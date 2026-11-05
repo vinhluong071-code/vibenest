@@ -176,6 +176,11 @@ export function VibeNestApp() {
     return session.user.id;
   }, [userId]);
 
+  const ensureChatIdentity = useCallback(
+    () => ensureIdentity("mở trò chuyện riêng"),
+    [ensureIdentity],
+  );
+
   async function publish(content: string, mood: Mood, location: string) {
     setBusy(true);
     try {
@@ -299,7 +304,7 @@ export function VibeNestApp() {
       </main>
 
       <nav className="mobile-bottom-nav" aria-label="Điều hướng di động"><a className="selected" href="#feed">⌂<span>Bảng tin</span></a><button onClick={() => setFilter("Chữa lành")}>♡<span>Chữa lành</span></button><button className="mobile-create" onClick={() => setComposerOpen(true)}>＋<span>Viết nhanh</span></button><button onClick={() => setFilter("Đã lưu")}>⌑<span>Đã lưu</span></button></nav>
-      {chatPost && <ChatDialog post={chatPost} alias={alias} onClose={() => setChatPost(null)} onEnsureIdentity={() => ensureIdentity("mở trò chuyện riêng")} />}
+      {chatPost && <ChatDialog post={chatPost} alias={alias} onClose={() => setChatPost(null)} onEnsureIdentity={ensureChatIdentity} />}
       <ComposerModal key={composerOpen ? composerMood : "closed"} open={composerOpen} alias={alias} initialMood={composerMood} busy={busy} onClose={() => setComposerOpen(false)} onSubmit={publish} />
     </div>
   );
