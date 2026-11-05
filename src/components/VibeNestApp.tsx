@@ -341,7 +341,7 @@ export function VibeNestApp() {
       <div className="ambient ambient-one" /><div className="ambient ambient-two" /><div className="ambient ambient-three" />
       {realtimeToast && <div className="realtime-toast" role="status" aria-live="polite"><span>{realtimeToast}</span><button onClick={() => setRealtimeToast("")} aria-label="Đóng thông báo">×</button></div>}
       <header className="topbar">
-        <a className="brand-lockup" href="#home" aria-label="VibeNest — Trang chủ"><Image src="/vibenest-logo.svg" alt="" width={34} height={34} priority /><span>VibeNest</span></a>
+        <a className="brand-lockup" href="#home" aria-label="VibeNest — Trang chủ"><Image src="/icon.svg" alt="" width={34} height={34} priority /><span>VibeNest</span></a>
         <nav className="desktop-nav" aria-label="Điều hướng chính">
           <a className="active" href="#feed">Bảng tâm sự</a><a href="#feed" onClick={() => setFilter("Chữa lành")}>Góc chữa lành</a><a href="#feed" onClick={() => setFilter("Đêm muộn")}>Tần số đêm</a><a href="#feed" onClick={() => setFilter("Đã lưu")}>Đã lưu</a>
         </nav>
