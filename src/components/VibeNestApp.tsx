@@ -38,7 +38,7 @@ export function VibeNestApp() {
     let replyRows: VibeReply[] = [];
     if (userId && ids.length) {
       const { data, error: interactionError } = await supabase.from("vibe_post_interactions")
-        .select("post_id,action_type").eq("user_id", userId).in("post_id", ids);
+        .select("post_id,action_type").in("post_id", ids);
       if (interactionError) throw interactionError;
       interactionRows = data ?? [];
     }
@@ -62,6 +62,10 @@ export function VibeNestApp() {
 
   useEffect(() => {
     let alive = true;
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY) {
+      setLoading(false);
+      return () => { alive = false; };
+    }
     const supabase = createClient();
     void supabase.auth.getSession().then(({ data }) => {
       if (alive) setUserId(data.session?.user.id ?? null);
@@ -121,7 +125,7 @@ export function VibeNestApp() {
       const active = action === "empathy" ? post.empathized : post.saved;
       if (active) {
         const { error } = await supabase.from("vibe_post_interactions").delete()
-          .eq("post_id", post.id).eq("user_id", ownerId).eq("action_type", action);
+          .eq("post_id", post.id).eq("action_type", action);
         if (error) throw error;
       } else {
         const { error } = await supabase.from("vibe_post_interactions").insert({
@@ -182,7 +186,7 @@ export function VibeNestApp() {
             </div>
             <div className="mood-tabs" role="tablist" aria-label="Lọc tâm trạng">{moods.map((item) => <button key={item} role="tab" aria-selected={filter === item} className={filter === item ? "selected" : ""} onClick={() => setFilter(item)}>{item}</button>)}</div>
             {notice && <div className="notice" role="status"><span>{notice}</span><button onClick={() => setNotice("")} aria-label="Đóng thông báo">×</button></div>}
-            {loading ? <div className="loading-state">Đang lắng nghe những câu chuyện…</div> : <VibeFeed posts={filteredPosts} busyId={busyId} onEmpathy={(post) => void toggleInteraction(post, "empathy")} onSave={(post) => void toggleInteraction(post, "save")} onReply={sendReply} />}
+            {!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ? <div className="notice">Hãy cấu hình Supabase URL và Publishable Key trong .env.local để kết nối dữ liệu.</div> : loading ? <div className="loading-state">Đang lắng nghe những câu chuyện…</div> : <VibeFeed posts={filteredPosts} busyId={busyId} onEmpathy={(post) => void toggleInteraction(post, "empathy")} onSave={(post) => void toggleInteraction(post, "save")} onReply={sendReply} />}
             <button className="refresh-button" onClick={() => void loadFeed()}>↻ Làm mới bảng tâm sự</button>
           </section>
           <aside className="right-sidebar">
