@@ -104,7 +104,7 @@ function escapeHtml(value: string): string {
 }
 
 function buildActionUrl(redirectTo: string | undefined, siteUrl: string | undefined, tokenHash: string, actionType: string): string {
-  const base = siteUrl || process.env.VIBENEST_APP_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const base = process.env.VIBENEST_APP_URL || siteUrl || process.env.NEXT_PUBLIC_SUPABASE_URL;
   if (!base) throw new Error("Missing VibeNest site URL for auth email.");
   const target = redirectTo ? new URL(redirectTo, base) : new URL("/auth/callback", base);
   if (target.protocol !== "https:" && target.protocol !== "http:") throw new Error("Invalid auth redirect URL.");
