@@ -68,7 +68,8 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   if (!authorized(request)) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   const apiKey = process.env.PRIMITIVE_API_KEY;
-  if (!apiKey) return NextResponse.json({ error: "primitive_not_configured" }, { status: 503 });
+  const from = process.env.PRIMITIVE_FROM_EMAIL;
+  if (!apiKey || !from) return NextResponse.json({ error: "primitive_not_configured" }, { status: 503 });
 
   const idempotencyKey = request.headers.get("idempotency-key")?.trim() ?? "";
   if (!idempotencyKey || idempotencyKey.length > 255) {
@@ -90,15 +91,18 @@ export async function POST(request: NextRequest) {
   const subject = typeof input.subject === "string" ? input.subject.trim() : "";
   const bodyText = typeof input.body_text === "string" ? input.body_text : undefined;
   const bodyHtml = typeof input.body_html === "string" ? input.body_html : undefined;
+  const replyTo = typeof input.reply_to === "string" ? input.reply_to.trim() : undefined;
+  const validEmail = (value: unknown): value is string =>
+    typeof value === "string" && value.length <= 998 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 
   if (!Array.isArray(recipients) || recipients.length < 1 || recipients.length > 20 ||
-      recipients.some((value) => typeof value !== "string" || value.length > 998 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) ||
+      recipients.some((value) => !validEmail(value)) ||
       !subject || subject.length > 998 ||
-      (!bodyText && !bodyHtml) || (bodyText && bodyText.length > 50000) || (bodyHtml && bodyHtml.length > 100000)) {
+      (!bodyText && !bodyHtml) || (bodyText && bodyText.length > 50000) || (bodyHtml && bodyHtml.length > 100000) ||
+      (replyTo !== undefined && !validEmail(replyTo))) {
     return NextResponse.json({ error: "invalid_mail_fields" }, { status: 400 });
   }
 
-  const replyTo = typeof input.reply_to === "string" && input.reply_to.length <= 998 ? input.reply_to : undefined;
   try {
     const response = await fetch("https://api.primitive.dev/v1/send-mail", {
       method: "POST",
@@ -109,7 +113,8 @@ export async function POST(request: NextRequest) {
         "Idempotency-Key": idempotencyKey,
       },
       body: JSON.stringify({
-        to: recipients,
+        from,
+        to: recipients.length === 1 ? recipients[0] : recipients,
         subject,
         ...(bodyText ? { body_text: bodyText } : {}),
         ...(bodyHtml ? { body_html: bodyHtml } : {}),
