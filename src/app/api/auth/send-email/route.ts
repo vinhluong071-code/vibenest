@@ -146,10 +146,11 @@ function buildDeliveries(payload: AuthHookPayload): Delivery[] {
         label: "new",
       });
     }
-    if (!result.length && (user.new_email || user.email) && email.token && email.token_hash) {
+    const fallbackToken = email.token_new || email.token;
+    if (!result.length && (user.new_email || user.email) && fallbackToken && email.token_hash) {
       result.push({
         to: user.new_email || user.email!,
-        token: email.token,
+        token: fallbackToken,
         tokenHash: email.token_hash,
         actionType,
         label: "primary",
