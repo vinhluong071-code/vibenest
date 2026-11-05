@@ -5,8 +5,18 @@ import { SupabaseSessionBridge } from "@/components/supabase-session-bridge";
 
 export const metadata: Metadata = {
   title: "VibeNest",
+  applicationName: "VibeNest",
   description: "Không gian tâm sự và kết nối cảm xúc ẩn danh.",
-  icons: { icon: [{ url: "/icon.svg", type: "image/svg+xml" }], shortcut: ["/icon.svg"], apple: ["/icon.svg"] },
+  icons: {
+    icon: [{ url: "/icon.svg", type: "image/svg+xml" }],
+    shortcut: ["/icon.svg"],
+    apple: [{ url: "/icon.svg", type: "image/svg+xml" }],
+  },
+  appleWebApp: {
+    capable: true,
+    title: "VibeNest",
+    statusBarStyle: "black-translucent",
+  },
 };
 
 export const viewport: Viewport = {
