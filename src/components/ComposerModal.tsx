@@ -20,13 +20,6 @@ export function ComposerModal({ open, alias, initialMood = "Đêm muộn", busy,
   const [location, setLocation] = useState("");
 
   useEffect(() => {
-    if (open) {
-      setMood(initialMood);
-      setContent("");
-    }
-  }, [open, initialMood]);
-
-  useEffect(() => {
     if (!open) return;
     const onKeyDown = (event: KeyboardEvent) => { if (event.key === "Escape") onClose(); };
     window.addEventListener("keydown", onKeyDown);
