@@ -26,6 +26,8 @@ export async function GET(request: NextRequest) {
   upstream.searchParams.set("limit", String(limit));
   const cursor = incoming.searchParams.get("cursor");
   if (cursor && cursor.length <= 2048) upstream.searchParams.set("cursor", cursor);
+  const domainId = process.env.PRIMITIVE_DOMAIN_ID;
+  if (domainId) upstream.searchParams.set("domain_id", domainId);
   const status = incoming.searchParams.get("status");
   if (status && ["pending", "accepted", "completed", "rejected"].includes(status)) upstream.searchParams.set("status", status);
 

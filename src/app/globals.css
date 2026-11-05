@@ -110,3 +110,5 @@
  .center-backdrop{align-items:flex-end;padding:0}.inbox-dialog,.account-dialog{width:100%;max-height:91dvh;border-radius:22px 22px 0 0;padding:19px 16px calc(18px + env(safe-area-inset-bottom));border-bottom:0}
  .center-header h2{font-size:22px}.center-list{max-height:58dvh}
 }
+
+@media(max-width:720px){.topbar .top-compose{display:none}}
