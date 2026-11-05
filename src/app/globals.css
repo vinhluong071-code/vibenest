@@ -16,7 +16,7 @@
 /* Private anonymous 1:1 chat */
 .chat-action{color:#f2a0b2}
 .chat-backdrop{position:fixed;z-index:80;inset:0;display:flex;align-items:center;justify-content:center;padding:18px;background:rgba(3,5,12,.76);backdrop-filter:blur(10px)}
-.chat-dialog{width:min(100%,520px);height:min( min(760px,88dvh),760px);display:flex;flex-direction:column;overflow:hidden;background:#111725;border-color:rgba(255,255,255,.12);box-shadow:0 30px 100px rgba(0,0,0,.5)}
+.chat-dialog{width:min(100%,520px);height:min(760px,88dvh);display:flex;flex-direction:column;overflow:hidden;background:#111725;border-color:rgba(255,255,255,.12);box-shadow:0 30px 100px rgba(0,0,0,.5)}
 .chat-header{display:flex;align-items:center;gap:12px;padding:16px 18px;border-bottom:1px solid var(--line)}
 .chat-heading{flex:1;display:grid;gap:5px;min-width:0}
 .chat-heading strong{font-size:12px}
