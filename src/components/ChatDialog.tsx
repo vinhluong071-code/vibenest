@@ -12,6 +12,7 @@ type ChatMessage = {
   sender_alias: string;
   content: string;
   created_at: string;
+  read_at: string | null;
 };
 
 type ChatDialogProps = {
@@ -19,6 +20,7 @@ type ChatDialogProps = {
   alias: string;
   onClose: () => void;
   onEnsureIdentity: () => Promise<string>;
+  onMessagesRead: () => void;
 };
 
 function friendlyChatError(error: unknown): string {
@@ -26,11 +28,11 @@ function friendlyChatError(error: unknown): string {
   if (value?.code === "P0002") return "Bài viết không còn tồn tại hoặc chưa có cuộc trò chuyện nào để mở.";
   if (value?.code === "22023") return "Bạn không thể tự bắt đầu cuộc trò chuyện với bài viết của mình.";
   if (value?.code === "28000" || value?.code === "42501") return "Phiên ẩn danh chưa sẵn sàng hoặc bạn không có quyền vào phòng chat.";
-  if (value?.code === "42P01" || value?.code === "PGRST202") return "Chat chưa được cấu hình trong Supabase. Hãy áp dụng migration VibeNest Private Chat.";
+  if (value?.code === "42P01" || value?.code === "PGRST202") return "Chat chưa được cấu hình trong Supabase. Hãy áp dụng migration VibeNest Realtime UX.";
   return "Chưa thể kết nối cuộc trò chuyện. Vui lòng thử lại.";
 }
 
-export function ChatDialog({ post, alias, onClose, onEnsureIdentity }: ChatDialogProps) {
+export function ChatDialog({ post, alias, onClose, onEnsureIdentity, onMessagesRead }: ChatDialogProps) {
   const [roomId, setRoomId] = useState<string | null>(null);
   const [peerAlias, setPeerAlias] = useState(post.alias);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -40,7 +42,35 @@ export function ChatDialog({ post, alias, onClose, onEnsureIdentity }: ChatDialo
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
   const [connection, setConnection] = useState("Đang kết nối riêng tư…");
+  const [peerTyping, setPeerTyping] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const channelRef = useRef<RealtimeChannel | null>(null);
+  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastTypingSentAt = useRef(0);
+
+  const broadcastTyping = useCallback((isTyping: boolean) => {
+    if (!channelRef.current || !userId) return;
+    void channelRef.current.send({
+      type: "broadcast",
+      event: "typing",
+      payload: { user_id: userId, is_typing: isTyping },
+    });
+  }, [userId]);
+
+  const updateDraft = useCallback((value: string) => {
+    setDraft(value);
+    if (!value.trim()) {
+      broadcastTyping(false);
+      return;
+    }
+    const now = Date.now();
+    if (now - lastTypingSentAt.current > 1100) {
+      lastTypingSentAt.current = now;
+      broadcastTyping(true);
+    }
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+    typingTimeoutRef.current = setTimeout(() => broadcastTyping(false), 1700);
+  }, [broadcastTyping]);
 
   useEffect(() => {
     let alive = true;
@@ -66,51 +96,77 @@ export function ChatDialog({ post, alias, onClose, onEnsureIdentity }: ChatDialo
         setRoomId(idOfRoom);
         setPeerAlias((room.peer_alias as string) || post.alias);
 
-        // Subscribe to a private room topic. Postgres Changes still applies
-        // chat_messages RLS before a row is delivered to this participant.
         channel = supabase
           .channel(`vibenest-chat:${idOfRoom}`, { config: { private: true } })
+          .on("broadcast", { event: "typing" }, ({ payload }) => {
+            if (!alive || payload?.user_id === id) return;
+            setPeerTyping(Boolean(payload?.is_typing));
+            if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+            if (payload?.is_typing) {
+              typingTimeoutRef.current = setTimeout(() => setPeerTyping(false), 2100);
+            }
+          })
           .on(
             "postgres_changes",
-            {
-              event: "INSERT",
-              schema: "public",
-              table: "chat_messages",
-              filter: `room_id=eq.${idOfRoom}`,
-            },
-            (payload: { new: ChatMessage }) => {
+            { event: "INSERT", schema: "public", table: "chat_messages", filter: `room_id=eq.${idOfRoom}` },
+            (payload) => {
               const incoming = payload.new as ChatMessage;
               if (!alive) return;
-              setMessages((current) =>
-                current.some((item) => item.id === incoming.id)
-                  ? current
-                  : [...current, incoming],
-              );
+              setMessages((current) => current.some((item) => item.id === incoming.id)
+                ? current
+                : [...current, incoming]);
+              if (incoming.sender_id !== id && !incoming.read_at) {
+                void supabase.from("chat_messages")
+                  .update({ read_at: new Date().toISOString() })
+                  .eq("id", incoming.id)
+                  .is("read_at", null)
+                  .then(({ error: readError }) => {
+                    if (readError) console.warn("[VibeNest] Không thể đánh dấu đã xem:", readError);
+                    else onMessagesRead();
+                  });
+              }
+            },
+          )
+          .on(
+            "postgres_changes",
+            { event: "UPDATE", schema: "public", table: "chat_messages", filter: `room_id=eq.${idOfRoom}` },
+            (payload) => {
+              const updated = payload.new as ChatMessage;
+              if (!alive) return;
+              setMessages((current) => current.map((item) => item.id === updated.id ? { ...item, read_at: updated.read_at } : item));
+              onMessagesRead();
             },
           )
           .subscribe((status: string) => {
             if (!alive) return;
             if (status === "SUBSCRIBED") setConnection("Đang trò chuyện trực tiếp");
-            else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
-              setConnection("Kết nối bị gián đoạn");
-            }
+            else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") setConnection("Kết nối bị gián đoạn");
           });
+        channelRef.current = channel;
 
         const { data: history, error: historyError } = await supabase
           .from("chat_messages")
-          .select("id,room_id,sender_id,sender_alias,content,created_at")
+          .select("id,room_id,sender_id,sender_alias,content,created_at,read_at")
           .eq("room_id", idOfRoom)
           .order("created_at", { ascending: true })
           .limit(200);
         if (historyError) throw historyError;
         if (alive) {
+          const loaded = (history ?? []) as ChatMessage[];
           setMessages((current) => {
             const merged = new Map(current.map((item) => [item.id, item]));
-            for (const item of (history ?? []) as ChatMessage[]) merged.set(item.id, item);
-            return [...merged.values()].sort(
-              (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
-            );
+            for (const item of loaded) merged.set(item.id, item);
+            return [...merged.values()].sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
           });
+          const unreadIds = loaded.filter((item) => item.sender_id !== id && !item.read_at).map((item) => item.id);
+          if (unreadIds.length) {
+            const { error: readError } = await supabase.from("chat_messages")
+              .update({ read_at: new Date().toISOString() })
+              .in("id", unreadIds)
+              .is("read_at", null);
+            if (readError) console.warn("[VibeNest] Không thể đánh dấu lịch sử đã xem:", readError);
+          }
+          onMessagesRead();
         }
       } catch (cause) {
         console.error("[VibeNest] Không thể mở chat riêng:", cause);
@@ -123,13 +179,15 @@ export function ChatDialog({ post, alias, onClose, onEnsureIdentity }: ChatDialo
     void connect();
     return () => {
       alive = false;
+      channelRef.current = null;
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
       if (channel) void createClient().removeChannel(channel);
     };
-  }, [onEnsureIdentity, post.id, post.alias]);
+  }, [alias, onEnsureIdentity, onMessagesRead, post.id, post.alias]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
-  }, [messages]);
+  }, [messages, peerTyping]);
 
   const sendMessage = useCallback(async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -137,23 +195,17 @@ export function ChatDialog({ post, alias, onClose, onEnsureIdentity }: ChatDialo
     if (!content || !roomId || !userId || sending) return;
     setSending(true);
     setError("");
+    broadcastTyping(false);
     try {
       const supabase = createClient();
       const { data, error: insertError } = await supabase
         .from("chat_messages")
-        .insert({
-          room_id: roomId,
-          sender_id: userId,
-          sender_alias: alias,
-          content,
-        })
-        .select("id,room_id,sender_id,sender_alias,content,created_at")
+        .insert({ room_id: roomId, sender_id: userId, sender_alias: alias, content })
+        .select("id,room_id,sender_id,sender_alias,content,created_at,read_at")
         .single();
       if (insertError) throw insertError;
       const sent = data as ChatMessage;
-      setMessages((current) =>
-        current.some((item) => item.id === sent.id) ? current : [...current, sent],
-      );
+      setMessages((current) => current.some((item) => item.id === sent.id) ? current : [...current, sent]);
       setDraft("");
     } catch (cause) {
       console.error("[VibeNest] Gửi tin nhắn thất bại:", cause);
@@ -161,7 +213,7 @@ export function ChatDialog({ post, alias, onClose, onEnsureIdentity }: ChatDialo
     } finally {
       setSending(false);
     }
-  }, [alias, draft, roomId, sending, userId]);
+  }, [alias, broadcastTyping, draft, roomId, sending, userId]);
 
   return (
     <div className="chat-backdrop" role="presentation" onMouseDown={(event) => {
@@ -185,15 +237,18 @@ export function ChatDialog({ post, alias, onClose, onEnsureIdentity }: ChatDialo
               <span>{message.sender_id === userId ? "Bạn" : message.sender_alias}</span>
               <p>{message.content}</p>
               <time>{new Date(message.created_at).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })}</time>
+              {message.sender_id === userId && <small className="chat-read-state">{message.read_at ? "Đã xem" : "Đã gửi"}</small>}
             </div>
           ))}
+          {peerTyping && <div className="chat-typing" role="status"><span /><span /><span /> <small>{peerAlias} đang gõ…</small></div>}
           <div ref={bottomRef} />
         </div>
         {error && <p className="chat-error" role="alert">{error}</p>}
         <form className="chat-compose" onSubmit={sendMessage}>
           <input
             value={draft}
-            onChange={(event) => setDraft(event.target.value)}
+            onChange={(event) => updateDraft(event.target.value)}
+            onBlur={() => broadcastTyping(false)}
             maxLength={2000}
             placeholder="Viết lời nhắn dịu dàng…"
             aria-label="Tin nhắn"

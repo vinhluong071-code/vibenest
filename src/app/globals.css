@@ -41,3 +41,27 @@
 .chat-compose button:disabled{opacity:.45}
 .chat-privacy-note{margin:0;padding:0 12px 12px;text-align:center;color:#777f90;font-size:8px}
 @media(max-width:720px){.chat-backdrop{padding:0;align-items:flex-end}.chat-dialog{width:100%;height:92dvh;height:min(92dvh,850px);border-radius:22px 22px 0 0;border-bottom:0;padding-bottom:env(safe-area-inset-bottom)}.chat-header{padding:14px 16px}.chat-messages{padding:15px}.chat-compose{padding:10px 12px}}
+
+
+/* Realtime feedback and low-cost mobile motion */
+.realtime-badge{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);border-radius:999px;padding:8px 11px;background:rgba(255,255,255,.045);color:#d9dce6;font-size:9px;white-space:nowrap;transition:background .18s ease,border-color .18s ease,transform .18s ease}
+.realtime-badge:hover{background:rgba(240,90,120,.12);border-color:rgba(240,90,120,.35);transform:translateY(-1px)}
+.realtime-badge b{display:grid;place-items:center;min-width:17px;height:17px;padding:0 4px;border-radius:99px;background:var(--rose);color:#fff;font-size:9px}
+.realtime-badge small{color:#ffadbd}
+.realtime-toast{position:fixed;z-index:100;top:76px;right:20px;display:flex;align-items:center;gap:12px;max-width:min(420px,calc(100vw - 28px));padding:12px 14px;border:1px solid rgba(240,90,120,.28);border-radius:13px;background:rgba(19,23,36,.96);box-shadow:0 18px 55px rgba(0,0,0,.35);color:#f6dce2;font-size:11px;line-height:1.5;animation:realtime-toast-in .22s ease-out}
+.realtime-toast button{border:0;background:none;color:#f4a4b5;font-size:18px}
+@keyframes realtime-toast-in{from{opacity:0;transform:translate3d(0,-7px,0)}to{opacity:1;transform:translate3d(0,0,0)}}
+.chat-read-state{align-self:flex-end;color:#f1a0b2;font-size:8px}
+.chat-typing{display:flex;align-items:center;gap:4px;align-self:flex-start;padding:9px 12px;border:1px solid var(--line);border-radius:13px;background:rgba(255,255,255,.045)}
+.chat-typing>span{width:4px;height:4px;border-radius:50%;background:#f39caf;animation:typing-pulse 1s infinite ease-in-out}
+.chat-typing>span:nth-child(2){animation-delay:.14s}.chat-typing>span:nth-child(3){animation-delay:.28s}
+.chat-typing small{margin-left:5px;color:#aeb3c0;font-size:8px}
+@keyframes typing-pulse{0%,60%,100%{opacity:.35;transform:translateY(0)}30%{opacity:1;transform:translateY(-3px)}}
+.chat-dialog{animation:chat-sheet-in .22s cubic-bezier(.2,.8,.2,1)}
+@keyframes chat-sheet-in{from{opacity:.75;transform:translateY(12px) scale(.99)}to{opacity:1;transform:translateY(0) scale(1)}}
+.vibe-card{content-visibility:auto;contain-intrinsic-size:1px 240px;transition:border-color .18s ease,transform .18s ease}
+.vibe-card:hover{border-color:rgba(240,90,120,.22)}
+.mobile-bottom-nav a,.mobile-bottom-nav button{transition:color .16s ease,transform .16s ease}
+.mobile-bottom-nav a:active,.mobile-bottom-nav button:active{transform:scale(.94)}
+@media(max-width:720px){.realtime-badge{padding:7px 9px}.realtime-badge>span{display:none}.realtime-badge small{display:none}.realtime-toast{top:66px;left:12px;right:12px;max-width:none}.chat-dialog{animation:chat-sheet-mobile-in .24s cubic-bezier(.2,.8,.2,1)}@keyframes chat-sheet-mobile-in{from{opacity:.8;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}}
+@media(prefers-reduced-motion:reduce){.realtime-toast,.chat-dialog,.chat-typing>span{animation:none!important}.realtime-badge,.vibe-card,.mobile-bottom-nav a,.mobile-bottom-nav button{transition:none!important}}

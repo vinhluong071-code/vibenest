@@ -66,6 +66,10 @@ export function VibeNestApp() {
   const [notice, setNotice] = useState("");
   const [loading, setLoading] = useState(true);
   const [feedError, setFeedError] = useState("");
+  const [notificationCount, setNotificationCount] = useState(0);
+  const [chatUnreadCount, setChatUnreadCount] = useState(0);
+  const [realtimeToast, setRealtimeToast] = useState("");
+
 
   // Keep feedback lightweight: action notices dismiss themselves without
   // interrupting feed browsing or requiring an extra tap.
@@ -74,6 +78,82 @@ export function VibeNestApp() {
     const timeoutId = window.setTimeout(() => setNotice(""), 4200);
     return () => window.clearTimeout(timeoutId);
   }, [notice]);
+  const refreshBadges = useCallback(async () => {
+    if (!userId) return;
+    const supabase = createClient();
+    const [notifications, messages] = await Promise.all([
+      supabase.from("notifications").select("id", { count: "exact", head: true })
+        .eq("recipient_id", userId).is("read_at", null),
+      supabase.from("chat_messages").select("id", { count: "exact", head: true })
+        .neq("sender_id", userId).is("read_at", null),
+    ]);
+    if (notifications.error) console.warn("[VibeNest] Không thể tải số thông báo:", notifications.error);
+    else setNotificationCount(notifications.count ?? 0);
+    if (messages.error) console.warn("[VibeNest] Không thể tải số tin nhắn chưa đọc:", messages.error);
+    else setChatUnreadCount(messages.count ?? 0);
+  }, [userId]);
+
+  useEffect(() => {
+    if (!realtimeToast) return;
+    const timeoutId = window.setTimeout(() => setRealtimeToast(""), 3600);
+    return () => window.clearTimeout(timeoutId);
+  }, [realtimeToast]);
+
+  useEffect(() => {
+    if (!userId) {
+      setNotificationCount(0);
+      setChatUnreadCount(0);
+      return;
+    }
+    let alive = true;
+    const supabase = createClient();
+    void refreshBadges();
+    const channel = supabase.channel(`vibenest-app-events:${userId}`)
+      .on("postgres_changes", {
+        event: "INSERT", schema: "public", table: "notifications",
+        filter: `recipient_id=eq.${userId}`,
+      }, (payload) => {
+        if (!alive) return;
+        const event = payload.new as { notification_type?: string };
+        setNotificationCount((count) => count + 1);
+        setRealtimeToast(event.notification_type === "reply"
+          ? "Có người vừa gửi lời hồi âm cho tâm sự của bạn."
+          : "Có người vừa gửi đồng cảm đến tâm sự của bạn.");
+      })
+      .on("postgres_changes", {
+        event: "INSERT", schema: "public", table: "chat_messages",
+      }, (payload) => {
+        if (!alive) return;
+        const message = payload.new as { sender_id?: string };
+        if (message.sender_id === userId) return;
+        setChatUnreadCount((count) => count + 1);
+        if (!chatPost) setRealtimeToast("Bạn có tin nhắn mới trong VibeNest.");
+      })
+      .on("postgres_changes", {
+        event: "UPDATE", schema: "public", table: "chat_messages",
+      }, () => {
+        if (alive) void refreshBadges();
+      })
+      .subscribe();
+    return () => {
+      alive = false;
+      void supabase.removeChannel(channel);
+    };
+  }, [userId, chatPost, refreshBadges]);
+
+  const clearNotifications = useCallback(async () => {
+    if (!userId) return;
+    const { error } = await createClient().from("notifications")
+      .update({ read_at: new Date().toISOString() })
+      .eq("recipient_id", userId).is("read_at", null);
+    if (error) {
+      console.warn("[VibeNest] Không thể đánh dấu thông báo đã đọc:", error);
+      setNotice("Chưa thể đánh dấu thông báo đã đọc. Vui lòng thử lại.");
+      return;
+    }
+    setNotificationCount(0);
+  }, [userId]);
+
 
   const loadFeed = useCallback(async () => {
     const supabase = createClient();
@@ -261,6 +341,7 @@ export function VibeNestApp() {
   return (
     <div className="app-shell">
       <div className="ambient ambient-one" /><div className="ambient ambient-two" /><div className="ambient ambient-three" />
+      {realtimeToast && <div className="realtime-toast" role="status" aria-live="polite"><span>{realtimeToast}</span><button onClick={() => setRealtimeToast("")} aria-label="Đóng thông báo">×</button></div>}
       <header className="topbar">
         <a className="wordmark" href="#home">VibeNest<span>✳</span></a>
         <nav className="desktop-nav" aria-label="Điều hướng chính">
@@ -268,6 +349,10 @@ export function VibeNestApp() {
         </nav>
         <div className="topbar-actions">
           <span className="session-indicator">{userId ? "Đã kết nối ẩn danh" : "Đang xem ẩn danh"}</span>
+          <button className="realtime-badge" onClick={() => void clearNotifications()} aria-label={`Thông báo chưa đọc: ${notificationCount}`}>
+            <span>Thông báo</span>{notificationCount > 0 && <b>{notificationCount > 99 ? "99+" : notificationCount}</b>}
+            {chatUnreadCount > 0 && <small>{chatUnreadCount} tin nhắn</small>}
+          </button>
           <button className="primary-button top-compose" onClick={() => setComposerOpen(true)}>＋ Gửi tâm sự</button>
         </div>
       </header>
@@ -304,7 +389,7 @@ export function VibeNestApp() {
       </main>
 
       <nav className="mobile-bottom-nav" aria-label="Điều hướng di động"><a className="selected" href="#feed">⌂<span>Bảng tin</span></a><button onClick={() => setFilter("Chữa lành")}>♡<span>Chữa lành</span></button><button className="mobile-create" onClick={() => setComposerOpen(true)}>＋<span>Viết nhanh</span></button><button onClick={() => setFilter("Đã lưu")}>⌑<span>Đã lưu</span></button></nav>
-      {chatPost && <ChatDialog post={chatPost} alias={alias} onClose={() => setChatPost(null)} onEnsureIdentity={ensureChatIdentity} />}
+      {chatPost && <ChatDialog post={chatPost} alias={alias} onClose={() => setChatPost(null)} onEnsureIdentity={ensureChatIdentity} onMessagesRead={() => void refreshBadges()} />}
       <ComposerModal key={composerOpen ? composerMood : "closed"} open={composerOpen} alias={alias} initialMood={composerMood} busy={busy} onClose={() => setComposerOpen(false)} onSubmit={publish} />
     </div>
   );
