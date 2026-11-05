@@ -106,25 +106,23 @@ export function VibeNestApp() {
       setLoading(false);
       return () => { alive = false; };
     }
+
     const supabase = createClient();
-    void supabase.auth.getSession().then(
-      (result: { data: { session: Session | null }; error: Error | null }) => {
-        if (!alive) return;
-        if (result.error) {
-          console.error("[VibeNest] Không thể khôi phục phiên Supabase:", result.error);
-          setNotice(getFriendlyError(result.error, "Không thể khôi phục phiên. Hãy thử tải lại trang."));
-          return;
-        }
-        setUserId(result.data.session?.user.id ?? null);
-      },
-    ).catch((error: unknown) => {
-      if (!alive) return;
-      console.error("[VibeNest] Lỗi khởi tạo phiên Supabase:", error);
-      setNotice(getFriendlyError(error, "Không thể khởi tạo kết nối xác thực."));
-    });
     const { data: listener } = supabase.auth.onAuthStateChange(
-      (_event: AuthChangeEvent, session: Session | null) => setUserId(session?.user.id ?? null),
+      (_event: AuthChangeEvent, session: Session | null) => {
+        if (alive) setUserId(session?.user.id ?? null);
+      },
     );
+
+    // Start silently on first visit. The same promise is reused by publish,
+    // reply and interaction handlers if the visitor acts before it resolves.
+    void signInAnonymously().then((session) => {
+      if (alive) setUserId(session?.user.id ?? null);
+    }).catch((error: unknown) => {
+      // Keep browsing uninterrupted; show feedback only if an action needs auth.
+      console.warn("[VibeNest] Silent anonymous session is not ready yet:", error);
+    });
+
     return () => { alive = false; listener.subscription.unsubscribe(); };
   }, []);
 
@@ -137,7 +135,6 @@ export function VibeNestApp() {
       if (alive) {
         const message = getFriendlyError(error, "Không thể tải bảng tâm sự. Vui lòng thử lại.");
         setFeedError(message);
-        setNotice(message);
       }
     }).finally(() => { if (alive) setLoading(false); });
     return () => { alive = false; };
