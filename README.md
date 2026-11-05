@@ -29,7 +29,7 @@ The private `/api/agent-mail/inbox` route exposes a server-side bridge to the Pr
 - `POST /api/agent-mail/inbox` sends an agent email through Primitive. Require an `Idempotency-Key` header to make retries safe. JSON body: `{ "to": "person@example.com", "subject": "Subject", "body_text": "Message" }` (or `body_html`).
 - Every request must include `x-vibenest-agent-secret`. The route uses timing-safe comparison and never returns the Primitive API key.
 - Email notifications are opt-in per account. The server queue only targets verified email identities and rechecks preferences before dispatch.
-- Vercel Cron runs `/api/cron/email-dispatch` daily at 09:00 UTC (16:00 Vietnam time).
+- The Vercel Cron schedule is daily at 09:00 UTC (16:00 Vietnam time), but Vercel invokes Cron only on Production deployments—not Preview deployments. The current feature branch therefore builds a Preview without activating the scheduled worker.
 - Configure `PRIMITIVE_API_KEY`, `PRIMITIVE_FROM_EMAIL`, `PRIMITIVE_DOMAIN_ID`, `VIBENEST_AGENT_API_SECRET`, `CRON_SECRET`, and `SUPABASE_SERVICE_ROLE_KEY` as server-only environment variables. Never prefix them with `NEXT_PUBLIC_`.
 - The VibeNest Preview uses the existing managed sender `agent@rust-mule.primitive.email`. Keep its domain ID scoped to this managed inbox; do not point VibeNest at a domain owned by another project.
 
