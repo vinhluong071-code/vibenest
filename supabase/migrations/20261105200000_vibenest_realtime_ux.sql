@@ -29,6 +29,7 @@ with check (
       and ((select auth.uid()) = r.participant_a or (select auth.uid()) = r.participant_b)
   )
 );
+grant select (read_at) on public.chat_messages to authenticated;
 grant update (read_at) on public.chat_messages to authenticated;
 
 -- Ephemeral typing broadcasts are allowed only on a valid room topic by its two members.
