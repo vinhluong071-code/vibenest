@@ -65,6 +65,14 @@ export function VibeNestApp() {
   const [loading, setLoading] = useState(true);
   const [feedError, setFeedError] = useState("");
 
+  // Keep feedback lightweight: action notices dismiss themselves without
+  // interrupting feed browsing or requiring an extra tap.
+  useEffect(() => {
+    if (!notice) return;
+    const timeoutId = window.setTimeout(() => setNotice(""), 4200);
+    return () => window.clearTimeout(timeoutId);
+  }, [notice]);
+
   const loadFeed = useCallback(async () => {
     const supabase = createClient();
     const { data: rows, error } = await supabase.from("vibe_posts")
@@ -149,16 +157,19 @@ export function VibeNestApp() {
     }).sort((a, b) => sort === "latest" ? new Date(b.created_at).getTime() - new Date(a.created_at).getTime() : b.empathy_count - a.empathy_count);
   }, [posts, filter, query, sort]);
 
-  async function ensureIdentity() {
+  async function ensureIdentity(actionLabel = "thực hiện thao tác này") {
     if (userId) return userId;
     let session: Session | null;
     try {
+      // Reuses the startup promise when an action races silent sign-in.
       session = await signInAnonymously();
     } catch (error) {
       console.error("[VibeNest] Tạo phiên ẩn danh thất bại:", error);
-      throw new Error(getFriendlyError(error, "Chưa thể tạo phiên ẩn danh. Hãy thử lại sau."));
+      throw new Error(getFriendlyError(error, `Chưa thể tạo phiên ẩn danh để ${actionLabel}. Vui lòng thử lại.`));
     }
-    if (!session?.user) throw new Error("Supabase chưa trả về phiên đăng nhập. Hãy kiểm tra Anonymous Sign-Ins trong Supabase.");
+    if (!session?.user) {
+      throw new Error(`Chưa thể xác nhận danh tính ẩn danh để ${actionLabel}. Vui lòng thử lại.`);
+    }
     setUserId(session.user.id);
     return session.user.id;
   }
@@ -166,7 +177,7 @@ export function VibeNestApp() {
   async function publish(content: string, mood: Mood, location: string) {
     setBusy(true);
     try {
-      const ownerId = await ensureIdentity();
+      const ownerId = await ensureIdentity("đăng tâm sự");
       const supabase = createClient();
       const { error } = await supabase.from("vibe_posts").insert({
         user_id: ownerId, alias, mood, content, location: location || null,
@@ -190,7 +201,7 @@ export function VibeNestApp() {
   async function toggleInteraction(post: VibePost, action: InteractionType) {
     setBusyId(post.id);
     try {
-      const ownerId = await ensureIdentity();
+      const ownerId = await ensureIdentity(action === "empathy" ? "gửi đồng cảm" : "lưu bài viết");
       const supabase = createClient();
       const active = action === "empathy" ? post.empathized : post.saved;
       if (active) {
@@ -218,7 +229,7 @@ export function VibeNestApp() {
 
   async function sendReply(post: VibePost, content: string) {
     try {
-      const ownerId = await ensureIdentity();
+      const ownerId = await ensureIdentity("gửi lời hồi âm");
       const supabase = createClient();
       const { error } = await supabase.from("vibe_replies").insert({
         post_id: post.id, user_id: ownerId, author_alias: alias, content,
@@ -273,7 +284,7 @@ export function VibeNestApp() {
               <div className="sort-switch"><button className={sort === "latest" ? "selected" : ""} onClick={() => setSort("latest")}>Mới nhất</button><button className={sort === "popular" ? "selected" : ""} onClick={() => setSort("popular")}>Nổi bật</button></div>
             </div>
             <div className="mood-tabs" role="tablist" aria-label="Lọc tâm trạng">{moods.map((item) => <button key={item} role="tab" aria-selected={filter === item} className={filter === item ? "selected" : ""} onClick={() => setFilter(item)}>{item}</button>)}</div>
-            {notice && <div className="notice" role="status"><span>{notice}</span><button onClick={() => setNotice("")} aria-label="Đóng thông báo">×</button></div>}
+            {notice && <div className="notice" role="status" aria-live="polite"><span>{notice}</span><button onClick={() => setNotice("")} aria-label="Đóng thông báo">×</button></div>}
             {!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ? <div className="notice" role="alert">Hãy cấu hình Supabase URL và Publishable Key trong môi trường Preview để kết nối dữ liệu.</div> : loading ? <div className="loading-state" role="status">Đang lắng nghe những câu chuyện…</div> : feedError ? <div className="empty-state glass-panel" role="alert"><h2>Chưa tải được bảng tâm sự</h2><p>{feedError}</p><button className="secondary-button" onClick={() => { setLoading(true); setFeedError(""); void loadFeed().catch((error: unknown) => { console.error("[VibeNest] Tải lại bảng tin thất bại:", error); setFeedError(getFriendlyError(error, "Vẫn chưa thể tải bảng tin.")); }).finally(() => setLoading(false)); }}>Thử tải lại</button></div> : <VibeFeed posts={filteredPosts} busyId={busyId} onEmpathy={(post) => void toggleInteraction(post, "empathy")} onSave={(post) => void toggleInteraction(post, "save")} onReply={sendReply} />}
             <button className="refresh-button" onClick={() => { setLoading(true); setFeedError(""); void loadFeed().catch((error: unknown) => { console.error("[VibeNest] Làm mới bảng tin thất bại:", error); setFeedError(getFriendlyError(error, "Không thể làm mới bảng tin.")); }).finally(() => setLoading(false)); }}>↻ Làm mới bảng tâm sự</button>
           </section>
