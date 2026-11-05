@@ -94,13 +94,14 @@ function verifySupabaseSignature(request: NextRequest, rawBody: string): string 
 }
 
 function escapeHtml(value: string): string {
-  return value.replace(/[&<>"']/g, (character) => ({
+  const entities: Record<string, string> = {
     "&": "&amp;",
     "<": "&lt;",
     ">": "&gt;",
     '"': "&quot;",
     "'": "&#39;",
-  })[character] ?? character);
+  };
+  return value.replace(/[&<>"']/g, (character) => entities[character] ?? character);
 }
 
 function buildActionUrl(redirectTo: string | undefined, siteUrl: string | undefined, tokenHash: string, actionType: string): string {
