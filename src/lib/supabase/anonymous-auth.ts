@@ -1,16 +1,30 @@
+import type { Session } from "@supabase/supabase-js";
 import { createClient } from "./client";
 
+let pendingAnonymousSignIn: Promise<Session | null> | null = null;
+
 /**
- * Call only from an explicit "Continue anonymously" user action.
- * Never call automatically on every page load.
+ * Call only from an explicit user action. Reuse an existing session and
+ * coalesce concurrent requests so multiple clicks cannot create many users.
  */
-export async function signInAnonymously() {
-  const supabase = createClient();
-  const { data: sessionData } = await supabase.auth.getSession();
+export async function signInAnonymously(): Promise<Session | null> {
+  if (pendingAnonymousSignIn) return pendingAnonymousSignIn;
 
-  if (sessionData.session) return sessionData.session;
+  pendingAnonymousSignIn = (async () => {
+    const supabase = createClient();
+    const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
 
-  const { data, error } = await supabase.auth.signInAnonymously();
-  if (error) throw error;
-  return data.session;
+    if (sessionError) throw sessionError;
+    if (sessionData.session) return sessionData.session;
+
+    const { data, error } = await supabase.auth.signInAnonymously();
+    if (error) throw error;
+    return data.session;
+  })();
+
+  try {
+    return await pendingAnonymousSignIn;
+  } finally {
+    pendingAnonymousSignIn = null;
+  }
 }
