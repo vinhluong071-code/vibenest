@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import type { Mood } from "@/lib/vibe/types";
 
 const moods: Mood[] = ["Đêm muộn", "Chênh vênh", "Chữa lành", "Thầm thương", "Khác"];
@@ -35,7 +35,7 @@ export function ComposerModal({ open, alias, initialMood = "Đêm muộn", busy,
 
   if (!open) return null;
 
-  async function submit(event: React.FormEvent<HTMLFormElement>) {
+  async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!content.trim()) return;
     await onSubmit(content.trim(), mood, location.trim());
