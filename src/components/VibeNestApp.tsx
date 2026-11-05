@@ -23,6 +23,32 @@ const moods = ["Tất cả", "Đêm muộn", "Chênh vênh", "Chữa lành", "Th
 const aliases = ["Mây Lang Thang", "Người Qua Đêm", "Kẻ Mộng Mơ", "Một Vì Sao", "Gió Nhẹ"];
 const makeAlias = () => aliases[Math.floor(Math.random() * aliases.length)] + " #" + Math.floor(100 + Math.random() * 900);
 
+function getFriendlyError(error: unknown, fallback: string): string {
+  const value = error as { code?: string; message?: string; status?: number } | null;
+  const code = value?.code;
+  const message = value?.message?.toLowerCase() ?? "";
+
+  if (code === "42501" || code === "PGRST301" || value?.status === 401 || value?.status === 403) {
+    return "Bạn chưa có quyền thực hiện thao tác này. Hãy kiểm tra phiên ẩn danh và chính sách quyền truy cập Supabase (RLS).";
+  }
+  if (code === "42P01" || code === "PGRST205" || code === "PGRST204") {
+    return "Cấu trúc dữ liệu VibeNest chưa sẵn sàng. Hãy kiểm tra migration và quyền Data API trong Supabase.";
+  }
+  if (code === "23505") return "Tương tác này đã tồn tại. Hãy làm mới bảng tin để cập nhật trạng thái.";
+  if (code === "23514" || code === "22001") return "Nội dung không đúng giới hạn cho phép. Vui lòng kiểm tra độ dài và tâm trạng đã chọn.";
+  if (code === "23503") return "Bài viết không còn tồn tại hoặc phiên của bạn không hợp lệ. Hãy tải lại bảng tin.";
+  if (value?.status === 429 || message.includes("rate limit") || message.includes("too many")) {
+    return "Bạn thao tác hơi nhanh. Vui lòng chờ một chút rồi thử lại.";
+  }
+  if (message.includes("anonymous") && (message.includes("disabled") || message.includes("not enabled"))) {
+    return "Đăng nhập ẩn danh chưa được bật. Hãy bật Anonymous Sign-Ins trong Supabase Authentication.";
+  }
+  if (message.includes("failed to fetch") || message.includes("network") || message.includes("fetch")) {
+    return "Không thể kết nối Supabase. Hãy kiểm tra mạng và cấu hình URL/Publishable Key.";
+  }
+  return fallback;
+}
+
 export function VibeNestApp() {
   const [alias, setAlias] = useState("Mây Lang Thang #409");
   const [userId, setUserId] = useState<string | null>(null);
@@ -36,6 +62,7 @@ export function VibeNestApp() {
   const [busyId, setBusyId] = useState<string | null>(null);
   const [notice, setNotice] = useState("");
   const [loading, setLoading] = useState(true);
+  const [feedError, setFeedError] = useState("");
 
   const loadFeed = useCallback(async () => {
     const supabase = createClient();
@@ -80,10 +107,20 @@ export function VibeNestApp() {
     }
     const supabase = createClient();
     void supabase.auth.getSession().then(
-      (result: { data: { session: Session | null } }) => {
-        if (alive) setUserId(result.data.session?.user.id ?? null);
+      (result: { data: { session: Session | null }; error: Error | null }) => {
+        if (!alive) return;
+        if (result.error) {
+          console.error("[VibeNest] Không thể khôi phục phiên Supabase:", result.error);
+          setNotice(getFriendlyError(result.error, "Không thể khôi phục phiên. Hãy thử tải lại trang."));
+          return;
+        }
+        setUserId(result.data.session?.user.id ?? null);
       },
-    );
+    ).catch((error: unknown) => {
+      if (!alive) return;
+      console.error("[VibeNest] Lỗi khởi tạo phiên Supabase:", error);
+      setNotice(getFriendlyError(error, "Không thể khởi tạo kết nối xác thực."));
+    });
     const { data: listener } = supabase.auth.onAuthStateChange(
       (_event: AuthChangeEvent, session: Session | null) => setUserId(session?.user.id ?? null),
     );
@@ -93,8 +130,14 @@ export function VibeNestApp() {
   useEffect(() => {
     let alive = true;
     setLoading(true);
+    setFeedError("");
     void loadFeed().catch((error: unknown) => {
-      if (alive) setNotice(error instanceof Error ? error.message : "Không thể tải bảng tâm sự.");
+      console.error("[VibeNest] Không thể tải bảng tâm sự:", error);
+      if (alive) {
+        const message = getFriendlyError(error, "Không thể tải bảng tâm sự. Vui lòng thử lại.");
+        setFeedError(message);
+        setNotice(message);
+      }
     }).finally(() => { if (alive) setLoading(false); });
     return () => { alive = false; };
   }, [loadFeed]);
@@ -110,8 +153,14 @@ export function VibeNestApp() {
 
   async function ensureIdentity() {
     if (userId) return userId;
-    const session = await signInAnonymously();
-    if (!session?.user) throw new Error("Supabase chưa tạo được phiên ẩn danh. Hãy kiểm tra Anonymous Sign-Ins trong Auth settings.");
+    let session;
+    try {
+      session = await signInAnonymously();
+    } catch (error) {
+      console.error("[VibeNest] Tạo phiên ẩn danh thất bại:", error);
+      throw new Error(getFriendlyError(error, "Chưa thể tạo phiên ẩn danh. Hãy thử lại sau."));
+    }
+    if (!session?.user) throw new Error("Supabase chưa trả về phiên đăng nhập. Hãy kiểm tra Anonymous Sign-Ins trong Supabase.");
     setUserId(session.user.id);
     return session.user.id;
   }
@@ -127,9 +176,16 @@ export function VibeNestApp() {
       if (error) throw error;
       setComposerOpen(false);
       setNotice("Tâm sự của bạn đã được gửi vào VibeNest.");
-      await loadFeed();
+      try {
+        await loadFeed();
+        setFeedError("");
+      } catch (refreshError) {
+        console.error("[VibeNest] Đã đăng bài nhưng tải lại bảng tin thất bại:", refreshError);
+        setFeedError("Bài đã được gửi, nhưng bảng tin chưa cập nhật. Hãy nhấn Làm mới bảng tâm sự.");
+      }
     } catch (error) {
-      setNotice(error instanceof Error ? error.message : "Chưa thể gửi tâm sự.");
+      console.error("[VibeNest] Đăng tâm sự thất bại:", error);
+      setNotice(getFriendlyError(error, "Chưa thể gửi tâm sự. Vui lòng thử lại."));
     } finally { setBusy(false); }
   }
 
@@ -149,20 +205,38 @@ export function VibeNestApp() {
         });
         if (error) throw error;
       }
-      await loadFeed();
+      try {
+        await loadFeed();
+        setFeedError("");
+      } catch (refreshError) {
+        console.error("[VibeNest] Tương tác đã lưu nhưng tải lại bảng tin thất bại:", refreshError);
+        setFeedError("Tương tác đã được lưu, nhưng bảng tin chưa cập nhật. Hãy nhấn Làm mới.");
+      }
     } catch (error) {
-      setNotice(error instanceof Error ? error.message : "Không thể lưu tương tác.");
+      console.error("[VibeNest] Tương tác thất bại:", error);
+      setNotice(getFriendlyError(error, "Không thể cập nhật tương tác. Vui lòng thử lại."));
     } finally { setBusyId(null); }
   }
 
   async function sendReply(post: VibePost, content: string) {
-    const ownerId = await ensureIdentity();
-    const supabase = createClient();
-    const { error } = await supabase.from("vibe_replies").insert({
-      post_id: post.id, user_id: ownerId, author_alias: alias, content,
-    });
-    if (error) throw error;
-    await loadFeed();
+    try {
+      const ownerId = await ensureIdentity();
+      const supabase = createClient();
+      const { error } = await supabase.from("vibe_replies").insert({
+        post_id: post.id, user_id: ownerId, author_alias: alias, content,
+      });
+      if (error) throw error;
+      try {
+        await loadFeed();
+      } catch (refreshError) {
+        console.error("[VibeNest] Đã gửi hồi âm nhưng tải lại bảng tin thất bại:", refreshError);
+        setNotice("Hồi âm đã được gửi, nhưng chưa thể cập nhật bảng tin. Hãy nhấn Làm mới.");
+      }
+    } catch (error) {
+      console.error("[VibeNest] Gửi hồi âm thất bại:", error);
+      setNotice(getFriendlyError(error, "Không thể gửi hồi âm. Vui lòng thử lại."));
+      throw error;
+    }
   }
 
   const savedCount = posts.filter((post) => post.saved).length;
@@ -202,8 +276,8 @@ export function VibeNestApp() {
             </div>
             <div className="mood-tabs" role="tablist" aria-label="Lọc tâm trạng">{moods.map((item) => <button key={item} role="tab" aria-selected={filter === item} className={filter === item ? "selected" : ""} onClick={() => setFilter(item)}>{item}</button>)}</div>
             {notice && <div className="notice" role="status"><span>{notice}</span><button onClick={() => setNotice("")} aria-label="Đóng thông báo">×</button></div>}
-            {!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ? <div className="notice">Hãy cấu hình Supabase URL và Publishable Key trong .env.local để kết nối dữ liệu.</div> : loading ? <div className="loading-state">Đang lắng nghe những câu chuyện…</div> : <VibeFeed posts={filteredPosts} busyId={busyId} onEmpathy={(post) => void toggleInteraction(post, "empathy")} onSave={(post) => void toggleInteraction(post, "save")} onReply={sendReply} />}
-            <button className="refresh-button" onClick={() => void loadFeed()}>↻ Làm mới bảng tâm sự</button>
+            {!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ? <div className="notice" role="alert">Hãy cấu hình Supabase URL và Publishable Key trong môi trường Preview để kết nối dữ liệu.</div> : loading ? <div className="loading-state" role="status">Đang lắng nghe những câu chuyện…</div> : feedError ? <div className="empty-state glass-panel" role="alert"><h2>Chưa tải được bảng tâm sự</h2><p>{feedError}</p><button className="secondary-button" onClick={() => { setLoading(true); setFeedError(""); void loadFeed().catch((error: unknown) => { console.error("[VibeNest] Tải lại bảng tin thất bại:", error); setFeedError(getFriendlyError(error, "Vẫn chưa thể tải bảng tin.")); }).finally(() => setLoading(false)); }}>Thử tải lại</button></div> : <VibeFeed posts={filteredPosts} busyId={busyId} onEmpathy={(post) => void toggleInteraction(post, "empathy")} onSave={(post) => void toggleInteraction(post, "save")} onReply={sendReply} />}
+            <button className="refresh-button" onClick={() => { setLoading(true); setFeedError(""); void loadFeed().catch((error: unknown) => { console.error("[VibeNest] Làm mới bảng tin thất bại:", error); setFeedError(getFriendlyError(error, "Không thể làm mới bảng tin.")); }).finally(() => setLoading(false)); }}>↻ Làm mới bảng tâm sự</button>
           </section>
           <aside className="right-sidebar">
             <section className="glass-panel reflection-card"><p className="eyebrow">CÂU HỎI GỢI MỞ HÔM NAY</p><h2>Nếu có thể nhắn một điều đến chính mình của ba năm trước, bạn sẽ nói gì?</h2><button onClick={() => { setComposerMood("Chữa lành"); setComposerOpen(true); }}>Viết câu trả lời <span>↗</span></button></section>
