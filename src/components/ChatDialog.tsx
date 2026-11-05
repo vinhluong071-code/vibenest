@@ -23,7 +23,7 @@ type ChatDialogProps = {
 
 function friendlyChatError(error: unknown): string {
   const value = error as { code?: string; message?: string } | null;
-  if (value?.code === "P0002") return "Bài viết này không còn tồn tại.";
+  if (value?.code === "P0002") return "Bài viết không còn tồn tại hoặc chưa có cuộc trò chuyện nào để mở.";
   if (value?.code === "22023") return "Bạn không thể tự bắt đầu cuộc trò chuyện với bài viết của mình.";
   if (value?.code === "28000" || value?.code === "42501") return "Phiên ẩn danh chưa sẵn sàng hoặc bạn không có quyền vào phòng chat.";
   if (value?.code === "42P01" || value?.code === "PGRST202") return "Chat chưa được cấu hình trong Supabase. Hãy áp dụng migration VibeNest Private Chat.";
@@ -55,7 +55,7 @@ export function ChatDialog({ post, alias, onClose, onEnsureIdentity }: ChatDialo
         const supabase = createClient();
         const { data: roomData, error: roomError } = await supabase.rpc(
           "start_vibenest_chat",
-          { p_post_id: post.id },
+          { p_post_id: post.id, p_alias: alias },
         );
         if (roomError) throw roomError;
 
