@@ -45,7 +45,8 @@ export function ChatDialog({ post, alias, onClose, onEnsureIdentity, onMessagesR
   const [peerTyping, setPeerTyping] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const channelRef = useRef<RealtimeChannel | null>(null);
-  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const localTypingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const peerTypingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastTypingSentAt = useRef(0);
 
   const broadcastTyping = useCallback((isTyping: boolean) => {
@@ -68,8 +69,8 @@ export function ChatDialog({ post, alias, onClose, onEnsureIdentity, onMessagesR
       lastTypingSentAt.current = now;
       broadcastTyping(true);
     }
-    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
-    typingTimeoutRef.current = setTimeout(() => broadcastTyping(false), 1700);
+    if (localTypingTimeoutRef.current) clearTimeout(localTypingTimeoutRef.current);
+    localTypingTimeoutRef.current = setTimeout(() => broadcastTyping(false), 1700);
   }, [broadcastTyping]);
 
   useEffect(() => {
@@ -98,40 +99,40 @@ export function ChatDialog({ post, alias, onClose, onEnsureIdentity, onMessagesR
 
         channel = supabase
           .channel(`vibenest-chat:${idOfRoom}`, { config: { private: true } })
-          .on("broadcast", { event: "typing" }, ({ payload }) => {
+          .on("broadcast", { event: "typing" }, ({ payload }: { payload: { user_id?: string; is_typing?: boolean } }) => {
             if (!alive || payload?.user_id === id) return;
             setPeerTyping(Boolean(payload?.is_typing));
-            if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+            if (peerTypingTimeoutRef.current) clearTimeout(peerTypingTimeoutRef.current);
             if (payload?.is_typing) {
-              typingTimeoutRef.current = setTimeout(() => setPeerTyping(false), 2100);
+              peerTypingTimeoutRef.current = setTimeout(() => setPeerTyping(false), 2100);
             }
           })
           .on(
             "postgres_changes",
             { event: "INSERT", schema: "public", table: "chat_messages", filter: `room_id=eq.${idOfRoom}` },
-            (payload) => {
-              const incoming = payload.new as ChatMessage;
+            (payload: { new: ChatMessage }) => {
+              const incoming = payload.new;
               if (!alive) return;
               setMessages((current) => current.some((item) => item.id === incoming.id)
                 ? current
                 : [...current, incoming]);
               if (incoming.sender_id !== id && !incoming.read_at) {
-                void supabase.from("chat_messages")
-                  .update({ read_at: new Date().toISOString() })
-                  .eq("id", incoming.id)
-                  .is("read_at", null)
-                  .then(({ error: readError }) => {
-                    if (readError) console.warn("[VibeNest] Không thể đánh dấu đã xem:", readError);
-                    else onMessagesRead();
-                  });
+                void (async () => {
+                  const { error: readError } = await supabase.from("chat_messages")
+                    .update({ read_at: new Date().toISOString() })
+                    .eq("id", incoming.id)
+                    .is("read_at", null);
+                  if (readError) console.warn("[VibeNest] Không thể đánh dấu đã xem:", readError);
+                  else onMessagesRead();
+                })();
               }
             },
           )
           .on(
             "postgres_changes",
             { event: "UPDATE", schema: "public", table: "chat_messages", filter: `room_id=eq.${idOfRoom}` },
-            (payload) => {
-              const updated = payload.new as ChatMessage;
+            (payload: { new: ChatMessage }) => {
+              const updated = payload.new;
               if (!alive) return;
               setMessages((current) => current.map((item) => item.id === updated.id ? { ...item, read_at: updated.read_at } : item));
               onMessagesRead();
@@ -180,7 +181,8 @@ export function ChatDialog({ post, alias, onClose, onEnsureIdentity, onMessagesR
     return () => {
       alive = false;
       channelRef.current = null;
-      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+      if (localTypingTimeoutRef.current) clearTimeout(localTypingTimeoutRef.current);
+      if (peerTypingTimeoutRef.current) clearTimeout(peerTypingTimeoutRef.current);
       if (channel) void createClient().removeChannel(channel);
     };
   }, [alias, onEnsureIdentity, onMessagesRead, post.id, post.alias]);

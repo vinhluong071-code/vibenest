@@ -112,9 +112,9 @@ export function VibeNestApp() {
       .on("postgres_changes", {
         event: "INSERT", schema: "public", table: "notifications",
         filter: `recipient_id=eq.${userId}`,
-      }, (payload) => {
+      }, (payload: { new: { notification_type?: string } }) => {
         if (!alive) return;
-        const event = payload.new as { notification_type?: string };
+        const event = payload.new;
         setNotificationCount((count) => count + 1);
         setRealtimeToast(event.notification_type === "reply"
           ? "Có người vừa gửi lời hồi âm cho tâm sự của bạn."
@@ -122,9 +122,9 @@ export function VibeNestApp() {
       })
       .on("postgres_changes", {
         event: "INSERT", schema: "public", table: "chat_messages",
-      }, (payload) => {
+      }, (payload: { new: { sender_id?: string } }) => {
         if (!alive) return;
-        const message = payload.new as { sender_id?: string };
+        const message = payload.new;
         if (message.sender_id === userId) return;
         setChatUnreadCount((count) => count + 1);
         if (!chatPost) setRealtimeToast("Bạn có tin nhắn mới trong VibeNest.");
@@ -153,6 +153,9 @@ export function VibeNestApp() {
     }
     setNotificationCount(0);
   }, [userId]);
+  const handleChatMessagesRead = useCallback(() => {
+    void refreshBadges();
+  }, [refreshBadges]);
 
 
   const loadFeed = useCallback(async () => {
@@ -389,7 +392,7 @@ export function VibeNestApp() {
       </main>
 
       <nav className="mobile-bottom-nav" aria-label="Điều hướng di động"><a className="selected" href="#feed">⌂<span>Bảng tin</span></a><button onClick={() => setFilter("Chữa lành")}>♡<span>Chữa lành</span></button><button className="mobile-create" onClick={() => setComposerOpen(true)}>＋<span>Viết nhanh</span></button><button onClick={() => setFilter("Đã lưu")}>⌑<span>Đã lưu</span></button></nav>
-      {chatPost && <ChatDialog post={chatPost} alias={alias} onClose={() => setChatPost(null)} onEnsureIdentity={ensureChatIdentity} onMessagesRead={() => void refreshBadges()} />}
+      {chatPost && <ChatDialog post={chatPost} alias={alias} onClose={() => setChatPost(null)} onEnsureIdentity={ensureChatIdentity} onMessagesRead={handleChatMessagesRead} />}
       <ComposerModal key={composerOpen ? composerMood : "closed"} open={composerOpen} alias={alias} initialMood={composerMood} busy={busy} onClose={() => setComposerOpen(false)} onSubmit={publish} />
     </div>
   );
