@@ -28,10 +28,11 @@ function getFriendlyError(error: unknown, fallback: string): string {
   const code = value?.code;
   const message = value?.message?.toLowerCase() ?? "";
 
+  if (code === "anonymous_provider_disabled") return "Supabase chưa bật Anonymous Sign-Ins. Hãy bật tính năng này trong Authentication → Sign In / Providers.";
   if (code === "42501" || code === "PGRST301" || value?.status === 401 || value?.status === 403) {
     return "Bạn chưa có quyền thực hiện thao tác này. Hãy kiểm tra phiên ẩn danh và chính sách quyền truy cập Supabase (RLS).";
   }
-  if (code === "42P01" || code === "PGRST205" || code === "PGRST204") {
+  if (code === "42P01" || code === "PGRST205" || code === "PGRST204" || code === "PGRST106") {
     return "Cấu trúc dữ liệu VibeNest chưa sẵn sàng. Hãy kiểm tra migration và quyền Data API trong Supabase.";
   }
   if (code === "23505") return "Tương tác này đã tồn tại. Hãy làm mới bảng tin để cập nhật trạng thái.";
@@ -153,7 +154,7 @@ export function VibeNestApp() {
 
   async function ensureIdentity() {
     if (userId) return userId;
-    let session;
+    let session: Session | null;
     try {
       session = await signInAnonymously();
     } catch (error) {
