@@ -6,6 +6,8 @@ create table if not exists public.chat_rooms (
   post_id uuid not null references public.vibe_posts(id) on delete cascade,
   participant_a uuid not null references auth.users(id) on delete cascade,
   participant_b uuid not null references auth.users(id) on delete cascade,
+  participant_a_alias text not null check (char_length(participant_a_alias) between 3 and 48),
+  participant_b_alias text not null check (char_length(participant_b_alias) between 3 and 48),
   created_at timestamptz not null default now(),
   last_message_at timestamptz not null default now(),
   constraint chat_rooms_distinct_participants check (participant_a <> participant_b),
@@ -63,7 +65,8 @@ grant select (id, room_id, sender_id, sender_alias, content, created_at) on publ
 grant insert (room_id, sender_id, sender_alias, content) on public.chat_messages to authenticated;
 
 -- Resolve the post author inside the database; never expose their Auth UUID to the browser.
-create or replace function public.start_vibenest_chat(p_post_id uuid)
+drop function if exists public.start_vibenest_chat(uuid);
+create or replace function public.start_vibenest_chat(p_post_id uuid, p_alias text)
 returns table (room_id uuid, peer_alias text)
 language plpgsql
 security definer
@@ -74,9 +77,16 @@ declare
   v_peer_id uuid;
   v_peer_alias text;
   v_room_id uuid;
+  v_a uuid;
+  v_b uuid;
+  v_a_alias text;
+  v_b_alias text;
 begin
   if v_user_id is null then
     raise exception 'Authentication required' using errcode = '28000';
+  end if;
+  if p_alias is null or char_length(p_alias) not between 3 and 48 then
+    raise exception 'A valid anonymous display name is required' using errcode = '22023';
   end if;
 
   select p.user_id, p.alias
@@ -88,26 +98,75 @@ begin
     raise exception 'Post not found' using errcode = 'P0002';
   end if;
 
+  -- The author reopens the latest existing conversation for this post.
+  -- Readers create (or reuse) their own independent 1:1 room with the author.
   if v_peer_id = v_user_id then
-    raise exception 'Cannot start a private chat with your own post' using errcode = '22023';
+    select r.id,
+      case when r.participant_a = v_user_id then r.participant_b_alias else r.participant_a_alias end
+      into v_room_id, v_peer_alias
+    from public.chat_rooms r
+    where r.post_id = p_post_id
+      and (r.participant_a = v_user_id or r.participant_b = v_user_id)
+    order by r.last_message_at desc, r.created_at desc
+    limit 1;
+
+    if v_room_id is null then
+      raise exception 'No conversation exists for this post yet' using errcode = 'P0002';
+    end if;
+    return query select v_room_id, v_peer_alias;
+    return;
   end if;
 
-  insert into public.chat_rooms (post_id, participant_a, participant_b)
-  values (p_post_id, least(v_user_id, v_peer_id), greatest(v_user_id, v_peer_id))
+  v_a := least(v_user_id, v_peer_id);
+  v_b := greatest(v_user_id, v_peer_id);
+  if v_user_id = v_a then
+    v_a_alias := p_alias;
+    v_b_alias := v_peer_alias;
+  else
+    v_a_alias := v_peer_alias;
+    v_b_alias := p_alias;
+  end if;
+
+  insert into public.chat_rooms (
+    post_id, participant_a, participant_b, participant_a_alias, participant_b_alias
+  )
+  values (p_post_id, v_a, v_b, v_a_alias, v_b_alias)
   on conflict (post_id, participant_a, participant_b) do nothing;
 
-  select r.id into v_room_id
+  select r.id,
+    case when r.participant_a = v_user_id then r.participant_b_alias else r.participant_a_alias end
+    into v_room_id, v_peer_alias
   from public.chat_rooms r
   where r.post_id = p_post_id
-    and r.participant_a = least(v_user_id, v_peer_id)
-    and r.participant_b = greatest(v_user_id, v_peer_id);
+    and r.participant_a = v_a
+    and r.participant_b = v_b;
 
   return query select v_room_id, v_peer_alias;
 end;
 $$;
 
-revoke all on function public.start_vibenest_chat(uuid) from public, anon;
-grant execute on function public.start_vibenest_chat(uuid) to authenticated;
+revoke all on function public.start_vibenest_chat(uuid, text) from public, anon;
+grant execute on function public.start_vibenest_chat(uuid, text) to authenticated;
+
+-- Keep the author's "latest conversation" shortcut useful after each new message.
+create or replace function public.touch_vibenest_chat_room()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+  update public.chat_rooms
+  set last_message_at = new.created_at
+  where id = new.room_id;
+  return new;
+end;
+$$;
+revoke all on function public.touch_vibenest_chat_room() from public, anon, authenticated;
+drop trigger if exists chat_messages_touch_room on public.chat_messages;
+create trigger chat_messages_touch_room
+after insert on public.chat_messages
+for each row execute function public.touch_vibenest_chat_room();
 
 -- Private channel topic format: vibenest-chat:<room UUID>.
 -- Only the two room participants may join/read the channel.
