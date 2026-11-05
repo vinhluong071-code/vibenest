@@ -5,6 +5,7 @@ import type { AuthChangeEvent, Session } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
 import { signInAnonymously } from "@/lib/supabase/anonymous-auth";
 import { ComposerModal } from "@/components/ComposerModal";
+import { ChatDialog } from "@/components/ChatDialog";
 import { Sidebar } from "@/components/Sidebar";
 import { VibeFeed } from "@/components/VibeFeed";
 import type { InteractionType, Mood, VibePost, VibeReply } from "@/lib/vibe/types";
@@ -58,6 +59,7 @@ export function VibeNestApp() {
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<"latest" | "popular">("latest");
   const [composerOpen, setComposerOpen] = useState(false);
+  const [chatPost, setChatPost] = useState<VibePost | null>(null);
   const [composerMood, setComposerMood] = useState<Mood>("Đêm muộn");
   const [busy, setBusy] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
@@ -157,7 +159,7 @@ export function VibeNestApp() {
     }).sort((a, b) => sort === "latest" ? new Date(b.created_at).getTime() - new Date(a.created_at).getTime() : b.empathy_count - a.empathy_count);
   }, [posts, filter, query, sort]);
 
-  async function ensureIdentity(actionLabel = "thực hiện thao tác này") {
+  const ensureIdentity = useCallback(async (actionLabel = "thực hiện thao tác này") => {
     if (userId) return userId;
     let session: Session | null;
     try {
@@ -172,7 +174,7 @@ export function VibeNestApp() {
     }
     setUserId(session.user.id);
     return session.user.id;
-  }
+  }, [userId]);
 
   async function publish(content: string, mood: Mood, location: string) {
     setBusy(true);
@@ -285,7 +287,7 @@ export function VibeNestApp() {
             </div>
             <div className="mood-tabs" role="tablist" aria-label="Lọc tâm trạng">{moods.map((item) => <button key={item} role="tab" aria-selected={filter === item} className={filter === item ? "selected" : ""} onClick={() => setFilter(item)}>{item}</button>)}</div>
             {notice && <div className="notice" role="status" aria-live="polite"><span>{notice}</span><button onClick={() => setNotice("")} aria-label="Đóng thông báo">×</button></div>}
-            {!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ? <div className="notice" role="alert">Hãy cấu hình Supabase URL và Publishable Key trong môi trường Preview để kết nối dữ liệu.</div> : loading ? <div className="loading-state" role="status">Đang lắng nghe những câu chuyện…</div> : feedError ? <div className="empty-state glass-panel" role="alert"><h2>Chưa tải được bảng tâm sự</h2><p>{feedError}</p><button className="secondary-button" onClick={() => { setLoading(true); setFeedError(""); void loadFeed().catch((error: unknown) => { console.error("[VibeNest] Tải lại bảng tin thất bại:", error); setFeedError(getFriendlyError(error, "Vẫn chưa thể tải bảng tin.")); }).finally(() => setLoading(false)); }}>Thử tải lại</button></div> : <VibeFeed posts={filteredPosts} busyId={busyId} onEmpathy={(post) => void toggleInteraction(post, "empathy")} onSave={(post) => void toggleInteraction(post, "save")} onReply={sendReply} />}
+            {!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ? <div className="notice" role="alert">Hãy cấu hình Supabase URL và Publishable Key trong môi trường Preview để kết nối dữ liệu.</div> : loading ? <div className="loading-state" role="status">Đang lắng nghe những câu chuyện…</div> : feedError ? <div className="empty-state glass-panel" role="alert"><h2>Chưa tải được bảng tâm sự</h2><p>{feedError}</p><button className="secondary-button" onClick={() => { setLoading(true); setFeedError(""); void loadFeed().catch((error: unknown) => { console.error("[VibeNest] Tải lại bảng tin thất bại:", error); setFeedError(getFriendlyError(error, "Vẫn chưa thể tải bảng tin.")); }).finally(() => setLoading(false)); }}>Thử tải lại</button></div> : <VibeFeed posts={filteredPosts} busyId={busyId} onEmpathy={(post) => void toggleInteraction(post, "empathy")} onSave={(post) => void toggleInteraction(post, "save")} onReply={sendReply} onChat={(post) => setChatPost(post)} />}
             <button className="refresh-button" onClick={() => { setLoading(true); setFeedError(""); void loadFeed().catch((error: unknown) => { console.error("[VibeNest] Làm mới bảng tin thất bại:", error); setFeedError(getFriendlyError(error, "Không thể làm mới bảng tin.")); }).finally(() => setLoading(false)); }}>↻ Làm mới bảng tâm sự</button>
           </section>
           <aside className="right-sidebar">
@@ -297,6 +299,7 @@ export function VibeNestApp() {
       </main>
 
       <nav className="mobile-bottom-nav" aria-label="Điều hướng di động"><a className="selected" href="#feed">⌂<span>Bảng tin</span></a><button onClick={() => setFilter("Chữa lành")}>♡<span>Chữa lành</span></button><button className="mobile-create" onClick={() => setComposerOpen(true)}>＋<span>Viết nhanh</span></button><button onClick={() => setFilter("Đã lưu")}>⌑<span>Đã lưu</span></button></nav>
+      {chatPost && <ChatDialog post={chatPost} alias={alias} onClose={() => setChatPost(null)} onEnsureIdentity={() => ensureIdentity("mở trò chuyện riêng")} />}
       <ComposerModal key={composerOpen ? composerMood : "closed"} open={composerOpen} alias={alias} initialMood={composerMood} busy={busy} onClose={() => setComposerOpen(false)} onSubmit={publish} />
     </div>
   );
