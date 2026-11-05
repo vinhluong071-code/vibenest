@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 import type { VibePost } from "@/lib/vibe/types";
 
 type VibeCardProps = {
@@ -24,7 +24,7 @@ export function VibeCard({ post, busy, onEmpathy, onSave, onReply }: VibeCardPro
   const [reply, setReply] = useState("");
   const [sending, setSending] = useState(false);
 
-  async function submitReply(event: React.FormEvent<HTMLFormElement>) {
+  async function submitReply(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const value = reply.trim();
     if (!value || sending) return;
