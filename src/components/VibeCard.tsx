@@ -9,6 +9,7 @@ type VibeCardProps = {
   onEmpathy: (post: VibePost) => void;
   onSave: (post: VibePost) => void;
   onReply: (post: VibePost, content: string) => Promise<void>;
+  onChat: (post: VibePost) => void;
 };
 
 function timeAgo(value: string) {
@@ -19,7 +20,7 @@ function timeAgo(value: string) {
   return Math.floor(minutes / 1440) + " ngày trước";
 }
 
-export function VibeCard({ post, busy, onEmpathy, onSave, onReply }: VibeCardProps) {
+export function VibeCard({ post, busy, onEmpathy, onSave, onReply, onChat }: VibeCardProps) {
   const [showReplies, setShowReplies] = useState(false);
   const [reply, setReply] = useState("");
   const [sending, setSending] = useState(false);
@@ -59,6 +60,9 @@ export function VibeCard({ post, busy, onEmpathy, onSave, onReply }: VibeCardPro
         </button>
         <button className="vibe-action" onClick={() => setShowReplies((value) => !value)}>
           <span aria-hidden="true">◌</span> Lời hồi âm <b>{post.replies.length}</b>
+        </button>
+        <button className="vibe-action chat-action" onClick={() => onChat(post)}>
+          <span aria-hidden="true">↗</span> Trò chuyện riêng
         </button>
         <button className={post.saved ? "vibe-action is-active" : "vibe-action"} onClick={() => onSave(post)} disabled={busy}>
           <span aria-hidden="true">⌑</span> {post.saved ? "Đã lưu" : "Lưu lại"}
