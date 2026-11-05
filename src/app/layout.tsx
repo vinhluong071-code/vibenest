@@ -6,6 +6,7 @@ import { SupabaseSessionBridge } from "@/components/supabase-session-bridge";
 export const metadata: Metadata = {
   title: "VibeNest",
   description: "Không gian tâm sự và kết nối cảm xúc ẩn danh.",
+  icons: { icon: [{ url: "/icon.svg", type: "image/svg+xml" }], shortcut: ["/icon.svg"], apple: ["/icon.svg"] },
 };
 
 export const viewport: Viewport = {

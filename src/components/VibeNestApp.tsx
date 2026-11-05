@@ -8,6 +8,8 @@ import { ComposerModal } from "@/components/ComposerModal";
 import { ChatDialog } from "@/components/ChatDialog";
 import { Sidebar } from "@/components/Sidebar";
 import { VibeFeed } from "@/components/VibeFeed";
+import { AccountDialog } from "@/components/AccountDialog";
+import { InboxCenter } from "@/components/InboxCenter";
 import type { InteractionType, Mood, VibePost, VibeReply } from "@/lib/vibe/types";
 
 type VibePostRow = {
@@ -69,6 +71,9 @@ export function VibeNestApp() {
   const [notificationCount, setNotificationCount] = useState(0);
   const [chatUnreadCount, setChatUnreadCount] = useState(0);
   const [realtimeToast, setRealtimeToast] = useState("");
+  const [accountOpen, setAccountOpen] = useState(false);
+  const [inboxTab, setInboxTab] = useState<"messages" | "notifications" | null>(null);
+  const [authUser, setAuthUser] = useState<Session["user"] | null>(null);
 
 
   // Keep feedback lightweight: action notices dismiss themselves without
@@ -203,14 +208,14 @@ export function VibeNestApp() {
     const supabase = createClient();
     const { data: listener } = supabase.auth.onAuthStateChange(
       (_event: AuthChangeEvent, session: Session | null) => {
-        if (alive) setUserId(session?.user.id ?? null);
+        if (alive) { setUserId(session?.user.id ?? null); setAuthUser(session?.user ?? null); }
       },
     );
 
     // Start silently on first visit. The same promise is reused by publish,
     // reply and interaction handlers if the visitor acts before it resolves.
     void signInAnonymously().then((session) => {
-      if (alive) setUserId(session?.user.id ?? null);
+      if (alive) { setUserId(session?.user.id ?? null); setAuthUser(session?.user ?? null); }
     }).catch((error: unknown) => {
       // Keep browsing uninterrupted; show feedback only if an action needs auth.
       console.warn("[VibeNest] Silent anonymous session is not ready yet:", error);
@@ -256,6 +261,7 @@ export function VibeNestApp() {
       throw new Error(`Chưa thể xác nhận danh tính ẩn danh để ${actionLabel}. Vui lòng thử lại.`);
     }
     setUserId(session.user.id);
+    setAuthUser(session.user);
     return session.user.id;
   }, [userId]);
 
@@ -346,16 +352,19 @@ export function VibeNestApp() {
       <div className="ambient ambient-one" /><div className="ambient ambient-two" /><div className="ambient ambient-three" />
       {realtimeToast && <div className="realtime-toast" role="status" aria-live="polite"><span>{realtimeToast}</span><button onClick={() => setRealtimeToast("")} aria-label="Đóng thông báo">×</button></div>}
       <header className="topbar">
-        <a className="wordmark" href="#home">VibeNest<span>✳</span></a>
+        <a className="brand-lockup" href="#home" aria-label="VibeNest — Trang chủ"><img src="/vibenest-logo.svg" alt="" width="34" height="34" /><span>VibeNest</span></a>
         <nav className="desktop-nav" aria-label="Điều hướng chính">
           <a className="active" href="#feed">Bảng tâm sự</a><a href="#feed" onClick={() => setFilter("Chữa lành")}>Góc chữa lành</a><a href="#feed" onClick={() => setFilter("Đêm muộn")}>Tần số đêm</a><a href="#feed" onClick={() => setFilter("Đã lưu")}>Đã lưu</a>
         </nav>
         <div className="topbar-actions">
-          <span className="session-indicator">{userId ? "Đã kết nối ẩn danh" : "Đang xem ẩn danh"}</span>
-          <button className="realtime-badge" onClick={() => void clearNotifications()} aria-label={`Thông báo chưa đọc: ${notificationCount}`}>
-            <span>Thông báo</span>{notificationCount > 0 && <b>{notificationCount > 99 ? "99+" : notificationCount}</b>}
-            {chatUnreadCount > 0 && <small>{chatUnreadCount} tin nhắn</small>}
+          <span className="session-indicator">{authUser?.email ? "Đã liên kết Email" : userId ? "Đang ẩn danh" : "Đang xem ẩn danh"}</span>
+          <button className="realtime-badge" onClick={() => setInboxTab("messages")} aria-label={`Hộp thư, ${chatUnreadCount} tin nhắn chưa đọc`}>
+            <span>Hộp thư</span>{chatUnreadCount > 0 && <b>{chatUnreadCount > 99 ? "99+" : chatUnreadCount}</b>}
           </button>
+          <button className="realtime-badge" onClick={() => setInboxTab("notifications")} aria-label={`Thông báo, ${notificationCount} chưa đọc`}>
+            <span>Thông báo</span>{notificationCount > 0 && <b>{notificationCount > 99 ? "99+" : notificationCount}</b>}
+          </button>
+          <button className="account-button" onClick={() => setAccountOpen(true)}>{authUser?.email ? "Tài khoản" : "Liên kết Email"}</button>
           <button className="primary-button top-compose" onClick={() => setComposerOpen(true)}>＋ Gửi tâm sự</button>
         </div>
       </header>
@@ -393,6 +402,8 @@ export function VibeNestApp() {
 
       <nav className="mobile-bottom-nav" aria-label="Điều hướng di động"><a className="selected" href="#feed">⌂<span>Bảng tin</span></a><button onClick={() => setFilter("Chữa lành")}>♡<span>Chữa lành</span></button><button className="mobile-create" onClick={() => setComposerOpen(true)}>＋<span>Viết nhanh</span></button><button onClick={() => setFilter("Đã lưu")}>⌑<span>Đã lưu</span></button></nav>
       {chatPost && <ChatDialog post={chatPost} alias={alias} onClose={() => setChatPost(null)} onEnsureIdentity={ensureChatIdentity} onMessagesRead={handleChatMessagesRead} />}
+      {inboxTab && userId && <InboxCenter key={inboxTab} userId={userId} initialTab={inboxTab} onClose={() => setInboxTab(null)} onOpenConversation={(post) => { setInboxTab(null); setChatPost(post); }} onNotificationsRead={() => { void refreshBadges(); }} />}
+      <AccountDialog open={accountOpen} onClose={() => setAccountOpen(false)} />
       <ComposerModal key={composerOpen ? composerMood : "closed"} open={composerOpen} alias={alias} initialMood={composerMood} busy={busy} onClose={() => setComposerOpen(false)} onSubmit={publish} />
     </div>
   );

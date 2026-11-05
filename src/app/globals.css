@@ -65,3 +65,48 @@
 .mobile-bottom-nav a:active,.mobile-bottom-nav button:active{transform:scale(.94)}
 @media(max-width:720px){.realtime-badge{padding:7px 9px}.realtime-badge>span{display:none}.realtime-badge small{display:none}.realtime-toast{top:66px;left:12px;right:12px;max-width:none}.chat-dialog{animation:chat-sheet-mobile-in .24s cubic-bezier(.2,.8,.2,1)}@keyframes chat-sheet-mobile-in{from{opacity:.8;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}}
 @media(prefers-reduced-motion:reduce){.realtime-toast,.chat-dialog,.chat-typing>span{animation:none!important}.realtime-badge,.vibe-card,.mobile-bottom-nav a,.mobile-bottom-nav button{transition:none!important}}
+
+/* VibeNest brand, account linking, inbox and notification center */
+.brand-lockup{display:inline-flex;align-items:center;gap:9px;font-family:Fraunces,Georgia,serif;font-size:23px;font-weight:600;letter-spacing:-.8px;white-space:nowrap}
+.brand-lockup img{display:block;object-fit:contain;filter:drop-shadow(0 5px 18px rgba(124,140,255,.22))}
+.account-button{border:1px solid rgba(167,139,250,.28);border-radius:999px;padding:9px 13px;background:linear-gradient(120deg,rgba(124,140,255,.13),rgba(94,234,212,.07));color:#e8e5ff;font-size:9px;font-weight:800;white-space:nowrap}
+.account-button:hover{border-color:rgba(94,234,212,.5);background:rgba(124,140,255,.18)}
+.center-backdrop{position:fixed;z-index:120;inset:0;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(3,5,12,.78);backdrop-filter:blur(12px)}
+.inbox-dialog,.account-dialog{width:min(100%,560px);max-height:min(84dvh,760px);overflow:auto;padding:20px;background:rgba(14,19,32,.97);border-color:rgba(167,139,250,.2);box-shadow:0 28px 100px rgba(0,0,0,.55)}
+.center-header{display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
+.center-header h2{font:600 24px/1.2 Fraunces,Georgia,serif;margin:0;color:#f6f4ff}
+.center-header .eyebrow{margin-bottom:8px}
+.center-subtitle{font-size:10px;line-height:1.75;color:#aeb4c5;margin:13px 0 16px}
+.center-tabs{display:grid;grid-template-columns:1fr 1fr;gap:5px;padding:4px;margin:18px 0 12px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.025)}
+.center-tabs button{border:0;border-radius:9px;padding:10px;background:transparent;color:#aeb4c5;font-size:10px;font-weight:700}
+.center-tabs button.selected{background:linear-gradient(110deg,rgba(124,140,255,.24),rgba(94,234,212,.12));color:#f1efff}
+.center-state,.center-error{padding:34px 16px;text-align:center;color:#9fa6b8;font-size:10px;line-height:1.7}
+.center-error{color:#ff9bad}
+.center-list{display:grid;gap:7px;max-height:55dvh;overflow:auto}
+.center-list-item{position:relative;display:flex;align-items:center;gap:11px;width:100%;padding:12px;border:1px solid rgba(255,255,255,.06);border-radius:13px;background:rgba(255,255,255,.035);color:#f4f3fa;text-align:left;transition:background .16s,border-color .16s}
+.center-list-item:hover{background:rgba(124,140,255,.09);border-color:rgba(167,139,250,.22)}
+.center-avatar{display:grid;place-items:center;flex:none;width:42px;height:42px;border:1px solid rgba(167,139,250,.25);border-radius:14px;background:linear-gradient(145deg,rgba(124,140,255,.22),rgba(94,234,212,.12));color:#dcd8ff;font:600 16px Fraunces,Georgia,serif}
+.center-list-copy{display:grid;gap:5px;min-width:0;flex:1}
+.center-list-copy strong{font-size:10px;line-height:1.4}
+.center-list-copy small{overflow:hidden;color:#aab1c1;font-size:9px;line-height:1.5;text-overflow:ellipsis;white-space:nowrap}
+.center-list-copy time{color:#788296;font-size:8px}
+.center-unread{display:grid;place-items:center;min-width:19px;height:19px;padding:0 5px;border-radius:99px;background:#7c8cff;color:#fff;font-size:8px}
+.notification-item.unread{background:rgba(124,140,255,.08);border-color:rgba(124,140,255,.18)}
+.notification-dot{width:7px;height:7px;flex:none;border-radius:50%;background:#5eead4;box-shadow:0 0 10px rgba(94,234,212,.5)}
+.inbox-mark-all{display:block;margin:0 0 9px auto}
+.account-form{display:grid;gap:9px}
+.account-form>label:not(.account-consent){font-size:10px;font-weight:700;color:#e4e2f0}
+.account-form>input{width:100%;border:1px solid rgba(255,255,255,.12);border-radius:11px;padding:13px 14px;background:rgba(255,255,255,.045);color:#fff;font-size:12px;outline:none}
+.account-form>input:focus{border-color:rgba(124,140,255,.7)}
+.account-hint,.account-warning{margin:2px 0 5px;color:#aab1c1;font-size:9px;line-height:1.7}
+.account-warning{color:#ffc4a8}
+.account-consent{display:flex;align-items:flex-start;gap:8px;color:#d8d8e4;font-size:9px;line-height:1.6}
+.account-consent input{margin:1px 0 0;accent-color:#8b83ff}
+.account-status{margin:4px 0;padding:11px 12px;border:1px solid rgba(94,234,212,.18);border-radius:10px;background:rgba(94,234,212,.06);color:#b8f5e7;font-size:9px;line-height:1.7}
+.account-submit{width:100%;margin-top:5px}
+@media(max-width:720px){
+ .topbar-actions{gap:7px}.brand-lockup{font-size:20px;gap:5px}.brand-lockup img{width:30px;height:30px}
+ .account-button{padding:8px 9px;font-size:8px}.realtime-badge{padding:8px 9px}.realtime-badge>span{display:inline;font-size:8px}
+ .center-backdrop{align-items:flex-end;padding:0}.inbox-dialog,.account-dialog{width:100%;max-height:91dvh;border-radius:22px 22px 0 0;padding:19px 16px calc(18px + env(safe-area-inset-bottom));border-bottom:0}
+ .center-header h2{font-size:22px}.center-list{max-height:58dvh}
+}
