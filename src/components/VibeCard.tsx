@@ -23,16 +23,20 @@ export function VibeCard({ post, busy, onEmpathy, onSave, onReply }: VibeCardPro
   const [showReplies, setShowReplies] = useState(false);
   const [reply, setReply] = useState("");
   const [sending, setSending] = useState(false);
+  const [replyError, setReplyError] = useState("");
 
   async function submitReply(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const value = reply.trim();
     if (!value || sending) return;
     setSending(true);
+    setReplyError("");
     try {
       await onReply(post, value);
       setReply("");
       setShowReplies(true);
+    } catch {
+      setReplyError("Chưa gửi được hồi âm. Nội dung vẫn được giữ lại để bạn thử lại.");
     } finally {
       setSending(false);
     }
@@ -68,6 +72,7 @@ export function VibeCard({ post, busy, onEmpathy, onSave, onReply }: VibeCardPro
               <p>{item.content}</p>
             </div>
           ))}
+          {replyError && <p className="reply-error" role="alert">{replyError}</p>}
           <form className="reply-form" onSubmit={submitReply}>
             <input value={reply} onChange={(event) => setReply(event.target.value)} maxLength={240} placeholder="Gửi một lời vỗ về ấm áp..." aria-label="Nội dung hồi âm" />
             <button type="submit" disabled={!reply.trim() || sending}>{sending ? "Đang gửi…" : "Gửi"}</button>
