@@ -83,14 +83,21 @@ export async function GET(request: NextRequest) {
           to: user.email,
           subject,
           body_text: body,
-          headers: { "Auto-Submitted": "auto-generated", "X-Auto-Response-Suppress": "All" },
         }),
         cache: "no-store",
+        signal: AbortSignal.timeout(12000),
       });
-      const result = await response.json().catch(() => ({})) as { status?: string; error?: { message?: string }; message?: string };
-      if (!response.ok) throw new Error(result.error?.message ?? result.message ?? `Primitive API returned ${response.status}`);
-      await admin.from("vibenest_email_notification_queue")
+      const result = await response.json().catch(() => ({})) as {
+        success?: boolean;
+        error?: { message?: string };
+        message?: string;
+      };
+      if (!response.ok || result.success === false) {
+        throw new Error(result.error?.message ?? result.message ?? `Primitive API returned ${response.status}`);
+      }
+      const { error: sentUpdateError } = await admin.from("vibenest_email_notification_queue")
         .update({ status: "sent", sent_at: new Date().toISOString(), last_error: null }).eq("id", item.id);
+      if (sentUpdateError) throw sentUpdateError;
       sent += 1;
     } catch (error) {
       const message = error instanceof Error ? error.message.slice(0, 500) : "Unknown mail error";
