@@ -4,8 +4,11 @@ import { createClient } from "./client";
 let pendingAnonymousSignIn: Promise<Session | null> | null = null;
 
 /**
- * Call only from an explicit user action. Reuse an existing session and
- * coalesce concurrent requests so multiple clicks cannot create many users.
+ * Reuse the current session or create one anonymous session.
+ *
+ * The shared promise is the mutex: app startup and any simultaneous
+ * account-required actions all await the same request, preventing duplicate
+ * anonymous users from being created by racing calls.
  */
 export async function signInAnonymously(): Promise<Session | null> {
   if (pendingAnonymousSignIn) return pendingAnonymousSignIn;
