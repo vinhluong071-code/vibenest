@@ -8,7 +8,7 @@ import { Sidebar } from "@/components/Sidebar";
 import { VibeFeed } from "@/components/VibeFeed";
 import type { InteractionType, Mood, VibePost, VibeReply } from "@/lib/vibe/types";
 
-const moods = ["Tất cả", "Đêm muộn", "Chênh vênh", "Chữa lành", "Thầm thương"] as const;
+const moods = ["Tất cả", "Đêm muộn", "Chênh vênh", "Chữa lành", "Thầm thương", "Đã lưu"] as const;
 const aliases = ["Mây Lang Thang", "Người Qua Đêm", "Kẻ Mộng Mơ", "Một Vì Sao", "Gió Nhẹ"];
 const makeAlias = () => aliases[Math.floor(Math.random() * aliases.length)] + " #" + Math.floor(100 + Math.random() * 900);
 
@@ -86,7 +86,7 @@ export function VibeNestApp() {
   const filteredPosts = useMemo(() => {
     const normalized = query.trim().toLocaleLowerCase("vi");
     return posts.filter((post) => {
-      const moodMatch = filter === "Tất cả" || post.mood === filter;
+      const moodMatch = filter === "Tất cả" || (filter === "Đã lưu" ? post.saved : post.mood === filter);
       const queryMatch = !normalized || [post.content, post.alias, post.mood, post.location ?? ""].some((value) => value.toLocaleLowerCase("vi").includes(normalized));
       return moodMatch && queryMatch;
     }).sort((a, b) => sort === "latest" ? new Date(b.created_at).getTime() - new Date(a.created_at).getTime() : b.empathy_count - a.empathy_count);
@@ -158,7 +158,7 @@ export function VibeNestApp() {
       <header className="topbar">
         <a className="wordmark" href="#home">VibeNest<span>✳</span></a>
         <nav className="desktop-nav" aria-label="Điều hướng chính">
-          <a className="active" href="#feed">Bảng tâm sự</a><a href="#feed" onClick={() => setFilter("Chữa lành")}>Góc chữa lành</a><a href="#feed" onClick={() => setFilter("Đêm muộn")}>Tần số đêm</a><a href="#feed" onClick={() => setFilter("Tất cả")}>Cộng đồng</a>
+          <a className="active" href="#feed">Bảng tâm sự</a><a href="#feed" onClick={() => setFilter("Chữa lành")}>Góc chữa lành</a><a href="#feed" onClick={() => setFilter("Đêm muộn")}>Tần số đêm</a><a href="#feed" onClick={() => setFilter("Đã lưu")}>Đã lưu</a>
         </nav>
         <div className="topbar-actions">
           <span className="session-indicator">{userId ? "Đã kết nối ẩn danh" : "Đang xem ẩn danh"}</span>
@@ -197,7 +197,7 @@ export function VibeNestApp() {
         </div>
       </main>
 
-      <nav className="mobile-bottom-nav" aria-label="Điều hướng di động"><a className="selected" href="#feed">⌂<span>Bảng tin</span></a><button onClick={() => setFilter("Chữa lành")}>♡<span>Chữa lành</span></button><button className="mobile-create" onClick={() => setComposerOpen(true)}>＋<span>Viết nhanh</span></button><button onClick={() => setFilter("Tất cả")}>✧<span>Cộng đồng</span></button></nav>
+      <nav className="mobile-bottom-nav" aria-label="Điều hướng di động"><a className="selected" href="#feed">⌂<span>Bảng tin</span></a><button onClick={() => setFilter("Chữa lành")}>♡<span>Chữa lành</span></button><button className="mobile-create" onClick={() => setComposerOpen(true)}>＋<span>Viết nhanh</span></button><button onClick={() => setFilter("Đã lưu")}>⌑<span>Đã lưu</span></button></nav>
       <ComposerModal key={composerOpen ? composerMood : "closed"} open={composerOpen} alias={alias} initialMood={composerMood} busy={busy} onClose={() => setComposerOpen(false)} onSubmit={publish} />
     </div>
   );
