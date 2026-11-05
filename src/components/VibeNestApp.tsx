@@ -1,12 +1,23 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import type { AuthChangeEvent, Session } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
 import { signInAnonymously } from "@/lib/supabase/anonymous-auth";
 import { ComposerModal } from "@/components/ComposerModal";
 import { Sidebar } from "@/components/Sidebar";
 import { VibeFeed } from "@/components/VibeFeed";
 import type { InteractionType, Mood, VibePost, VibeReply } from "@/lib/vibe/types";
+
+type VibePostRow = {
+  id: string;
+  alias: string;
+  mood: string;
+  content: string;
+  location: string | null;
+  created_at: string;
+  empathy_count: number | null;
+};
 
 const moods = ["Tất cả", "Đêm muộn", "Chênh vênh", "Chữa lành", "Thầm thương", "Đã lưu"] as const;
 const aliases = ["Mây Lang Thang", "Người Qua Đêm", "Kẻ Mộng Mơ", "Một Vì Sao", "Gió Nhẹ"];
@@ -33,14 +44,15 @@ export function VibeNestApp() {
       .order("created_at", { ascending: false }).limit(60);
     if (error) throw error;
 
-    const ids = (rows ?? []).map((row) => row.id);
+    const postRows = (rows ?? []) as VibePostRow[];
+    const ids = postRows.map((row: VibePostRow) => row.id);
     let interactionRows: { post_id: string; action_type: InteractionType }[] = [];
     let replyRows: VibeReply[] = [];
     if (userId && ids.length) {
       const { data, error: interactionError } = await supabase.from("vibe_post_interactions")
         .select("post_id,action_type").in("post_id", ids);
       if (interactionError) throw interactionError;
-      interactionRows = data ?? [];
+      interactionRows = (data ?? []) as { post_id: string; action_type: InteractionType }[];
     }
     if (ids.length) {
       const { data, error: replyError } = await supabase.from("vibe_replies")
@@ -49,7 +61,7 @@ export function VibeNestApp() {
       if (replyError) throw replyError;
       replyRows = (data ?? []) as VibeReply[];
     }
-    setPosts((rows ?? []).map((row) => ({
+    setPosts(postRows.map((row: VibePostRow) => ({
       ...row,
       mood: row.mood as Mood,
       location: row.location ?? null,
@@ -67,10 +79,14 @@ export function VibeNestApp() {
       return () => { alive = false; };
     }
     const supabase = createClient();
-    void supabase.auth.getSession().then(({ data }) => {
-      if (alive) setUserId(data.session?.user.id ?? null);
-    });
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => setUserId(session?.user.id ?? null));
+    void supabase.auth.getSession().then(
+      (result: { data: { session: Session | null } }) => {
+        if (alive) setUserId(result.data.session?.user.id ?? null);
+      },
+    );
+    const { data: listener } = supabase.auth.onAuthStateChange(
+      (_event: AuthChangeEvent, session: Session | null) => setUserId(session?.user.id ?? null),
+    );
     return () => { alive = false; listener.subscription.unsubscribe(); };
   }, []);
 
