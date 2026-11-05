@@ -78,7 +78,7 @@ export function ChatDialog({ post, alias, onClose, onEnsureIdentity }: ChatDialo
               table: "chat_messages",
               filter: `room_id=eq.${idOfRoom}`,
             },
-            (payload) => {
+            (payload: { new: ChatMessage }) => {
               const incoming = payload.new as ChatMessage;
               if (!alive) return;
               setMessages((current) =>
@@ -88,7 +88,7 @@ export function ChatDialog({ post, alias, onClose, onEnsureIdentity }: ChatDialo
               );
             },
           )
-          .subscribe((status) => {
+          .subscribe((status: string) => {
             if (!alive) return;
             if (status === "SUBSCRIBED") setConnection("Đang trò chuyện trực tiếp");
             else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
