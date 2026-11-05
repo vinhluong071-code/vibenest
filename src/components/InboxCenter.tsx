@@ -29,10 +29,12 @@ export function InboxCenter({ userId, initialTab, onClose, onOpenConversation, o
 
   useEffect(() => {
     let alive = true;
+    let refreshTimer: ReturnType<typeof setTimeout> | null = null;
+    const supabase = createClient();
+
     async function load() {
       setLoading(true);
       setError("");
-      const supabase = createClient();
       try {
         if (tab === "messages") {
           const { data: roomData, error: roomError } = await supabase.from("chat_rooms")
@@ -45,7 +47,12 @@ export function InboxCenter({ userId, initialTab, onClose, onOpenConversation, o
           const roomIds = roomRows.map((room) => room.id);
           if (!alive) return;
           setRooms(roomRows);
-          if (!postIds.length) { setPosts({}); setLatestMessages({}); setUnreadByRoom({}); return; }
+          if (!postIds.length) {
+            setPosts({});
+            setLatestMessages({});
+            setUnreadByRoom({});
+            return;
+          }
           const [{ data: postData, error: postError }, { data: messageData, error: messageError }] = await Promise.all([
             supabase.from("vibe_posts").select("id,alias,mood,content,location,created_at,empathy_count").in("id", postIds),
             supabase.from("chat_messages").select("id,room_id,sender_id,sender_alias,content,created_at,read_at")
@@ -88,8 +95,33 @@ export function InboxCenter({ userId, initialTab, onClose, onOpenConversation, o
         if (alive) setLoading(false);
       }
     }
+
+    const scheduleRefresh = () => {
+      if (refreshTimer) clearTimeout(refreshTimer);
+      refreshTimer = setTimeout(() => {
+        if (alive) void load();
+      }, 100);
+    };
+
     void load();
-    return () => { alive = false; };
+    const channel = supabase.channel(`vibenest-inbox:${userId}:${tab}`);
+    if (tab === "messages") {
+      channel
+        .on("postgres_changes", { event: "*", schema: "public", table: "chat_messages" }, scheduleRefresh)
+        .subscribe();
+    } else {
+      channel
+        .on("postgres_changes", {
+          event: "*", schema: "public", table: "notifications", filter: `recipient_id=eq.${userId}`,
+        }, scheduleRefresh)
+        .subscribe();
+    }
+
+    return () => {
+      alive = false;
+      if (refreshTimer) clearTimeout(refreshTimer);
+      void supabase.removeChannel(channel);
+    };
   }, [tab, userId]);
 
   async function markNotificationRead(id: string) {
