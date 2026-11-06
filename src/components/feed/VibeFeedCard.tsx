@@ -34,6 +34,8 @@ export interface VibeFeedCardProps {
   onToggleSave: (postId: string) => void;
   onAddReply: (postId: string, text: string) => void;
   onShare: (post: VibePostItem) => void;
+  onChat?: (post: VibePostItem) => void;
+  busy?: boolean;
 }
 
 export const VibeFeedCard: React.FC<VibeFeedCardProps> = ({
@@ -42,6 +44,8 @@ export const VibeFeedCard: React.FC<VibeFeedCardProps> = ({
   onToggleSave,
   onAddReply,
   onShare,
+  onChat,
+  busy = false,
 }) => {
   const [isRepliesOpen, setIsRepliesOpen] = useState<boolean>(false);
   const [replyText, setReplyText] = useState<string>('');
@@ -92,6 +96,7 @@ export const VibeFeedCard: React.FC<VibeFeedCardProps> = ({
 
         <button
           type="button"
+          disabled={busy}
           onClick={() => onToggleSave(post.id)}
           aria-label={post.saved ? 'Bỏ lưu bài viết' : 'Lưu bài viết'}
           className={`min-h-[44px] min-w-[44px] -mr-2 -mt-1 rounded-xl flex items-center justify-center transition-colors shrink-0 ${
@@ -135,6 +140,7 @@ export const VibeFeedCard: React.FC<VibeFeedCardProps> = ({
         <div className="flex items-center gap-1.5">
           <button
             type="button"
+            disabled={busy}
             onClick={() => onToggleEmpathy(post.id)}
             className={`min-h-[44px] px-3.5 py-1.5 rounded-xl flex items-center gap-2 text-xs font-medium transition-colors ${
               post.empathized
