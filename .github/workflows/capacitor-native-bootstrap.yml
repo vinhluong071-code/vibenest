@@ -1,0 +1,83 @@
+name: VibeNest Capacitor native bootstrap
+
+on:
+  push:
+    branches:
+      - feat/hybrid-mobile-navigation-pwa-capacitor
+
+permissions:
+  contents: write
+
+concurrency:
+  group: vibenest-capacitor-bootstrap
+  cancel-in-progress: false
+
+jobs:
+  bootstrap:
+    if: ${{ hashFiles('android/app/build.gradle', 'ios/App/App.xcodeproj/project.pbxproj') == '' }}
+    runs-on: macos-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout current feature branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+          fetch-depth: 0
+
+      - name: Set up Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install Capacitor runtime and native platforms
+        run: npm install @capacitor/core @capacitor/android @capacitor/ios --no-audit --no-fund
+
+      - name: Install Capacitor CLI
+        run: npm install -D @capacitor/cli --no-audit --no-fund
+
+      - name: Generate Android native project
+        run: npx cap add android
+
+      - name: Generate iOS native project
+        run: npx cap add ios
+
+      - name: Synchronize native projects
+        run: npx cap sync
+
+      - name: Validate Capacitor configuration
+        run: npx cap doctor
+
+      - name: Validate iOS project generation
+        run: xcodebuild -list -project ios/App/App.xcodeproj
+
+      - name: Validate Android project scaffold
+        run: |
+          test -f android/settings.gradle || test -f android/settings.gradle.kts
+          test -f android/app/build.gradle || test -f android/app/build.gradle.kts
+          test -x android/gradlew
+
+      - name: TypeScript and ESLint
+        run: |
+          npm run typecheck
+          npm run lint
+
+      - name: Next.js production build
+        run: npm run build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://vibenest-build-check.supabase.co
+          NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_build_check
+
+      - name: Commit native projects and exact npm lockfile
+        env:
+          BRANCH_NAME: ${{ github.ref_name }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package.json package-lock.json android ios
+          if git diff --cached --quiet; then
+            echo "No generated native changes to commit."
+          else
+            git commit -m "build: add Capacitor Android and iOS projects [native-bootstrap] [skip ci]"
+            git push origin "HEAD:${BRANCH_NAME}"
+          fi
