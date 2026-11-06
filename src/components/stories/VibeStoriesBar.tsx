@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
+import Image from 'next/image';
 import { getAvatarThemeFromIdentity } from '../../lib/avatar-hash';
 
 export type StoryMood = 'Đêm muộn' | 'Chênh vênh' | 'Chữa lành' | 'Thầm thương';
@@ -296,11 +297,13 @@ export const VibeStoriesBar: React.FC<VibeStoriesBarProps> = ({
             >
               {story.imageUrl && (
                 <div className="absolute inset-0 z-0">
-                  <img
+                  <Image
                     src={story.imageUrl}
                     alt={story.displayName}
-                    referrerPolicy="no-referrer"
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    fill
+                    sizes="106px"
+                    unoptimized
+                    className="object-cover transition-transform duration-500 group-hover:scale-105"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-black/50" />
                 </div>
@@ -360,11 +363,13 @@ export const VibeStoriesBar: React.FC<VibeStoriesBarProps> = ({
           >
             {activeStory.imageUrl && (
               <div className="absolute inset-0 z-0">
-                <img
+                <Image
                   src={activeStory.imageUrl}
                   alt={activeStory.caption}
-                  referrerPolicy="no-referrer"
-                  className="w-full h-full object-cover"
+                  fill
+                  sizes="(max-width: 640px) 100vw, 400px"
+                  unoptimized
+                  className="object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-black/60" />
               </div>
@@ -562,10 +567,13 @@ export const VibeStoriesBar: React.FC<VibeStoriesBarProps> = ({
               >
                 {uploadedImage && (
                   <div className="absolute inset-0">
-                    <img
+                    <Image
                       src={uploadedImage}
                       alt="Xem trước"
-                      className="w-full h-full object-cover"
+                      fill
+                      sizes="(max-width: 640px) 100vw, 400px"
+                      unoptimized
+                      className="object-cover"
                     />
                     <div className="absolute inset-0 bg-black/50" />
                   </div>
