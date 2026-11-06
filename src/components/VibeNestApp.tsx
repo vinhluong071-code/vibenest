@@ -277,7 +277,7 @@ export function VibeNestApp() {
     });
 
     return () => { alive = false; listener.subscription.unsubscribe(); };
-  }, []);
+  }, [hasSupabaseConfig]);
 
   useEffect(() => {
     if (!hasSupabaseConfig) return;
