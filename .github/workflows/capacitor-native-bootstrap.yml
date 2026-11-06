@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - feat/hybrid-mobile-navigation-pwa-capacitor
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -14,7 +15,6 @@ concurrency:
 
 jobs:
   bootstrap:
-    if: ${{ !contains(github.event.head_commit.message, '[native-bootstrap]') }}
     runs-on: macos-latest
     timeout-minutes: 45
     steps:
@@ -34,7 +34,7 @@ jobs:
           fi
 
       - name: Set up Node.js 22
-        if: steps.native_state.outputs.exists == 'false'
+        if: ${{ steps.native_state.outputs.exists != 'true' }}
         uses: actions/setup-node@v4
         with:
           node-version: 22
