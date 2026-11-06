@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import type { AuthChangeEvent, Session } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
@@ -15,6 +15,9 @@ import { LitmatchOnboardingModal, type UserProfile } from "@/components/auth/Lit
 import { AccountLinkingModal } from "@/components/auth/AccountLinkingModal";
 import { InboxCenter } from "@/components/InboxCenter";
 import { VibeRadarModal } from "@/components/match/VibeRadarModal";
+import { AuraDiscoveryRail } from "@/components/discovery/AuraDiscoveryRail";
+import { VoiceLoungeScreen } from "@/components/experience/VoiceLoungeScreen";
+import { VibeRadarScreen } from "@/components/experience/VibeRadarScreen";
 import type { InteractionType, Mood, VibePost, VibeReply } from "@/lib/vibe/types";
 
 type VibePostRow = {
@@ -106,6 +109,8 @@ export function VibeNestApp() {
   const [accountOpen, setAccountOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [radarOpen, setRadarOpen] = useState(false);
+  const [activeSurface, setActiveSurface] = useState<"home" | "voice" | "radar">("home");
+  const touchOrigin = useRef<{ x: number; y: number } | null>(null);
   const [inboxTab, setInboxTab] = useState<"messages" | "notifications" | null>(null);
   const [authUser, setAuthUser] = useState<Session["user"] | null>(null);
 
@@ -497,12 +502,15 @@ export function VibeNestApp() {
       {realtimeToast && <div className="realtime-toast" role="status" aria-live="polite"><span>{realtimeToast}</span><button onClick={() => setRealtimeToast("")} aria-label="Đóng thông báo">×</button></div>}
       <header className="topbar">
         <a className="brand-lockup" href="#home" aria-label="VibeNest — Trang chủ"><Image src="/icon.svg" alt="" width={34} height={34} priority /><span>VibeNest</span></a>
-        <nav className="desktop-nav" aria-label="Điều hướng chính">
-          <a className="active" href="#feed">Bảng tâm sự</a><a href="#feed" onClick={() => setFilter("Chữa lành")}>Góc chữa lành</a><a href="#feed" onClick={() => setFilter("Đêm muộn")}>Tần số đêm</a><a href="#feed" onClick={() => setFilter("Đã lưu")}>Đã lưu</a>
+        <nav className="desktop-nav hybrid-desktop-nav" aria-label="Điều hướng chính">
+          <button className={activeSurface === "home" ? "active" : ""} onClick={() => setActiveSurface("home")}>Home Feed</button>
+          <button className={activeSurface === "voice" ? "active" : ""} onClick={() => setActiveSurface("voice")}>Voice Lounge</button>
+          <button className={activeSurface === "radar" ? "active" : ""} onClick={() => setActiveSurface("radar")}>Vibe Radar</button>
+          <button onClick={() => { setActiveSurface("home"); setFilter("Chữa lành"); }}>Chữa lành</button>
         </nav>
         <div className="topbar-actions">
           <span className="session-indicator">{authUser?.email ? "Đã liên kết Email" : userId ? "Đang ẩn danh" : "Đang xem ẩn danh"}</span>
-          <button className="realtime-badge" onClick={() => setRadarOpen(true)} aria-label="Mở Soul Match Vibe Radar"><span>✦ Vibe Radar</span></button>
+          <button className="realtime-badge" onClick={() => setActiveSurface("radar")} aria-label="Mở Vibe Radar"><span>✦ Vibe Radar</span></button>
           <button className="realtime-badge" onClick={() => setInboxTab("messages")} aria-label={`Hộp thư, ${chatUnreadCount} tin nhắn chưa đọc`}>
             <span>Hộp thư</span>{chatUnreadCount > 0 && <b>{chatUnreadCount > 99 ? "99+" : chatUnreadCount}</b>}
           </button>
@@ -514,7 +522,10 @@ export function VibeNestApp() {
         </div>
       </header>
 
-      <main className="workspace" id="home">
+      <main className={`workspace hybrid-workspace surface-${activeSurface}`} id="home"
+        onTouchStart={(event) => { const touch = event.touches[0]; if (touch) touchOrigin.current = { x: touch.clientX, y: touch.clientY }; }}
+        onTouchEnd={(event) => { const start = touchOrigin.current; touchOrigin.current = null; const touch = event.changedTouches[0]; if (!start || !touch) return; const dx = touch.clientX - start.x; const dy = touch.clientY - start.y; if (Math.abs(dx) < 70 || Math.abs(dx) < Math.abs(dy) * 1.25) return; setActiveSurface((current) => { const order = ["home", "voice", "radar"] as const; const index = order.indexOf(current); return order[Math.max(0, Math.min(order.length - 1, index + (dx < 0 ? 1 : -1)))]; }); }}>
+        {activeSurface === "home" && <>
         <section className="intro-row">
           <div><p className="eyebrow">KHÔNG GIAN LẮNG NGHE ẨN DANH</p><h1>Hôm nay trong lòng bạn<br className="desktop-break" /> đang mang theo điều gì?</h1><p className="muted">Không cần hoàn hảo. Chỉ cần là chính cảm xúc của bạn.</p></div>
           <div className="intro-note"><span>✧</span><p>Mọi câu chuyện đều xứng đáng được lắng nghe.</p></div>
@@ -523,6 +534,7 @@ export function VibeNestApp() {
         <div className="workspace-grid">
           <Sidebar alias={alias} postCount={ownPostCount} savedCount={savedCount} onChangeAlias={() => setAlias(makeAlias())} />
           <section className="feed-column" id="feed" aria-label="Luồng tâm sự">
+            <AuraDiscoveryRail posts={feedCardPosts.slice(0, 3)} onOpenChat={(postId) => { const target = posts.find((item) => item.id === postId); if (target) setChatPost(target); }} />
             <VibeStoriesBar currentUserName={alias} currentUserHandle={alias} onNotify={setNotice} />
             <div className="composer-prompt glass-panel">
               <div className="avatar">{alias.slice(0, 1)}</div>
@@ -572,11 +584,14 @@ export function VibeNestApp() {
             <section className="glass-panel join-card"><span>✳</span><h2>Một nơi để được là mình.</h2><p>Bạn có thể đọc trước. Khi muốn chia sẻ hoặc tương tác, hãy tạo một phiên ẩn danh.</p><button className="secondary-button" onClick={async () => { try { await ensureIdentity(); setNotice("Bạn đã vào VibeNest bằng danh tính ẩn danh."); } catch (error) { setNotice(error instanceof Error ? error.message : "Không thể tạo phiên."); } }}>Tiếp tục ẩn danh</button></section>
           </aside>
         </div>
+        </>}
+        {activeSurface === "voice" && <VoiceLoungeScreen />}
+        {activeSurface === "radar" && <VibeRadarScreen displayName={profile.displayName} vibeTag={profile.vibeTag} onStart={() => setRadarOpen(true)} />}
       </main>
 
       <BottomTabBar
-        activeTab={filter === "Chữa lành" ? "Chữa lành" : filter === "Đã lưu" ? "saved" : "all"}
-        onSelectTab={(tab) => setFilter(tab === "all" ? "Tất cả" : tab === "saved" ? "Đã lưu" : "Chữa lành")}
+        activeTab={activeSurface === "home" ? (filter === "Chữa lành" ? "Chữa lành" : filter === "Đã lưu" ? "saved" : "all") : activeSurface}
+        onSelectTab={(tab) => { if (tab === "voice" || tab === "radar") { setActiveSurface(tab); return; } setActiveSurface("home"); if (tab === "profile") { setProfileOpen(true); return; } setFilter(tab === "all" ? "Tất cả" : tab === "saved" ? "Đã lưu" : "Chữa lành"); }}
         onOpenComposer={() => setComposerOpen(true)}
         onOpenProfile={() => setProfileOpen(true)}
         userInitial={alias.slice(0, 1).toUpperCase()}
