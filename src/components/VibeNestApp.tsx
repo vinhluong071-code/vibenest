@@ -523,7 +523,7 @@ export function VibeNestApp() {
       </header>
 
       <main className={`workspace hybrid-workspace surface-${activeSurface}`} id="home"
-        onTouchStart={(event) => { const touch = event.touches[0]; if (touch) touchOrigin.current = { x: touch.clientX, y: touch.clientY }; }}
+        onTouchStart={(event) => { const target = event.target; if (target instanceof Element && target.closest("button,a,input,textarea,select,[data-no-swipe],.aura-card-track,.mood-tabs,.sort-switch")) { touchOrigin.current = null; return; } const touch = event.touches[0]; if (touch) touchOrigin.current = { x: touch.clientX, y: touch.clientY }; }}
         onTouchEnd={(event) => { const start = touchOrigin.current; touchOrigin.current = null; const touch = event.changedTouches[0]; if (!start || !touch) return; const dx = touch.clientX - start.x; const dy = touch.clientY - start.y; if (Math.abs(dx) < 70 || Math.abs(dx) < Math.abs(dy) * 1.25) return; setActiveSurface((current) => { const order = ["home", "voice", "radar"] as const; const index = order.indexOf(current); return order[Math.max(0, Math.min(order.length - 1, index + (dx < 0 ? 1 : -1)))]; }); }}>
         {activeSurface === "home" && <>
         <section className="intro-row">
