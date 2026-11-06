@@ -80,6 +80,10 @@ function getFriendlyError(error: unknown, fallback: string): string {
 }
 
 export function VibeNestApp() {
+  const hasSupabaseConfig = Boolean(
+    process.env.NEXT_PUBLIC_SUPABASE_URL &&
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+  );
   const [alias, setAlias] = useState("Mây Lang Thang #409");
   const [profile, setProfile] = useState<UserProfile>(() => getProfileFromAuthUser(null, "Mây Lang Thang #409"));
   const [userId, setUserId] = useState<string | null>(null);
@@ -93,7 +97,8 @@ export function VibeNestApp() {
   const [busy, setBusy] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [notice, setNotice] = useState("");
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(hasSupabaseConfig);
+  const [now, setNow] = useState<number | null>(null);
   const [feedError, setFeedError] = useState("");
   const [notificationCount, setNotificationCount] = useState(0);
   const [chatUnreadCount, setChatUnreadCount] = useState(0);
@@ -107,6 +112,15 @@ export function VibeNestApp() {
 
   // Keep feedback lightweight: action notices dismiss themselves without
   // interrupting feed browsing or requiring an extra tap.
+  useEffect(() => {
+    const initialClock = window.setTimeout(() => setNow(Date.now()), 0);
+    const clockInterval = window.setInterval(() => setNow(Date.now()), 60_000);
+    return () => {
+      window.clearTimeout(initialClock);
+      window.clearInterval(clockInterval);
+    };
+  }, []);
+
   useEffect(() => {
     if (!notice) return;
     const timeoutId = window.setTimeout(() => setNotice(""), 4200);
@@ -134,11 +148,7 @@ export function VibeNestApp() {
   }, [realtimeToast]);
 
   useEffect(() => {
-    if (!userId) {
-      setNotificationCount(0);
-      setChatUnreadCount(0);
-      return;
-    }
+    if (!userId) return;
     let alive = true;
     const supabase = createClient();
     void refreshBadges();
@@ -181,46 +191,49 @@ export function VibeNestApp() {
 
 
   const loadFeed = useCallback(async () => {
-    const supabase = createClient();
-    const { data: rows, error } = await supabase.from("vibe_posts")
-      .select("id,alias,mood,content,location,created_at,empathy_count")
-      .order("created_at", { ascending: false }).limit(60);
-    if (error) throw error;
+    setLoading(true);
+    setFeedError("");
+    try {
+      const supabase = createClient();
+      const { data: rows, error } = await supabase.from("vibe_posts")
+        .select("id,alias,mood,content,location,created_at,empathy_count")
+        .order("created_at", { ascending: false }).limit(60);
+      if (error) throw error;
 
-    const postRows = (rows ?? []) as VibePostRow[];
-    const ids = postRows.map((row: VibePostRow) => row.id);
-    let interactionRows: { post_id: string; action_type: InteractionType }[] = [];
-    let replyRows: VibeReply[] = [];
-    if (userId && ids.length) {
-      const { data, error: interactionError } = await supabase.from("vibe_post_interactions")
-        .select("post_id,action_type").in("post_id", ids);
-      if (interactionError) throw interactionError;
-      interactionRows = (data ?? []) as { post_id: string; action_type: InteractionType }[];
+      const postRows = (rows ?? []) as VibePostRow[];
+      const ids = postRows.map((row: VibePostRow) => row.id);
+      let interactionRows: { post_id: string; action_type: InteractionType }[] = [];
+      let replyRows: VibeReply[] = [];
+      if (userId && ids.length) {
+        const { data, error: interactionError } = await supabase.from("vibe_post_interactions")
+          .select("post_id,action_type").in("post_id", ids);
+        if (interactionError) throw interactionError;
+        interactionRows = (data ?? []) as { post_id: string; action_type: InteractionType }[];
+      }
+      if (ids.length) {
+        const { data, error: replyError } = await supabase.from("vibe_replies")
+          .select("id,post_id,author_alias,content,created_at").in("post_id", ids)
+          .order("created_at", { ascending: true });
+        if (replyError) throw replyError;
+        replyRows = (data ?? []) as VibeReply[];
+      }
+      setPosts(postRows.map((row: VibePostRow) => ({
+        ...row,
+        mood: row.mood as Mood,
+        location: row.location ?? null,
+        empathy_count: row.empathy_count ?? 0,
+        replies: replyRows.filter((reply) => reply.post_id === row.id),
+        empathized: interactionRows.some((item) => item.post_id === row.id && item.action_type === "empathy"),
+        saved: interactionRows.some((item) => item.post_id === row.id && item.action_type === "save"),
+      })));
+    } finally {
+      setLoading(false);
     }
-    if (ids.length) {
-      const { data, error: replyError } = await supabase.from("vibe_replies")
-        .select("id,post_id,author_alias,content,created_at").in("post_id", ids)
-        .order("created_at", { ascending: true });
-      if (replyError) throw replyError;
-      replyRows = (data ?? []) as VibeReply[];
-    }
-    setPosts(postRows.map((row: VibePostRow) => ({
-      ...row,
-      mood: row.mood as Mood,
-      location: row.location ?? null,
-      empathy_count: row.empathy_count ?? 0,
-      replies: replyRows.filter((reply) => reply.post_id === row.id),
-      empathized: interactionRows.some((item) => item.post_id === row.id && item.action_type === "empathy"),
-      saved: interactionRows.some((item) => item.post_id === row.id && item.action_type === "save"),
-    })));
   }, [userId]);
 
   useEffect(() => {
     let alive = true;
-    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY) {
-      setLoading(false);
-      return () => { alive = false; };
-    }
+    if (!hasSupabaseConfig) return;
 
     const supabase = createClient();
     const { data: listener } = supabase.auth.onAuthStateChange(
@@ -229,6 +242,10 @@ export function VibeNestApp() {
           const nextUser = session?.user ?? null;
           const nextProfile = getProfileFromAuthUser(nextUser, "Mây Lang Thang #409");
           setUserId(nextUser?.id ?? null);
+          if (!nextUser) {
+            setNotificationCount(0);
+            setChatUnreadCount(0);
+          }
           setAuthUser(nextUser);
           setProfile(nextProfile);
           setAlias(nextProfile.displayName);
@@ -243,6 +260,10 @@ export function VibeNestApp() {
         const nextUser = session?.user ?? null;
         const nextProfile = getProfileFromAuthUser(nextUser, "Mây Lang Thang #409");
         setUserId(nextUser?.id ?? null);
+        if (!nextUser) {
+          setNotificationCount(0);
+          setChatUnreadCount(0);
+        }
         setAuthUser(nextUser);
         setProfile(nextProfile);
         setAlias(nextProfile.displayName);
@@ -256,18 +277,22 @@ export function VibeNestApp() {
   }, []);
 
   useEffect(() => {
+    if (!hasSupabaseConfig) return;
     let alive = true;
-    setLoading(true);
-    setFeedError("");
-    void loadFeed().catch((error: unknown) => {
-      console.error("[VibeNest] Không thể tải bảng tâm sự:", error);
-      if (alive) {
-        const message = getFriendlyError(error, "Không thể tải bảng tâm sự. Vui lòng thử lại.");
-        setFeedError(message);
-      }
-    }).finally(() => { if (alive) setLoading(false); });
-    return () => { alive = false; };
-  }, [loadFeed]);
+    const timerId = window.setTimeout(() => {
+      void loadFeed().catch((error: unknown) => {
+        console.error("[VibeNest] Không thể tải bảng tâm sự:", error);
+        if (alive) {
+          const message = getFriendlyError(error, "Không thể tải bảng tâm sự. Vui lòng thử lại.");
+          setFeedError(message);
+        }
+      });
+    }, 0);
+    return () => {
+      alive = false;
+      window.clearTimeout(timerId);
+    };
+  }, [hasSupabaseConfig, loadFeed]);
 
   const filteredPosts = useMemo(() => {
     const normalized = query.trim().toLocaleLowerCase("vi");
@@ -281,7 +306,7 @@ export function VibeNestApp() {
   const feedCardPosts = useMemo<VibePostItem[]>(() => filteredPosts.map((post) => {
     const toHandle = (value: string) => value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, ".").replace(/^\.|\.$/g, "") || "vibenest.user";
     const timestamp = new Date(post.created_at).getTime();
-    const elapsedMinutes = Math.max(0, Math.floor((Date.now() - timestamp) / 60000));
+    const elapsedMinutes = Math.max(0, Math.floor(((now ?? timestamp) - timestamp) / 60000));
     const timeAgo = elapsedMinutes < 1 ? "Vừa xong" : elapsedMinutes < 60 ? `${elapsedMinutes} phút trước` : elapsedMinutes < 1440 ? `${Math.floor(elapsedMinutes / 60)} giờ trước` : `${Math.floor(elapsedMinutes / 1440)} ngày trước`;
     return {
       id: post.id,
@@ -304,7 +329,7 @@ export function VibeNestApp() {
         text: reply.content,
       })),
     };
-  }), [filteredPosts]);
+  }), [filteredPosts, now]);
 
   const handleSharePost = useCallback((post: VibePostItem) => {
     const shareText = `${post.displayName}: ${post.content}`;
@@ -507,7 +532,7 @@ export function VibeNestApp() {
             </div>
             <div className="mood-tabs" role="tablist" aria-label="Lọc tâm trạng">{moods.map((item) => <button key={item} role="tab" aria-selected={filter === item} className={filter === item ? "selected" : ""} onClick={() => setFilter(item)}>{item}</button>)}</div>
             {notice && <div className="notice" role="status" aria-live="polite"><span>{notice}</span><button onClick={() => setNotice("")} aria-label="Đóng thông báo">×</button></div>}
-            {!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ? <div className="notice" role="alert">Hãy cấu hình Supabase URL và Publishable Key trong môi trường Preview để kết nối dữ liệu.</div> : loading ? <div className="loading-state" role="status">Đang lắng nghe những câu chuyện…</div> : feedError ? <div className="empty-state glass-panel" role="alert"><h2>Chưa tải được bảng tâm sự</h2><p>{feedError}</p><button className="secondary-button" onClick={() => { setLoading(true); setFeedError(""); void loadFeed().catch((error: unknown) => { console.error("[VibeNest] Tải lại bảng tin thất bại:", error); setFeedError(getFriendlyError(error, "Vẫn chưa thể tải bảng tin.")); }).finally(() => setLoading(false)); }}>Thử tải lại</button></div> : <div className="space-y-4">
+            {!hasSupabaseConfig ? <div className="notice" role="alert">Hãy cấu hình Supabase URL và Publishable Key trong môi trường Preview để kết nối dữ liệu.</div> : loading ? <div className="loading-state" role="status">Đang lắng nghe những câu chuyện…</div> : feedError ? <div className="empty-state glass-panel" role="alert"><h2>Chưa tải được bảng tâm sự</h2><p>{feedError}</p><button className="secondary-button" onClick={() => { void loadFeed().catch((error: unknown) => { console.error("[VibeNest] Tải lại bảng tin thất bại:", error); setFeedError(getFriendlyError(error, "Vẫn chưa thể tải bảng tin.")); }); }}>Thử tải lại</button></div> : <div className="space-y-4">
                 {feedCardPosts.length === 0 ? (
                   <div className="empty-state glass-panel"><span>✧</span><h2>Khoảng lặng cũng có ý nghĩa</h2><p>Chưa có lời tâm sự phù hợp. Bạn có thể là người đầu tiên mở lời.</p></div>
                 ) : feedCardPosts.map((cardPost) => {
@@ -536,7 +561,7 @@ export function VibeNestApp() {
                   );
                 })}
               </div>}
-            <button className="refresh-button" onClick={() => { setLoading(true); setFeedError(""); void loadFeed().catch((error: unknown) => { console.error("[VibeNest] Làm mới bảng tin thất bại:", error); setFeedError(getFriendlyError(error, "Không thể làm mới bảng tin.")); }).finally(() => setLoading(false)); }}>↻ Làm mới bảng tâm sự</button>
+            <button className="refresh-button" onClick={() => { void loadFeed().catch((error: unknown) => { console.error("[VibeNest] Làm mới bảng tin thất bại:", error); setFeedError(getFriendlyError(error, "Không thể làm mới bảng tin.")); }); }}>↻ Làm mới bảng tâm sự</button>
           </section>
           <aside className="right-sidebar">
             <section className="glass-panel reflection-card"><p className="eyebrow">CÂU HỎI GỢI MỞ HÔM NAY</p><h2>Nếu có thể nhắn một điều đến chính mình của ba năm trước, bạn sẽ nói gì?</h2><button onClick={() => { setComposerMood("Chữa lành"); setComposerOpen(true); }}>Viết câu trả lời <span>↗</span></button></section>
