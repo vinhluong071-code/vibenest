@@ -58,6 +58,11 @@ const AVATAR_PALETTES: Omit<AvatarTheme, "hashHex" | "initial">[] = [
   },
 ];
 
+/** Backwards-compatible identity adapter used by the App Router UI modules. */
+export function getAvatarThemeFromIdentity(identity: string): AvatarTheme {
+  return getAvatarThemeFromAlias(identity);
+}
+
 export function getAvatarThemeFromAlias(alias: string): AvatarTheme {
   const safeAlias = alias?.trim() || "Ẩn danh";
   const normalized = safeAlias.toLowerCase();
