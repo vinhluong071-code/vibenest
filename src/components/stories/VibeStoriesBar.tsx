@@ -237,10 +237,8 @@ export const VibeStoriesBar: React.FC<VibeStoriesBarProps> = ({
           <h2 className="text-sm font-semibold text-slate-900 dark:text-white tracking-tight">
             Khoảnh khắc 24h
           </h2>
-          <span className="text-xs text-slate-400 dark:text-slate-500">·</span>
-          <span className="text-xs text-slate-500 dark:text-slate-400">
-            Chạm để xem toàn màn hình
-          </span>
+          <span className="rounded-full border border-amber-400/25 bg-amber-400/10 px-2 py-1 text-[9px] font-semibold text-amber-700 dark:text-amber-200">Bản xem trước · chưa đồng bộ cloud</span>
+          <span className="text-xs text-slate-500 dark:text-slate-400">Chạm để xem toàn màn hình</span>
         </div>
         <span className="font-mono text-[11px] text-rose-600 dark:text-rose-400 tabular-nums">
           {stories.length} khoảnh khắc
@@ -599,6 +597,7 @@ export const VibeStoriesBar: React.FC<VibeStoriesBarProps> = ({
                     ref={fileInputRef}
                     type="file"
                     accept="image/*"
+                    capture="environment"
                     onChange={handleImageUpload}
                     className="hidden"
                   />
