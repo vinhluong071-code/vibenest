@@ -26,8 +26,8 @@ export function BottomTabBar({ activeTab, onSelectTab, onOpenComposer, onOpenPro
             <span className="hybrid-nav-icon" aria-hidden="true">{item.icon}</span><span>{item.label}</span>
           </button>
         ))}
-        <button type="button" className="hybrid-camera-button" onClick={onOpenComposer} aria-label="Mở camera hoặc tạo bài đăng">
-          <span aria-hidden="true">◎</span>
+        <button type="button" className="hybrid-camera-button" onClick={onOpenComposer} aria-label="Tạo bài đăng">
+          <span aria-hidden="true">＋</span>
         </button>
         {items.slice(2).map((item) => (
           <button key={item.id} type="button" className={activeTab === item.id ? 'is-active' : ''} onClick={() => onSelectTab(item.id)} aria-label={item.label}>
