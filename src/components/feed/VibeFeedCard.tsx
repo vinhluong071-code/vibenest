@@ -200,7 +200,7 @@ export const VibeFeedCard: React.FC<VibeFeedCardProps> = ({
         )}
         <button
           type="button"
-          onClick={() => onShare(post)
+          onClick={() => onShare(post)}
           className="min-h-[44px] px-3 py-1.5 rounded-xl flex items-center gap-1.5 text-xs font-medium text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/[0.05] hover:text-slate-900 dark:hover:text-white transition-colors shrink-0"
         >
           <svg
