@@ -30,6 +30,8 @@ export interface VibePostItem {
 
 export interface VibeFeedCardProps {
   post: VibePostItem;
+  busy?: boolean;
+  onChat: () => void;
   onToggleEmpathy: (postId: string) => void;
   onToggleSave: (postId: string) => void;
   onAddReply: (postId: string, text: string) => void;
@@ -38,6 +40,8 @@ export interface VibeFeedCardProps {
 
 export const VibeFeedCard: React.FC<VibeFeedCardProps> = ({
   post,
+  busy = false,
+  onChat,
   onToggleEmpathy,
   onToggleSave,
   onAddReply,
@@ -57,7 +61,7 @@ export const VibeFeedCard: React.FC<VibeFeedCardProps> = ({
   };
 
   return (
-    <article className="rounded-3xl p-5 bg-white/85 dark:bg-white/[0.035] border border-slate-200/80 dark:border-white/[0.08] hover:border-slate-300 dark:hover:border-white/[0.14] backdrop-blur-xl shadow-sm transition-colors">
+    <article aria-busy={busy} className="rounded-3xl p-5 bg-white/85 dark:bg-white/[0.035] border border-slate-200/80 dark:border-white/[0.08] hover:border-slate-300 dark:hover:border-white/[0.14] backdrop-blur-xl shadow-sm transition-colors">
       {/* Author Header (Personal Identity + Unboxed Metadata) */}
       <div className="flex items-start justify-between gap-3 mb-3.5">
         <div className="flex items-center gap-3 min-w-0">
@@ -94,6 +98,7 @@ export const VibeFeedCard: React.FC<VibeFeedCardProps> = ({
         <button
           type="button"
           onClick={() => onToggleSave(post.id)}
+          disabled={busy}
           aria-label={post.saved ? 'Bỏ lưu bài viết' : 'Lưu bài viết'}
           className={`min-h-[44px] min-w-[44px] -mr-2 -mt-1 rounded-xl flex items-center justify-center transition-colors shrink-0 ${
             post.saved
@@ -140,6 +145,7 @@ export const VibeFeedCard: React.FC<VibeFeedCardProps> = ({
           <button
             type="button"
             onClick={() => onToggleEmpathy(post.id)}
+            disabled={busy}
             className={`min-h-[44px] px-3.5 py-1.5 rounded-xl flex items-center gap-2 text-xs font-medium transition-colors ${
               post.empathized
                 ? 'bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/30'
@@ -166,6 +172,7 @@ export const VibeFeedCard: React.FC<VibeFeedCardProps> = ({
           <button
             type="button"
             onClick={() => setIsRepliesOpen((prev) => !prev)}
+            disabled={busy}
             className="min-h-[44px] px-3.5 py-1.5 rounded-xl flex items-center gap-2 text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/[0.05] hover:text-slate-900 dark:hover:text-white transition-colors"
           >
             <svg
@@ -205,6 +212,14 @@ export const VibeFeedCard: React.FC<VibeFeedCardProps> = ({
             />
           </svg>
           <span className="hidden sm:inline">Chia sẻ</span>
+        </button>
+        <button
+          type="button"
+          onClick={onChat}
+          disabled={busy}
+          className="min-h-[44px] px-3 py-1.5 rounded-xl text-xs font-medium text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-colors shrink-0 disabled:opacity-50"
+        >
+          Nhắn riêng
         </button>
       </div>
 

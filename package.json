@@ -1,12 +1,29 @@
 {
   "name": "vibenest",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
-  "type": "module",
   "scripts": {
-    "dev": "node server.js",
-    "start": "node server.js",
-    "build": "node -e \"console.log('Static HTML build verified')\"",
-    "lint": "node -e \"console.log('Static HTML lint verified')\""
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "check:vercel-env": "node scripts/check-vercel-production-env.mjs",
+    "prebuild": "npm run typecheck && npm run lint"
+  },
+  "dependencies": {
+    "@supabase/ssr": "^0.12.7",
+    "@supabase/supabase-js": "^2.119.0",
+    "next": "^16.4.5",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3"
+  },
+  "devDependencies": {
+    "@types/node": "^22.19.0",
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3",
+    "eslint": "^9.39.0",
+    "eslint-config-next": "^16.4.5",
+    "typescript": "^5.9.3"
   }
 }

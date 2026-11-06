@@ -145,9 +145,13 @@ export const VibeRadarModal: React.FC<VibeRadarModalProps> = ({
   onNotify,
 }) => {
   const [stage, setStage] = useState<RadarStage>('idle');
-  const [selectedFrequency, setSelectedFrequency] = useState<string>(
-    currentUser.vibeTag || VIBE_FREQUENCIES[0]
-  );
+  const [frequencySelection, setFrequencySelection] = useState<{
+    handle: string;
+    value: string;
+  } | null>(null);
+  const selectedFrequency = frequencySelection?.handle === currentUser.handle
+    ? frequencySelection.value
+    : currentUser.vibeTag || VIBE_FREQUENCIES[0];
   const [matchedSoul, setMatchedSoul] = useState<SoulCandidate>(SOUL_CANDIDATES[0]);
   const [remainingSeconds, setRemainingSeconds] = useState<number>(180);
   const [isMutualConnected, setIsMutualConnected] = useState<boolean>(false);
@@ -156,6 +160,11 @@ export const VibeRadarModal: React.FC<VibeRadarModalProps> = ({
   const [isPeerTyping, setIsPeerTyping] = useState<boolean>(false);
 
   const replyStepRef = useRef<number>(0);
+  const messageSequenceRef = useRef(0);
+  const nextMessageId = (prefix: string) => {
+    messageSequenceRef.current += 1;
+    return `${prefix}-${messageSequenceRef.current}`;
+  };
   const candidateIndexRef = useRef<number>(0);
   const chatScrollRef = useRef<HTMLDivElement | null>(null);
   const scanTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -164,15 +173,11 @@ export const VibeRadarModal: React.FC<VibeRadarModalProps> = ({
   const myTheme = getAvatarThemeFromIdentity(currentUser.handle);
   const peerTheme = getAvatarThemeFromIdentity(matchedSoul.handle);
 
-  // Sync default frequency when modal opens
   useEffect(() => {
-    if (isOpen) {
-      setSelectedFrequency(currentUser.vibeTag || VIBE_FREQUENCIES[0]);
-    } else {
-      if (scanTimeoutRef.current) clearTimeout(scanTimeoutRef.current);
-      if (replyTimeoutRef.current) clearTimeout(replyTimeoutRef.current);
-    }
-  }, [isOpen, currentUser.vibeTag]);
+    if (isOpen) return;
+    if (scanTimeoutRef.current) clearTimeout(scanTimeoutRef.current);
+    if (replyTimeoutRef.current) clearTimeout(replyTimeoutRef.current);
+  }, [isOpen]);
 
   // 180-second Litmatch Soul Chat Countdown
   useEffect(() => {
@@ -227,13 +232,13 @@ export const VibeRadarModal: React.FC<VibeRadarModalProps> = ({
     setIsMutualConnected(false);
     setMessages([
       {
-        id: `sys-${Date.now()}`,
+        id: nextMessageId('sys'),
         sender: 'system',
         text: `Phiên trò chuyện 180 giây cùng @${matchedSoul.handle} đã mở. Mọi chia sẻ đều được bảo mật trong phòng tần số này.`,
         timestamp: getCurrentTimeLabel(),
       },
       {
-        id: `peer-init-${Date.now()}`,
+        id: nextMessageId('peer-init'),
         sender: 'peer',
         text: matchedSoul.openingLine,
         timestamp: getCurrentTimeLabel(),
@@ -247,7 +252,7 @@ export const VibeRadarModal: React.FC<VibeRadarModalProps> = ({
     if (!trimmed || (remainingSeconds === 0 && !isMutualConnected)) return;
 
     const myMsg: RadarChatMessage = {
-      id: `me-${Date.now()}`,
+      id: nextMessageId('me'),
       sender: 'me',
       text: trimmed,
       timestamp: getCurrentTimeLabel(),
@@ -267,7 +272,7 @@ export const VibeRadarModal: React.FC<VibeRadarModalProps> = ({
       setMessages((prev) => [
         ...prev,
         {
-          id: `peer-${Date.now()}`,
+          id: nextMessageId('peer'),
           sender: 'peer',
           text: replyText,
           timestamp: getCurrentTimeLabel(),
@@ -282,7 +287,7 @@ export const VibeRadarModal: React.FC<VibeRadarModalProps> = ({
     setMessages((prev) => [
       ...prev,
       {
-        id: `sys-unlock-${Date.now()}`,
+        id: nextMessageId('sys-unlock'),
         sender: 'system',
         text: `Bạn và ${matchedSoul.displayName} (@${matchedSoul.handle}) đã mở khóa kết nối không giới hạn thời gian.`,
         timestamp: getCurrentTimeLabel(),
@@ -409,7 +414,7 @@ export const VibeRadarModal: React.FC<VibeRadarModalProps> = ({
                       key={freq}
                       type="button"
                       disabled={stage === 'scanning'}
-                      onClick={() => setSelectedFrequency(freq)}
+                      onClick={() => setFrequencySelection({ handle: currentUser.handle, value: freq })}
                       className={`min-h-[38px] px-3.5 py-1.5 rounded-xl text-xs font-medium transition-all ${
                         isSelected
                           ? 'bg-rose-600 text-white font-semibold shadow-sm shadow-rose-600/25'

@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+  <title id="title">VibeNest</title>
+  <defs>
+    <linearGradient id="nest" x1="7" y1="5" x2="58" y2="60" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#c4b5fd"/>
+      <stop offset=".52" stop-color="#818cf8"/>
+      <stop offset="1" stop-color="#5eead4"/>
+    </linearGradient>
+    <linearGradient id="glass" x1="8" y1="7" x2="55" y2="58" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#fff" stop-opacity=".18"/>
+      <stop offset="1" stop-color="#fff" stop-opacity=".025"/>
+    </linearGradient>
+  </defs>
+  <rect x="2" y="2" width="60" height="60" rx="19" fill="#101525"/>
+  <rect x="2.5" y="2.5" width="59" height="59" rx="18.5" fill="url(#glass)" stroke="#c4b5fd" stroke-opacity=".24"/>
+  <g fill="none" stroke="url(#nest)" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 31c2.8-12 10.3-19 20-19s17.2 7 20 19" stroke-width="3.2"/>
+    <path d="M15 37c4.2 9.1 10 14 17 14s12.8-4.9 17-14" stroke-width="3.2"/>
+    <path d="M20 35c3.1 5.1 7.1 7.7 12 7.7s8.9-2.6 12-7.7" stroke-width="3.2"/>
+    <path d="M23 27c2.4-4.5 5.4-6.8 9-6.8s6.6 2.3 9 6.8" stroke-width="2.6"/>
+    <path d="M24 32c2.4-2.1 5.1-3.2 8-3.2s5.6 1.1 8 3.2" stroke-width="2.6"/>
+  </g>
+  <circle cx="32" cy="34" r="2.8" fill="#e9e7ff"/>
+</svg>

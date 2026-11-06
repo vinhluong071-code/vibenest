@@ -105,7 +105,7 @@ export const LitmatchOnboardingModal: React.FC<LitmatchOnboardingModalProps> = (
         <div className="flex items-start justify-between gap-3 mb-5">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-rose-500/10 border border-rose-500/25 flex items-center justify-center shrink-0">
-              <VibeNestLogo size={24} showWordmark={false} />
+              <VibeNestLogo size="md" />
             </div>
             <div>
               <h2

@@ -1,0 +1,1549 @@
+<!DOCTYPE html>
+<html lang="vi" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>VibeNest — Không Gian Tâm Sự Ẩn Danh</title>
+  <meta name="description" content="Nền tảng kết nối và chia sẻ tâm sự ẩn danh tối ưu cho di động với thiết kế Glassmorphism hiện đại, giàu cảm xúc." />
+  <meta property="og:title" content="VibeNest — Không Gian Tâm Sự Ẩn Danh" />
+  <meta property="og:description" content="Nền tảng kết nối và chia sẻ tâm sự ẩn danh tối ưu cho di động với thiết kế Glassmorphism hiện đại, giàu cảm xúc." />
+  <meta name="theme-color" content="#0b0f19" />
+
+  <!-- Google Fonts: Plus Jakarta Sans (UI & Body), Fraunces (Expressive Editorial Display), JetBrains Mono (Tabular Metrics) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,400&family=JetBrains+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'system-ui', '-apple-system', 'sans-serif'],
+            display: ['"Fraunces"', 'Georgia', 'serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          colors: {
+            night: {
+              950: '#080b12',
+              900: '#0d121f',
+              800: '#161f33',
+            },
+            ember: {
+              400: '#fb7185',
+              500: '#f43f5e',
+              600: '#e11d48',
+            }
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    :root {
+      --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    * {
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* Ambient organic background blobs */
+    .ambient-canvas {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    .ambient-orb {
+      position: absolute;
+      border-radius: 9999px;
+      filter: blur(90px);
+      opacity: 0.38;
+      transform: translate3d(0, 0, 0);
+      transition: opacity 400ms var(--ease-out-expo);
+    }
+
+    html:not(.dark) .ambient-orb {
+      opacity: 0.25;
+      filter: blur(100px);
+    }
+
+    /* True multi-layered Glassmorphism surface */
+    .glass-surface {
+      backdrop-filter: blur(20px) saturate(160%);
+      -webkit-backdrop-filter: blur(20px) saturate(160%);
+      transition: transform 180ms var(--ease-out-expo), opacity 180ms var(--ease-out-expo), border-color 180ms var(--ease-out-expo), background-color 180ms var(--ease-out-expo);
+    }
+
+    .glass-nav {
+      backdrop-filter: blur(24px) saturate(180%);
+      -webkit-backdrop-filter: blur(24px) saturate(180%);
+    }
+
+    /* Smooth card entrance & micro-interactions using compositor-only properties */
+    @keyframes cardEnter {
+      from {
+        opacity: 0;
+        transform: translateY(14px) scale(0.985);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    .vibe-card-enter {
+      animation: cardEnter 320ms var(--ease-out-expo) forwards;
+    }
+
+    @keyframes heartPop {
+      0% { transform: scale(1); }
+      45% { transform: scale(1.24); }
+      100% { transform: scale(1); }
+    }
+
+    .animate-heart-pop {
+      animation: heartPop 200ms var(--ease-out-expo);
+    }
+
+    /* Hide scrollbar for horizontal mood filter while preserving touch scroll */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    .tabular-nums {
+      font-variant-numeric: tabular-nums;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, ::before, ::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+  </style>
+</head>
+
+<body class="bg-slate-50 text-slate-900 dark:bg-night-950 dark:text-slate-100 min-h-screen selection:bg-rose-500/20 selection:text-rose-400 transition-colors duration-200">
+
+  <!-- Ambient Glassmorphism Backdrop -->
+  <div class="ambient-canvas" aria-hidden="true">
+    <div class="ambient-orb w-[360px] h-[360px] md:w-[520px] md:h-[520px] bg-rose-500/30 -top-24 -left-20"></div>
+    <div class="ambient-orb w-[320px] h-[320px] md:w-[460px] md:h-[460px] bg-indigo-500/25 top-1/3 -right-24"></div>
+    <div class="ambient-orb w-[300px] h-[300px] md:w-[480px] md:h-[480px] bg-amber-500/15 -bottom-24 left-1/4"></div>
+  </div>
+
+  <!-- TOP NAVIGATION BAR (Strict 3-Zone Contract, Compact <=56px Height for 15% Mobile Sticky Cap) -->
+  <header class="sticky top-0 z-30 h-14 glass-nav bg-white/75 dark:bg-night-950/75 border-b border-slate-200/80 dark:border-white/[0.07]">
+    <div class="max-w-6xl mx-auto h-full px-4 sm:px-6 flex items-center justify-between gap-8">
+      <!-- Zone 1: Single-line Brand Wordmark -->
+      <a href="#feed" id="brandHomeLink" class="font-display text-xl font-semibold tracking-tight text-slate-900 dark:text-white whitespace-nowrap shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 rounded">
+        VibeNest
+      </a>
+
+      <!-- Zone 2: 4 Concise Single-Line Navigation Links -->
+      <nav class="hidden md:flex items-center gap-7 text-sm font-medium text-slate-600 dark:text-slate-300" aria-label="Điều hướng chính">
+        <a href="#feed" data-nav="all" class="nav-link text-slate-900 dark:text-white underline underline-offset-8 decoration-rose-500 decoration-2 transition-colors whitespace-nowrap shrink-0">Bảng tâm sự</a>
+        <a href="#frequencies" data-nav="healing" class="nav-link hover:text-slate-900 dark:hover:text-white transition-colors whitespace-nowrap shrink-0">Góc chữa lành</a>
+        <a href="#late-night" data-nav="latenight" class="nav-link hover:text-slate-900 dark:hover:text-white transition-colors whitespace-nowrap shrink-0">Tần số đêm</a>
+        <a href="#saved" data-nav="saved" class="nav-link hover:text-slate-900 dark:hover:text-white transition-colors whitespace-nowrap shrink-0">Đã lưu</a>
+      </nav>
+
+      <!-- Zone 3: 1 Primary Action CTA -->
+      <div class="flex items-center shrink-0">
+        <button
+          type="button"
+          id="topComposeBtn"
+          class="min-h-[40px] px-4 py-2 text-xs sm:text-sm font-semibold text-white bg-rose-600 hover:bg-rose-500 active:scale-[0.98] rounded-xl shadow-sm shadow-rose-600/20 transition-all whitespace-nowrap shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500"
+        >
+          Gửi tâm sự
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN WORKSPACE CONTAINER (Mobile-First Ergonomics + Full Multi-Column Desktop Presence) -->
+  <main class="max-w-6xl mx-auto px-4 sm:px-6 pt-5 pb-28 md:pb-16">
+    <!-- Secondary Workspace Controls & Mood Banner -->
+    <section class="mb-6 flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-slate-200/70 dark:border-white/[0.06] pb-5">
+      <div>
+        <p class="text-xs font-medium text-slate-500 dark:text-slate-400 mb-1" id="greetingTimeText">
+          Không gian lắng nghe ẩn danh · Mọi câu chuyện đều được tôn trọng
+        </p>
+        <h1 class="font-display text-2xl sm:text-3xl font-semibold tracking-tight text-slate-900 dark:text-white" style="text-wrap: balance;">
+          Hôm nay trong lòng bạn đang mang theo điều gì?
+        </h1>
+      </div>
+
+      <!-- Utility Controls: Search, Ambient Sound, Theme Switch -->
+      <div class="flex items-center gap-2 self-start sm:self-auto">
+        <!-- Ambient Night Rain Sound Toggle -->
+        <button
+          type="button"
+          id="ambientAudioBtn"
+          aria-pressed="false"
+          class="min-h-[44px] px-3.5 py-2 rounded-xl glass-surface bg-white/70 dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/[0.08] text-xs font-medium text-slate-700 dark:text-slate-300 hover:border-rose-500/40 flex items-center gap-2 transition-all whitespace-nowrap shrink-0"
+          title="Bật âm thanh mưa đêm dịu nhẹ"
+        >
+          <svg class="w-4 h-4 text-rose-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
+          </svg>
+          <span id="ambientAudioLabel">Nhạc nền: Tắt</span>
+        </button>
+
+        <!-- Theme Switcher (Dark / Light Glass) -->
+        <button
+          type="button"
+          id="themeToggleBtn"
+          aria-label="Chuyển đổi giao diện Sáng hoặc Tối"
+          class="min-h-[44px] min-w-[44px] px-3 py-2 rounded-xl glass-surface bg-white/70 dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/[0.08] text-xs font-medium text-slate-700 dark:text-slate-300 hover:border-slate-300 dark:hover:border-white/20 flex items-center justify-center gap-1.5 transition-all whitespace-nowrap shrink-0"
+        >
+          <svg id="themeIconSun" class="w-4 h-4 hidden dark:block text-amber-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" />
+          </svg>
+          <svg id="themeIconMoon" class="w-4 h-4 block dark:hidden text-slate-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" />
+          </svg>
+          <span id="themeTextLabel" class="hidden sm:inline">Giao diện sáng</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- 12-COLUMN RESPONSIVE GRID: Left Context Sidebar (Desktop) + Center Mobile-First Feed + Right Reflection Panel -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+      <!-- LEFT COLUMN (Desktop 3 cols): Mood Frequencies & Anonymous Identity -->
+      <aside class="hidden lg:block lg:col-span-3 space-y-5 sticky top-20">
+        <div class="glass-surface rounded-2xl p-5 bg-white/75 dark:bg-white/[0.03] border border-slate-200/80 dark:border-white/[0.08]">
+          <div class="flex items-center justify-between mb-3">
+            <h2 class="text-sm font-semibold text-slate-900 dark:text-white">Danh tính ẩn danh của bạn</h2>
+            <button
+              type="button"
+              id="shuffleIdentitySidebarBtn"
+              class="min-h-[36px] px-2.5 py-1 text-xs font-medium text-rose-600 dark:text-rose-400 hover:underline whitespace-nowrap shrink-0"
+            >
+              Đổi tên
+            </button>
+          </div>
+          <div class="flex items-center gap-3">
+            <div id="sidebarAvatarBox" class="w-11 h-11 rounded-2xl bg-gradient-to-br from-rose-500/20 to-indigo-500/20 border border-slate-200/60 dark:border-white/10 flex items-center justify-center font-display font-semibold text-base text-rose-600 dark:text-rose-300 shrink-0">
+              M
+            </div>
+            <div class="min-w-0">
+              <p id="sidebarAliasName" class="text-sm font-semibold text-slate-900 dark:text-white truncate">Mây Lang Thang #409</p>
+              <p class="text-xs text-slate-500 dark:text-slate-400">Không lưu IP · Tự xóa dấu vết</p>
+            </div>
+          </div>
+
+          <div class="mt-4 pt-4 border-t border-slate-200/60 dark:border-white/[0.06] grid grid-cols-2 gap-3 text-left">
+            <div>
+              <p class="text-xs text-slate-500 dark:text-slate-400">Đã đồng cảm</p>
+              <p id="statEmpathyGiven" class="font-mono text-lg font-medium text-slate-900 dark:text-white tabular-nums mt-0.5">0</p>
+            </div>
+            <div>
+              <p class="text-xs text-slate-500 dark:text-slate-400">Tâm sự đã lưu</p>
+              <p id="statSavedCount" class="font-mono text-lg font-medium text-slate-900 dark:text-white tabular-nums mt-0.5">2</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Emotional Frequency Index -->
+        <div class="glass-surface rounded-2xl p-5 bg-white/75 dark:bg-white/[0.03] border border-slate-200/80 dark:border-white/[0.08]">
+          <h2 class="text-sm font-semibold text-slate-900 dark:text-white mb-1">Nhịp cảm xúc đêm nay</h2>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">Tổng hợp từ các câu chuyện vừa chia sẻ</p>
+
+          <div class="space-y-3 text-xs">
+            <div>
+              <div class="flex justify-between text-slate-700 dark:text-slate-300 mb-1">
+                <span>Chênh vênh tuổi 20s</span>
+                <span class="font-mono tabular-nums text-slate-500 dark:text-slate-400">42%</span>
+              </div>
+              <div class="h-1.5 w-full rounded-full bg-slate-200/80 dark:bg-white/[0.07] overflow-hidden">
+                <div class="h-full bg-rose-500 rounded-full" style="width: 42%"></div>
+              </div>
+            </div>
+
+            <div>
+              <div class="flex justify-between text-slate-700 dark:text-slate-300 mb-1">
+                <span>Chữa lành & Biết ơn</span>
+                <span class="font-mono tabular-nums text-slate-500 dark:text-slate-400">31%</span>
+              </div>
+              <div class="h-1.5 w-full rounded-full bg-slate-200/80 dark:bg-white/[0.07] overflow-hidden">
+                <div class="h-full bg-indigo-400 rounded-full" style="width: 31%"></div>
+              </div>
+            </div>
+
+            <div>
+              <div class="flex justify-between text-slate-700 dark:text-slate-300 mb-1">
+                <span>Tâm sự đêm muộn</span>
+                <span class="font-mono tabular-nums text-slate-500 dark:text-slate-400">27%</span>
+              </div>
+              <div class="h-1.5 w-full rounded-full bg-slate-200/80 dark:bg-white/[0.07] overflow-hidden">
+                <div class="h-full bg-amber-400 rounded-full" style="width: 27%"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- CENTER COLUMN (Mobile Full Width / Desktop 6 cols): Interactive Home Feed -->
+      <section class="lg:col-span-6 space-y-4" aria-label="Luồng tâm sự">
+
+        <!-- Quick Inline Prompt Card (Opens Quick Composer Sheet) -->
+        <div class="glass-surface rounded-2xl p-4 sm:p-5 bg-white/80 dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/[0.09] shadow-sm">
+          <div class="flex items-center gap-3">
+            <div id="quickPromptAvatar" class="w-10 h-10 rounded-xl bg-rose-500/15 border border-rose-500/20 flex items-center justify-center font-display font-semibold text-sm text-rose-600 dark:text-rose-300 shrink-0">
+              M
+            </div>
+            <button
+              type="button"
+              id="inlineComposerTrigger"
+              class="flex-1 min-h-[44px] text-left px-4 py-2.5 rounded-xl bg-slate-100/80 dark:bg-white/[0.04] hover:bg-slate-200/60 dark:hover:bg-white/[0.07] border border-slate-200/60 dark:border-white/[0.06] text-sm text-slate-500 dark:text-slate-400 transition-colors"
+            >
+              Viết vài dòng trút bầu tâm sự ẩn danh...
+            </button>
+          </div>
+          <div class="mt-3 pt-3 border-t border-slate-200/60 dark:border-white/[0.06] flex items-center justify-between gap-2 text-xs text-slate-500 dark:text-slate-400">
+            <div class="flex items-center gap-2 overflow-x-auto no-scrollbar">
+              <button type="button" data-quick-mood="Đêm muộn" class="quick-mood-btn min-h-[36px] px-2.5 py-1 rounded-lg hover:bg-slate-200/60 dark:hover:bg-white/[0.06] hover:text-slate-900 dark:hover:text-white transition-colors whitespace-nowrap shrink-0">
+                + Đêm muộn
+              </button>
+              <span aria-hidden="true">·</span>
+              <button type="button" data-quick-mood="Chênh vênh" class="quick-mood-btn min-h-[36px] px-2.5 py-1 rounded-lg hover:bg-slate-200/60 dark:hover:bg-white/[0.06] hover:text-slate-900 dark:hover:text-white transition-colors whitespace-nowrap shrink-0">
+                + Chênh vênh
+              </button>
+              <span aria-hidden="true">·</span>
+              <button type="button" data-quick-mood="Chữa lành" class="quick-mood-btn min-h-[36px] px-2.5 py-1 rounded-lg hover:bg-slate-200/60 dark:hover:bg-white/[0.06] hover:text-slate-900 dark:hover:text-white transition-colors whitespace-nowrap shrink-0">
+                + Chữa lành
+              </button>
+            </div>
+            <span class="hidden sm:inline text-slate-400 dark:text-slate-500 whitespace-nowrap shrink-0">Ẩn danh 100%</span>
+          </div>
+        </div>
+
+        <!-- Search & Interactive Segmented Mood Filter Bar -->
+        <div class="space-y-3">
+          <div class="flex items-center gap-2">
+            <div class="relative flex-1">
+              <svg class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+              </svg>
+              <input
+                type="search"
+                id="searchFeedInput"
+                placeholder="Tìm theo từ khóa, tâm trạng hoặc thành phố..."
+                class="w-full min-h-[44px] pl-10 pr-4 py-2 rounded-xl glass-surface bg-white/80 dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/[0.08] text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-rose-500/60 transition-colors"
+              />
+            </div>
+
+            <!-- Sort Selector -->
+            <div class="flex items-center p-1 rounded-xl glass-surface bg-white/80 dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/[0.08] shrink-0">
+              <button
+                type="button"
+                data-sort="latest"
+                class="sort-btn min-h-[36px] px-3 py-1 text-xs font-medium rounded-lg bg-slate-900 text-white dark:bg-white dark:text-slate-900 transition-colors whitespace-nowrap shrink-0"
+              >
+                Mới nhất
+              </button>
+              <button
+                type="button"
+                data-sort="popular"
+                class="sort-btn min-h-[36px] px-3 py-1 text-xs font-medium rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors whitespace-nowrap shrink-0"
+              >
+                Đồng cảm nhiều
+              </button>
+            </div>
+          </div>
+
+          <!-- Interactive Filter Tabs (Functional Segmented Buttons, Touch-Friendly >= 44px Hitboxes) -->
+          <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5" role="tablist" aria-label="Lọc theo cung bậc cảm xúc">
+            <button
+              type="button"
+              role="tab"
+              aria-selected="true"
+              data-filter="all"
+              class="mood-filter-btn min-h-[40px] px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-rose-600 text-white shadow-sm shadow-rose-600/20 transition-all whitespace-nowrap shrink-0"
+            >
+              Tất cả tâm sự
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected="false"
+              data-filter="Đêm muộn"
+              class="mood-filter-btn min-h-[40px] px-3.5 py-1.5 rounded-xl text-xs font-medium glass-surface bg-white/75 dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/[0.08] text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-all whitespace-nowrap shrink-0"
+            >
+              Đêm muộn
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected="false"
+              data-filter="Chênh vênh"
+              class="mood-filter-btn min-h-[40px] px-3.5 py-1.5 rounded-xl text-xs font-medium glass-surface bg-white/75 dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/[0.08] text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-all whitespace-nowrap shrink-0"
+            >
+              Chênh vênh
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected="false"
+              data-filter="Chữa lành"
+              class="mood-filter-btn min-h-[40px] px-3.5 py-1.5 rounded-xl text-xs font-medium glass-surface bg-white/75 dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/[0.08] text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-all whitespace-nowrap shrink-0"
+            >
+              Chữa lành
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected="false"
+              data-filter="Thầm thương"
+              class="mood-filter-btn min-h-[40px] px-3.5 py-1.5 rounded-xl text-xs font-medium glass-surface bg-white/75 dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/[0.08] text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-all whitespace-nowrap shrink-0"
+            >
+              Thầm thương
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected="false"
+              data-filter="saved"
+              class="mood-filter-btn min-h-[40px] px-3.5 py-1.5 rounded-xl text-xs font-medium glass-surface bg-white/75 dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/[0.08] text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-all whitespace-nowrap shrink-0"
+            >
+              Đã lưu (<span id="filterSavedCount" class="font-mono tabular-nums">2</span>)
+            </button>
+          </div>
+        </div>
+
+        <!-- VIBE CARDS FEED CONTAINER -->
+        <div id="vibeFeedList" class="space-y-4" aria-live="polite">
+          <!-- Cards dynamically rendered via clean modern JS -->
+        </div>
+
+        <!-- Empty State (Hidden when cards match) -->
+        <div id="emptyFeedState" class="hidden glass-surface rounded-2xl p-8 text-center bg-white/75 dark:bg-white/[0.03] border border-slate-200/80 dark:border-white/[0.08]">
+          <p class="font-display text-lg font-medium text-slate-900 dark:text-white mb-1">Chưa tìm thấy lời tâm sự phù hợp</p>
+          <p class="text-sm text-slate-500 dark:text-slate-400 mb-4">Thử đổi từ khóa tìm kiếm hoặc là người đầu tiên sẻ chia cảm xúc này.</p>
+          <button
+            type="button"
+            id="resetFiltersBtn"
+            class="min-h-[44px] px-4 py-2 rounded-xl text-xs font-semibold bg-slate-900 text-white dark:bg-white dark:text-slate-900 transition-transform active:scale-95"
+          >
+            Xem lại toàn bộ tâm sự
+          </button>
+        </div>
+
+      </section>
+
+      <!-- RIGHT COLUMN (Desktop 3 cols): Daily Gentle Reflection & Community Guidelines -->
+      <aside class="hidden lg:block lg:col-span-3 space-y-5 sticky top-20">
+        <!-- Daily Reflection Card -->
+        <div class="glass-surface rounded-2xl p-5 bg-white/75 dark:bg-white/[0.03] border border-slate-200/80 dark:border-white/[0.08]">
+          <p class="text-xs font-medium text-rose-600 dark:text-rose-400 mb-1.5">Câu hỏi gợi mở hôm nay</p>
+          <h2 id="dailyPromptText" class="font-display text-base font-medium text-slate-900 dark:text-white leading-snug mb-3">
+            "Nếu có thể gửi một tin nhắn ẩn danh đến chính mình của 3 năm trước, bạn sẽ nói điều gì?"
+          </h2>
+          <div class="flex items-center justify-between gap-2 pt-2 border-t border-slate-200/60 dark:border-white/[0.06]">
+            <button
+              type="button"
+              id="answerDailyPromptBtn"
+              class="min-h-[38px] text-xs font-semibold text-rose-600 dark:text-rose-400 hover:underline whitespace-nowrap shrink-0"
+            >
+              Viết câu trả lời →
+            </button>
+            <button
+              type="button"
+              id="nextDailyPromptBtn"
+              class="min-h-[38px] px-2.5 py-1 rounded-lg text-xs text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors whitespace-nowrap shrink-0"
+            >
+              Đổi câu hỏi
+            </button>
+          </div>
+        </div>
+
+        <!-- Gentle Corner / Rules -->
+        <div class="glass-surface rounded-2xl p-5 bg-white/75 dark:bg-white/[0.03] border border-slate-200/80 dark:border-white/[0.08]">
+          <h2 class="text-sm font-semibold text-slate-900 dark:text-white mb-2">Quy ước nhỏ tại VibeNest</h2>
+          <ul class="space-y-2.5 text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+            <li>01. Lắng nghe không phán xét. Một lời vỗ về đúng lúc có thể làm ấm cả một đêm dài.</li>
+            <li>02. Tuyệt đối bảo mật danh tính cá nhân của bạn và người được nhắc đến.</li>
+            <li>03. Sử dụng ngôn từ dịu dàng, tôn trọng cảm xúc thật của nhau.</li>
+          </ul>
+          <div class="mt-4 pt-3 border-t border-slate-200/60 dark:border-white/[0.06] text-[11px] text-slate-400 dark:text-slate-500">
+            VibeNest · omni.id.vn · Kết nối cảm xúc ẩn danh
+          </div>
+        </div>
+      </aside>
+
+    </div>
+  </main>
+
+  <!-- FLOATING QUICK COMPOSE BUTTON (Desktop & Tablet Reachable Trigger) -->
+  <button
+    type="button"
+    id="floatingComposeBtn"
+    aria-label="Tạo tâm sự nhanh"
+    class="hidden md:flex fixed bottom-7 right-7 z-30 min-h-[52px] px-5 py-3 rounded-2xl bg-rose-600 hover:bg-rose-500 active:scale-95 text-white font-semibold text-sm shadow-lg shadow-rose-600/25 items-center gap-2.5 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400"
+  >
+    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+    </svg>
+    <span>Tâm sự nhanh</span>
+  </button>
+
+  <!-- MOBILE FIXED BOTTOM TAB BAR (Ergonomic Thumb Zone, Compact 60px Height -> Combined Sticky <= 15% Viewport) -->
+  <nav
+    class="md:hidden fixed bottom-0 left-0 right-0 z-30 h-[60px] glass-nav bg-white/85 dark:bg-night-950/85 border-t border-slate-200/80 dark:border-white/[0.08] px-2"
+    aria-label="Điều hướng di động"
+  >
+    <div class="grid grid-cols-4 items-center h-full max-w-md mx-auto">
+      <button
+        type="button"
+        data-mobile-nav="all"
+        class="mobile-nav-btn min-h-[48px] flex flex-col items-center justify-center text-rose-600 dark:text-rose-400 transition-colors"
+      >
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
+        </svg>
+        <span class="text-[10px] font-semibold tracking-tight mt-0.5 whitespace-nowrap">Bảng tin</span>
+      </button>
+
+      <button
+        type="button"
+        data-mobile-nav="Chữa lành"
+        class="mobile-nav-btn min-h-[48px] flex flex-col items-center justify-center text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+      >
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
+        </svg>
+        <span class="text-[10px] font-medium tracking-tight mt-0.5 whitespace-nowrap">Chữa lành</span>
+      </button>
+
+      <button
+        type="button"
+        id="mobileComposeTrigger"
+        class="min-h-[48px] flex flex-col items-center justify-center text-slate-900 dark:text-white transition-transform active:scale-95"
+      >
+        <span class="w-8 h-8 rounded-xl bg-rose-600 text-white flex items-center justify-center shadow-sm shadow-rose-600/30">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+          </svg>
+        </span>
+        <span class="text-[10px] font-semibold tracking-tight mt-0.5 text-rose-600 dark:text-rose-400 whitespace-nowrap">Viết nhanh</span>
+      </button>
+
+      <button
+        type="button"
+        data-mobile-nav="saved"
+        class="mobile-nav-btn min-h-[48px] flex flex-col items-center justify-center text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+      >
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z" />
+        </svg>
+        <span class="text-[10px] font-medium tracking-tight mt-0.5 whitespace-nowrap">Đã lưu</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- QUICK COMPOSE BOTTOM SHEET / MODAL (Mobile Slide-Up Sheet + Desktop Centered Glass Modal) -->
+  <div
+    id="composerModalBackdrop"
+    class="fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 opacity-0 transition-opacity duration-200"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="composerModalTitle"
+  >
+    <div
+      id="composerModalPanel"
+      class="w-full max-w-lg rounded-t-3xl sm:rounded-3xl glass-nav bg-white/95 dark:bg-night-900/95 border-t sm:border border-slate-200/80 dark:border-white/10 p-5 sm:p-6 shadow-2xl transform translate-y-6 sm:translate-y-0 sm:scale-95 transition-transform duration-200 max-h-[90vh] overflow-y-auto"
+    >
+      <!-- Mobile Sheet Drag Handle -->
+      <div class="w-10 h-1.5 bg-slate-300 dark:bg-white/20 rounded-full mx-auto mb-4 sm:hidden"></div>
+
+      <div class="flex items-center justify-between gap-4 mb-4">
+        <div>
+          <h2 id="composerModalTitle" class="font-display text-lg font-semibold text-slate-900 dark:text-white">Gửi một lời tâm sự ẩn danh</h2>
+          <p class="text-xs text-slate-500 dark:text-slate-400">Danh tính được mã hóa ngẫu nhiên trên VibeNest</p>
+        </div>
+        <button
+          type="button"
+          id="closeComposerBtn"
+          aria-label="Đóng cửa sổ"
+          class="min-h-[44px] min-w-[44px] rounded-xl flex items-center justify-center text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/[0.06] transition-colors"
+        >
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <form id="composeVibeForm" class="space-y-4">
+        <!-- Alias & Location Row -->
+        <div class="flex flex-col sm:flex-row gap-2.5">
+          <div class="flex-1 flex items-center justify-between px-3.5 py-2 rounded-xl bg-slate-100/90 dark:bg-white/[0.05] border border-slate-200/70 dark:border-white/[0.07]">
+            <div class="min-w-0">
+              <span class="text-[11px] text-slate-500 dark:text-slate-400 block">Bút danh ẩn danh</span>
+              <span id="composerAliasPreview" class="text-xs font-semibold text-slate-900 dark:text-white truncate block">Mây Lang Thang #409</span>
+            </div>
+            <button
+              type="button"
+              id="randomizeAliasBtn"
+              class="min-h-[36px] px-2.5 py-1 text-xs font-medium text-rose-600 dark:text-rose-400 hover:underline whitespace-nowrap shrink-0"
+            >
+              Đổi ngẫu nhiên
+            </button>
+          </div>
+
+          <div class="sm:w-40">
+            <label for="composerLocation" class="sr-only">Địa điểm</label>
+            <select
+              id="composerLocation"
+              class="w-full h-full min-h-[48px] px-3.5 py-2 rounded-xl bg-slate-100/90 dark:bg-white/[0.05] border border-slate-200/70 dark:border-white/[0.07] text-xs font-medium text-slate-800 dark:text-slate-200 focus:outline-none focus:border-rose-500"
+            >
+              <option value="Sài Gòn">Sài Gòn</option>
+              <option value="Hà Nội">Hà Nội</option>
+              <option value="Đà Lạt">Đà Lạt</option>
+              <option value="Đà Nẵng">Đà Nẵng</option>
+              <option value="Nơi xa">Từ một nơi xa</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Mood Selection -->
+        <div>
+          <label class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-2">Chọn tần số cảm xúc</label>
+          <div class="flex flex-wrap gap-2" id="composerMoodGroup">
+            <button type="button" data-compose-mood="Đêm muộn" class="compose-mood-option min-h-[38px] px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-rose-600 text-white transition-colors whitespace-nowrap">
+              Đêm muộn
+            </button>
+            <button type="button" data-compose-mood="Chênh vênh" class="compose-mood-option min-h-[38px] px-3.5 py-1.5 rounded-xl text-xs font-medium bg-slate-100 dark:bg-white/[0.05] text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-white/10 transition-colors whitespace-nowrap">
+              Chênh vênh
+            </button>
+            <button type="button" data-compose-mood="Chữa lành" class="compose-mood-option min-h-[38px] px-3.5 py-1.5 rounded-xl text-xs font-medium bg-slate-100 dark:bg-white/[0.05] text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-white/10 transition-colors whitespace-nowrap">
+              Chữa lành
+            </button>
+            <button type="button" data-compose-mood="Thầm thương" class="compose-mood-option min-h-[38px] px-3.5 py-1.5 rounded-xl text-xs font-medium bg-slate-100 dark:bg-white/[0.05] text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-white/10 transition-colors whitespace-nowrap">
+              Thầm thương
+            </button>
+          </div>
+        </div>
+
+        <!-- Textarea Content -->
+        <div>
+          <label for="composerTextarea" class="sr-only">Nội dung tâm sự</label>
+          <textarea
+            id="composerTextarea"
+            rows="4"
+            maxlength="600"
+            required
+            placeholder="Hãy viết ra điều bạn chưa thể nói cùng ai. Ở đây chỉ có sự lắng nghe..."
+            class="w-full p-4 rounded-2xl bg-slate-100/90 dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/[0.08] text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 leading-relaxed focus:outline-none focus:border-rose-500 transition-colors resize-none"
+          ></textarea>
+          <div class="flex items-center justify-between text-xs text-slate-400 dark:text-slate-500 mt-1.5 px-1">
+            <span>Gợi ý: Đính kèm giai điệu để người đọc đồng điệu hơn</span>
+            <span class="font-mono tabular-nums"><span id="charCountNum">0</span>/600</span>
+          </div>
+        </div>
+
+        <!-- Ambient Sound Attachment Selector -->
+        <div>
+          <label for="composerSoundSelect" class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">Đính kèm thanh âm nền (tùy chọn)</label>
+          <select
+            id="composerSoundSelect"
+            class="w-full min-h-[44px] px-3.5 py-2 rounded-xl bg-slate-100/90 dark:bg-white/[0.05] border border-slate-200/70 dark:border-white/[0.07] text-xs font-medium text-slate-800 dark:text-slate-200 focus:outline-none focus:border-rose-500"
+          >
+            <option value="">Không đính kèm âm thanh</option>
+            <option value="Mưa rơi hiên nhà · Lo-fi">Mưa rơi hiên nhà · Lo-fi</option>
+            <option value="Sóng biển đêm khuya · 432Hz">Sóng biển đêm khuya · 432Hz</option>
+            <option value="Tiếng dương cầm trầm lắng">Tiếng dương cầm trầm lắng</option>
+          </select>
+        </div>
+
+        <!-- Submit & Cancel Actions -->
+        <div class="flex items-center justify-end gap-2.5 pt-2">
+          <button
+            type="button"
+            id="cancelComposerBtn"
+            class="min-h-[44px] px-4 py-2 rounded-xl text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/[0.06] transition-colors whitespace-nowrap"
+          >
+            Hủy
+          </button>
+          <button
+            type="submit"
+            class="min-h-[44px] px-5 py-2.5 rounded-xl text-xs font-semibold bg-rose-600 hover:bg-rose-500 active:scale-[0.98] text-white shadow-md shadow-rose-600/20 transition-all whitespace-nowrap"
+          >
+            Đăng tâm sự ẩn danh
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div
+    id="vibeToast"
+    role="status"
+    aria-live="polite"
+    class="fixed bottom-20 md:bottom-8 left-1/2 -translate-x-1/2 z-50 pointer-events-none opacity-0 translate-y-3 transition-all duration-200 glass-nav bg-slate-900/90 dark:bg-white/95 text-white dark:text-slate-900 px-4 py-2.5 rounded-xl text-xs font-medium shadow-lg whitespace-nowrap"
+  >
+    Đã gửi lời đồng cảm
+  </div>
+
+  <!-- MODERN VANILLA JAVASCRIPT (Zero External Dependencies, Web Audio API Synth, Full Interactivity) -->
+  <script>
+    (() => {
+      const STORAGE_KEY = 'vibenest_feed_v1';
+      const THEME_KEY = 'vibenest_theme_v1';
+
+      const ALIAS_POOL = [
+        'Mây Lang Thang #409',
+        'Cú Đêm Sài Gòn #812',
+        'Tách Trà Nóng #204',
+        'Gió Mùa Thu #519',
+        'Người Lạ Cuối Phố #731',
+        'Ánh Đèn Vàng #108',
+        'Nắng Chiều Muộn #642'
+      ];
+
+      const DAILY_PROMPTS = [
+        '"Nếu có thể gửi một tin nhắn ẩn danh đến chính mình của 3 năm trước, bạn sẽ nói điều gì?"',
+        '"Khoảnh khắc nhỏ bé nào trong tuần qua khiến bạn nhận ra mình vẫn đang cố gắng rất tốt?"',
+        '"Có lời xin lỗi hay cảm ơn nào bạn vẫn giữ trong lòng chưa kịp nói ra?"',
+        '"Điều gì đang làm bạn trăn trở nhất mỗi khi tắt màn hình điện thoại lúc nửa đêm?"'
+      ];
+
+      const INITIAL_VIBES = [
+        {
+          id: 'vn-101',
+          alias: 'Cú Đêm Sài Gòn #812',
+          avatarChar: 'C',
+          mood: 'Đêm muộn',
+          location: 'Sài Gòn',
+          timeAgo: '12 phút trước',
+          timestamp: Date.now() - 12 * 60 * 1000,
+          content: '2 giờ sáng chạy xe qua cầu Thủ Thiêm sau ca làm thêm, gió thổi mát rượi mà tự nhiên sống mũi cay cay. Tuổi 25 không sợ vất vả, chỉ sợ lúc mệt nhất nhìn quanh chẳng biết gọi cho ai để không làm phiền họ. Mong những ai cũng đang thức giờ này sẽ có một giấc ngủ thật êm.',
+          soundTrack: 'Mưa rơi hiên nhà · Lo-fi',
+          empathyCount: 48,
+          empathized: false,
+          saved: true,
+          replies: [
+            { author: 'Tách Trà Nóng #204', time: '6 phút trước', text: 'Cố lên nhé bạn ơi, Sài Gòn rộng thật nhưng bạn không cô đơn đâu. Về nhà tắm nước ấm rồi ngủ một giấc thật sâu nhé.' },
+            { author: 'Mây Lang Thang #409', time: '2 phút trước', text: 'Đọc mà thấy hình ảnh của chính mình tuần trước. Gửi bạn một cái ôm thật chặt từ Quận 3.' }
+          ]
+        },
+        {
+          id: 'vn-102',
+          alias: 'Nắng Chiều Muộn #642',
+          avatarChar: 'N',
+          mood: 'Chữa lành',
+          location: 'Đà Lạt',
+          timeAgo: '38 phút trước',
+          timestamp: Date.now() - 38 * 60 * 1000,
+          content: 'Hôm nay mình đã tự nấu một bữa cơm tử tế, dọn lại góc bàn làm việc và xóa đi những đoạn tin nhắn cũ từng làm mình tổn thương suốt nửa năm qua. Hóa ra buông bỏ không phải là quên ngay lập tức, mà là thôi không còn tự trách bản thân nữa.',
+          soundTrack: 'Tiếng dương cầm trầm lắng',
+          empathyCount: 93,
+          empathized: true,
+          saved: true,
+          replies: [
+            { author: 'Gió Mùa Thu #519', time: '21 phút trước', text: 'Tự hào về bạn thật nhiều. Những bước nhỏ như vậy chính là khởi đầu của bình yên đó.' }
+          ]
+        },
+        {
+          id: 'vn-103',
+          alias: 'Người Lạ Cuối Phố #731',
+          avatarChar: 'N',
+          mood: 'Chênh vênh',
+          location: 'Hà Nội',
+          timeAgo: '1 giờ trước',
+          timestamp: Date.now() - 65 * 60 * 1000,
+          content: 'Bạn bè đồng trang lứa người thì khoe mua nhà, người rục rịch cưới hỏi, còn mình vừa nộp đơn xin nghỉ việc vì kiệt sức sau 3 năm gồng mình ở một môi trường không thuộc về mình. Hơi sợ ngày mai thức dậy không có lịch họp, nhưng lần đầu tiên sau 3 năm mình thở phào nhẹ nhõm.',
+          soundTrack: '',
+          empathyCount: 74,
+          empathized: false,
+          saved: false,
+          replies: [
+            { author: 'Ánh Đèn Vàng #108', time: '40 phút trước', text: 'Mỗi người có một múi giờ riêng mà. Dừng lại để hồi phục cũng là một sự dũng cảm rất lớn rồi.' }
+          ]
+        },
+        {
+          id: 'vn-104',
+          alias: 'Gió Mùa Thu #519',
+          avatarChar: 'G',
+          mood: 'Thầm thương',
+          location: 'Đà Nẵng',
+          timeAgo: '2 giờ trước',
+          timestamp: Date.now() - 125 * 60 * 1000,
+          content: 'Có một người ngày nào cũng mua cùng một loại cà phê muối ở quán quen lúc 8h15 sáng. Mình chỉ dám đứng cách hai người trong hàng, nhìn người ta cười với nhân viên pha chế rồi cả ngày hôm đó tự nhiên thấy vui lây. Chẳng biết có nên bắt chuyện một lần không.',
+          soundTrack: 'Sóng biển đêm khuya · 432Hz',
+          empathyCount: 116,
+          empathized: false,
+          saved: false,
+          replies: [
+            { author: 'Cú Đêm Sài Gòn #812', time: '1 giờ trước', text: 'Bắt chuyện đi bạn ơi! Một câu chào buổi sáng nhẹ nhàng biết đâu mở ra cả một câu chuyện đẹp.' }
+          ]
+        }
+      ];
+
+      // State
+      let vibes = [];
+      let currentFilter = 'all';
+      let currentSort = 'latest';
+      let searchQuery = '';
+      let currentAlias = ALIAS_POOL[0];
+      let selectedComposeMood = 'Đêm muộn';
+      let promptIndex = 0;
+
+      // Web Audio API Synthesizer for Ambient Soundscape (Zero external MP3 fragility)
+      let audioCtx = null;
+      let ambientNodes = [];
+      let isAmbientPlaying = false;
+      let activeCardAudioId = null;
+
+      function toggleAmbientSound(forceTrackName) {
+        if (!audioCtx) {
+          const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+          if (!AudioContextClass) {
+            showToast('Trình duyệt không hỗ trợ âm thanh');
+            return;
+          }
+          audioCtx = new AudioContextClass();
+        }
+
+        if (isAmbientPlaying && !forceTrackName) {
+          stopAmbientAudio();
+          showToast('Đã tắt âm thanh nền');
+          return;
+        }
+
+        if (isAmbientPlaying && forceTrackName) {
+          stopAmbientAudio();
+        }
+
+        try {
+          if (audioCtx.state === 'suspended') {
+            audioCtx.resume();
+          }
+
+          const masterGain = audioCtx.createGain();
+          masterGain.gain.setValueAtTime(0.01, audioCtx.currentTime);
+          masterGain.gain.exponentialRampToValueAtTime(0.08, audioCtx.currentTime + 1.2);
+          masterGain.connect(audioCtx.destination);
+
+          // Warm Lo-Fi Pad Frequencies (Fmaj7 warm voicing)
+          const freqs = [174.61, 220.0, 261.63, 329.63];
+          freqs.forEach((f) => {
+            const osc = audioCtx.createOscillator();
+            const filter = audioCtx.createBiquadFilter();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(f, audioCtx.currentTime);
+
+            filter.type = 'lowpass';
+            filter.frequency.setValueAtTime(600, audioCtx.currentTime);
+
+            osc.connect(filter);
+            filter.connect(masterGain);
+            osc.start();
+            ambientNodes.push(osc);
+          });
+
+          isAmbientPlaying = true;
+          updateAudioUI(forceTrackName || 'Đang phát: Mưa đêm');
+          showToast(forceTrackName ? `Đang phát: ${forceTrackName}` : 'Đã bật giai điệu đêm dịu nhẹ');
+        } catch (e) {
+          showToast('Không thể khởi tạo âm thanh');
+        }
+      }
+
+      function stopAmbientAudio() {
+        ambientNodes.forEach((node) => {
+          try { node.stop(); node.disconnect(); } catch (_) {}
+        });
+        ambientNodes = [];
+        isAmbientPlaying = false;
+        activeCardAudioId = null;
+        updateAudioUI('Nhạc nền: Tắt');
+        renderFeed();
+      }
+
+      function updateAudioUI(label) {
+        const btn = document.getElementById('ambientAudioBtn');
+        const txt = document.getElementById('ambientAudioLabel');
+        if (!btn || !txt) return;
+        txt.textContent = label;
+        btn.setAttribute('aria-pressed', String(isAmbientPlaying));
+        if (isAmbientPlaying) {
+          btn.classList.add('border-rose-500/60', 'text-rose-600', 'dark:text-rose-400');
+        } else {
+          btn.classList.remove('border-rose-500/60', 'text-rose-600', 'dark:text-rose-400');
+        }
+      }
+
+      // Load & Save Persistence
+      function loadState() {
+        try {
+          const saved = localStorage.getItem(STORAGE_KEY);
+          vibes = saved ? JSON.parse(saved) : INITIAL_VIBES;
+        } catch (_) {
+          vibes = [...INITIAL_VIBES];
+        }
+
+        try {
+          const savedTheme = localStorage.getItem(THEME_KEY);
+          if (savedTheme === 'light') {
+            document.documentElement.classList.remove('dark');
+          } else {
+            document.documentElement.classList.add('dark');
+          }
+        } catch (_) {}
+        syncThemeLabel();
+      }
+
+      function saveState() {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(vibes));
+        } catch (_) {}
+        updateSidebarStats();
+      }
+
+      function updateSidebarStats() {
+        const savedCount = vibes.filter((v) => v.saved).length;
+        const empathyGiven = vibes.filter((v) => v.empathized).length;
+
+        const savedEl = document.getElementById('statSavedCount');
+        const filterSavedEl = document.getElementById('filterSavedCount');
+        const empEl = document.getElementById('statEmpathyGiven');
+
+        if (savedEl) savedEl.textContent = String(savedCount);
+        if (filterSavedEl) filterSavedEl.textContent = String(savedCount);
+        if (empEl) empEl.textContent = String(empathyGiven);
+      }
+
+      // Escape HTML to prevent XSS when users submit confessions or comments
+      function escapeHTML(str) {
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+      }
+
+      // Toast helper
+      let toastTimeout = null;
+      function showToast(message) {
+        const toast = document.getElementById('vibeToast');
+        if (!toast) return;
+        toast.textContent = message;
+        toast.classList.remove('opacity-0', 'translate-y-3');
+        toast.classList.add('opacity-100', 'translate-y-0');
+        clearTimeout(toastTimeout);
+        toastTimeout = setTimeout(() => {
+          toast.classList.remove('opacity-100', 'translate-y-0');
+          toast.classList.add('opacity-0', 'translate-y-3');
+        }, 2200);
+      }
+
+      // Render Vibe Cards Feed
+      function renderFeed() {
+        const listEl = document.getElementById('vibeFeedList');
+        const emptyEl = document.getElementById('emptyFeedState');
+        if (!listEl || !emptyEl) return;
+
+        let filtered = vibes.filter((item) => {
+          if (currentFilter === 'saved') return item.saved;
+          if (currentFilter !== 'all' && item.mood !== currentFilter) return false;
+          if (searchQuery.trim() !== '') {
+            const q = searchQuery.toLowerCase();
+            const matchContent = item.content.toLowerCase().includes(q);
+            const matchAlias = item.alias.toLowerCase().includes(q);
+            const matchLocation = item.location.toLowerCase().includes(q);
+            const matchMood = item.mood.toLowerCase().includes(q);
+            return matchContent || matchAlias || matchLocation || matchMood;
+          }
+          return true;
+        });
+
+        if (currentSort === 'popular') {
+          filtered.sort((a, b) => b.empathyCount - a.empathyCount);
+        } else {
+          filtered.sort((a, b) => b.timestamp - a.timestamp);
+        }
+
+        if (filtered.length === 0) {
+          listEl.innerHTML = '';
+          emptyEl.classList.remove('hidden');
+          updateSidebarStats();
+          return;
+        }
+
+        emptyEl.classList.add('hidden');
+
+        listEl.innerHTML = filtered.map((item, idx) => {
+          const isPlayingThisCard = isAmbientPlaying && activeCardAudioId === item.id;
+          const delayMs = Math.min(idx * 45, 180);
+
+          return `
+            <article
+              class="vibe-card-enter glass-surface rounded-2xl p-5 bg-white/80 dark:bg-white/[0.035] border border-slate-200/80 dark:border-white/[0.08] hover:border-slate-300 dark:hover:border-white/[0.15] shadow-sm"
+              style="animation-delay: ${delayMs}ms"
+              data-card-id="${item.id}"
+            >
+              <!-- Card Header: Avatar + Clean Unboxed Metadata with Typographic Separators (Zero-Pill Rule) -->
+              <div class="flex items-start justify-between gap-3 mb-3.5">
+                <div class="flex items-center gap-3 min-w-0">
+                  <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-rose-500/15 via-indigo-500/15 to-amber-500/15 border border-slate-200/70 dark:border-white/10 flex items-center justify-center font-display font-semibold text-sm text-rose-600 dark:text-rose-300 shrink-0">
+                    ${escapeHTML(item.avatarChar || 'V')}
+                  </div>
+                  <div class="min-w-0">
+                    <h3 class="text-sm font-semibold text-slate-900 dark:text-white truncate">
+                      ${escapeHTML(item.alias)}
+                    </h3>
+                    <!-- Clean unboxed metadata with typographic dots -->
+                    <div class="flex flex-wrap items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                      <span class="font-medium text-rose-600 dark:text-rose-400">${escapeHTML(item.mood)}</span>
+                      <span aria-hidden="true">·</span>
+                      <span>${escapeHTML(item.location)}</span>
+                      <span aria-hidden="true">·</span>
+                      <span>${escapeHTML(item.timeAgo)}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Bookmark / Save Button (>=44x44px hitbox) -->
+                <button
+                  type="button"
+                  data-action="toggle-save"
+                  data-id="${item.id}"
+                  aria-label="${item.saved ? 'Bỏ lưu tâm sự' : 'Lưu tâm sự'}"
+                  class="min-h-[44px] min-w-[44px] -mr-2 -mt-1 rounded-xl flex items-center justify-center ${item.saved ? 'text-amber-500 dark:text-amber-400' : 'text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'} transition-colors shrink-0"
+                >
+                  <svg class="w-5 h-5" fill="${item.saved ? 'currentColor' : 'none'}" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z" />
+                  </svg>
+                </button>
+              </div>
+
+              <!-- Confession Prose Body -->
+              <p class="text-[15px] leading-[1.68] text-slate-800 dark:text-slate-200 whitespace-pre-line mb-4">
+                ${escapeHTML(item.content)}
+              </p>
+
+              <!-- Optional Ambient Sound Attachment Bar -->
+              ${item.soundTrack ? `
+                <div class="mb-4">
+                  <button
+                    type="button"
+                    data-action="play-card-sound"
+                    data-id="${item.id}"
+                    data-track="${escapeHTML(item.soundTrack)}"
+                    class="w-full min-h-[44px] px-3.5 py-2 rounded-xl bg-slate-100/80 dark:bg-white/[0.04] hover:bg-slate-200/70 dark:hover:bg-white/[0.07] border border-slate-200/70 dark:border-white/[0.07] flex items-center justify-between gap-3 text-xs transition-colors"
+                  >
+                    <span class="flex items-center gap-2 font-medium ${isPlayingThisCard ? 'text-rose-600 dark:text-rose-400' : 'text-slate-700 dark:text-slate-300'} truncate">
+                      <svg class="w-4 h-4 shrink-0 ${isPlayingThisCard ? 'text-rose-500' : 'text-slate-400'}" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        ${isPlayingThisCard
+                          ? '<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25v13.5m-7.5-13.5v13.5" />'
+                          : '<path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z" />'}
+                      </svg>
+                      <span class="truncate">${escapeHTML(item.soundTrack)}</span>
+                    </span>
+                    <span class="text-[11px] font-mono tabular-nums text-slate-400 dark:text-slate-500 shrink-0">
+                      ${isPlayingThisCard ? 'Đang phát' : 'Nghe cùng'}
+                    </span>
+                  </button>
+                </div>
+              ` : ''}
+
+              <!-- Interactive Action Footer (Minimum 44px Touch Targets) -->
+              <div class="pt-3 border-t border-slate-200/60 dark:border-white/[0.06] flex items-center justify-between gap-2">
+                <div class="flex items-center gap-1.5">
+                  <!-- Empathy / Hug Button -->
+                  <button
+                    type="button"
+                    data-action="toggle-empathy"
+                    data-id="${item.id}"
+                    class="min-h-[44px] px-3.5 py-1.5 rounded-xl flex items-center gap-2 text-xs font-medium transition-colors ${
+                      item.empathized
+                        ? 'bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/30'
+                        : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/[0.05] hover:text-slate-900 dark:hover:text-white'
+                    }"
+                  >
+                    <svg class="w-4 h-4 shrink-0" fill="${item.empathized ? 'currentColor' : 'none'}" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
+                    </svg>
+                    <span class="whitespace-nowrap">Đồng cảm</span>
+                    <span class="font-mono tabular-nums">${item.empathyCount}</span>
+                  </button>
+
+                  <!-- Toggle Comforting Replies Drawer -->
+                  <button
+                    type="button"
+                    data-action="toggle-replies"
+                    data-id="${item.id}"
+                    class="min-h-[44px] px-3.5 py-1.5 rounded-xl flex items-center gap-2 text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/[0.05] hover:text-slate-900 dark:hover:text-white transition-colors"
+                  >
+                    <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M12 20.25c4.97 0 9-3.694 9-8.25s-4.03-8.25-9-8.25S3 7.444 3 12c0 2.104.859 4.023 2.273 5.48.432.447.74 1.04.586 1.641a4.483 4.483 0 01-.923 1.785A5.969 5.969 0 006 21c1.282 0 2.47-.402 3.445-1.087.81.22 1.668.337 2.555.337z" />
+                    </svg>
+                    <span class="whitespace-nowrap">Lời vỗ về</span>
+                    <span class="font-mono tabular-nums">${item.replies.length}</span>
+                  </button>
+                </div>
+
+                <!-- Copy Quote / Share Button -->
+                <button
+                  type="button"
+                  data-action="share-vibe"
+                  data-id="${item.id}"
+                  aria-label="Sao chép trích dẫn tâm sự"
+                  class="min-h-[44px] px-3 py-1.5 rounded-xl flex items-center gap-1.5 text-xs font-medium text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/[0.05] hover:text-slate-900 dark:hover:text-white transition-colors whitespace-nowrap shrink-0"
+                >
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935 2.186 2.25 2.25 0 00-3.935-2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z" />
+                  </svg>
+                  <span class="hidden sm:inline">Chia sẻ</span>
+                </button>
+              </div>
+
+              <!-- Expandable Comforting Replies Section -->
+              <div id="replies-panel-${item.id}" class="hidden mt-3 pt-3 border-t border-slate-200/60 dark:border-white/[0.06] space-y-3">
+                <div class="space-y-2.5">
+                  ${item.replies.map((r) => `
+                    <div class="p-3 rounded-xl bg-slate-100/70 dark:bg-white/[0.03] text-xs">
+                      <div class="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 mb-1">
+                        <span class="font-semibold text-slate-800 dark:text-slate-200">${escapeHTML(r.author)}</span>
+                        <span aria-hidden="true">·</span>
+                        <span>${escapeHTML(r.time)}</span>
+                      </div>
+                      <p class="text-slate-700 dark:text-slate-300 leading-relaxed">${escapeHTML(r.text)}</p>
+                    </div>
+                  `).join('')}
+                </div>
+
+                <!-- Quick Reply Form -->
+                <form data-action="submit-reply" data-id="${item.id}" class="flex items-center gap-2">
+                  <input
+                    type="text"
+                    name="replyText"
+                    required
+                    maxlength="240"
+                    placeholder="Gửi một lời vỗ về ấm áp..."
+                    class="flex-1 min-h-[42px] px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/[0.08] text-xs text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:border-rose-500"
+                  />
+                  <button
+                    type="submit"
+                    class="min-h-[42px] px-3.5 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold transition-colors whitespace-nowrap shrink-0"
+                  >
+                    Gửi
+                  </button>
+                </form>
+              </div>
+            </article>
+          `;
+        }).join('');
+
+        updateSidebarStats();
+      }
+
+      // Filter UI updates
+      function setFilter(filterValue) {
+        currentFilter = filterValue;
+
+        // Sync mood filter buttons
+        document.querySelectorAll('.mood-filter-btn').forEach((btn) => {
+          const isMatch = btn.getAttribute('data-filter') === filterValue;
+          btn.setAttribute('aria-selected', String(isMatch));
+          if (isMatch) {
+            btn.className = 'mood-filter-btn min-h-[40px] px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-rose-600 text-white shadow-sm shadow-rose-600/20 transition-all whitespace-nowrap shrink-0';
+          } else {
+            btn.className = 'mood-filter-btn min-h-[40px] px-3.5 py-1.5 rounded-xl text-xs font-medium glass-surface bg-white/75 dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/[0.08] text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-all whitespace-nowrap shrink-0';
+          }
+        });
+
+        // Sync mobile bottom nav active state
+        document.querySelectorAll('.mobile-nav-btn').forEach((btn) => {
+          const target = btn.getAttribute('data-mobile-nav');
+          if (target === filterValue) {
+            btn.classList.add('text-rose-600', 'dark:text-rose-400');
+            btn.classList.remove('text-slate-500', 'dark:text-slate-400');
+          } else {
+            btn.classList.remove('text-rose-600', 'dark:text-rose-400');
+            btn.classList.add('text-slate-500', 'dark:text-slate-400');
+          }
+        });
+
+        renderFeed();
+      }
+
+      // Composer Modal Controls
+      function openComposer(prefillMood, prefillText) {
+        const backdrop = document.getElementById('composerModalBackdrop');
+        const panel = document.getElementById('composerModalPanel');
+        const textarea = document.getElementById('composerTextarea');
+        if (!backdrop || !panel) return;
+
+        if (prefillMood) {
+          selectComposeMood(prefillMood);
+        }
+        if (typeof prefillText === 'string' && textarea) {
+          textarea.value = prefillText;
+          document.getElementById('charCountNum').textContent = String(prefillText.length);
+        }
+
+        backdrop.classList.remove('hidden');
+        requestAnimationFrame(() => {
+          backdrop.classList.remove('opacity-0');
+          panel.classList.remove('translate-y-6', 'sm:scale-95');
+          if (textarea) textarea.focus();
+        });
+      }
+
+      function closeComposer() {
+        const backdrop = document.getElementById('composerModalBackdrop');
+        const panel = document.getElementById('composerModalPanel');
+        if (!backdrop || !panel) return;
+
+        backdrop.classList.add('opacity-0');
+        panel.classList.add('translate-y-6', 'sm:scale-95');
+        setTimeout(() => {
+          backdrop.classList.add('hidden');
+        }, 190);
+      }
+
+      function selectComposeMood(mood) {
+        selectedComposeMood = mood;
+        document.querySelectorAll('.compose-mood-option').forEach((btn) => {
+          const isMatch = btn.getAttribute('data-compose-mood') === mood;
+          if (isMatch) {
+            btn.className = 'compose-mood-option min-h-[38px] px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-rose-600 text-white transition-colors whitespace-nowrap';
+          } else {
+            btn.className = 'compose-mood-option min-h-[38px] px-3.5 py-1.5 rounded-xl text-xs font-medium bg-slate-100 dark:bg-white/[0.05] text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-white/10 transition-colors whitespace-nowrap';
+          }
+        });
+      }
+
+      function randomizeAlias() {
+        const others = ALIAS_POOL.filter((a) => a !== currentAlias);
+        const randomPick = others[Math.floor(Math.random() * others.length)];
+        const randomDigits = Math.floor(100 + Math.random() * 899);
+        currentAlias = randomPick.replace(/#\d+/, `#${randomDigits}`);
+
+        const char = currentAlias.charAt(0).toUpperCase();
+        const sidebarName = document.getElementById('sidebarAliasName');
+        const sidebarAvatar = document.getElementById('sidebarAvatarBox');
+        const quickAvatar = document.getElementById('quickPromptAvatar');
+        const composerAlias = document.getElementById('composerAliasPreview');
+
+        if (sidebarName) sidebarName.textContent = currentAlias;
+        if (sidebarAvatar) sidebarAvatar.textContent = char;
+        if (quickAvatar) quickAvatar.textContent = char;
+        if (composerAlias) composerAlias.textContent = currentAlias;
+      }
+
+      function syncThemeLabel() {
+        const isDark = document.documentElement.classList.contains('dark');
+        const label = document.getElementById('themeTextLabel');
+        if (label) {
+          label.textContent = isDark ? 'Giao diện sáng' : 'Giao diện tối';
+        }
+      }
+
+      // Initialize Event Listeners
+      document.addEventListener('DOMContentLoaded', () => {
+        loadState();
+        renderFeed();
+
+        // Delegated Clicks on Feed Cards
+        const feedEl = document.getElementById('vibeFeedList');
+        if (feedEl) {
+          feedEl.addEventListener('click', (e) => {
+            const btn = e.target.closest('button[data-action]');
+            if (!btn) return;
+
+            const action = btn.getAttribute('data-action');
+            const id = btn.getAttribute('data-id');
+            const targetVibe = vibes.find((v) => v.id === id);
+            if (!targetVibe) return;
+
+            if (action === 'toggle-empathy') {
+              targetVibe.empathized = !targetVibe.empathized;
+              targetVibe.empathyCount += targetVibe.empathized ? 1 : -1;
+              saveState();
+              renderFeed();
+              if (targetVibe.empathized) {
+                showToast('Đã gửi một cái ôm đồng cảm');
+              }
+            } else if (action === 'toggle-save') {
+              targetVibe.saved = !targetVibe.saved;
+              saveState();
+              renderFeed();
+              showToast(targetVibe.saved ? 'Đã lưu vào góc riêng của bạn' : 'Đã bỏ lưu tâm sự');
+            } else if (action === 'toggle-replies') {
+              const panel = document.getElementById(`replies-panel-${id}`);
+              if (panel) {
+                panel.classList.toggle('hidden');
+                if (!panel.classList.contains('hidden')) {
+                  const input = panel.querySelector('input[name="replyText"]');
+                  if (input) input.focus();
+                }
+              }
+            } else if (action === 'play-card-sound') {
+              const track = btn.getAttribute('data-track');
+              if (activeCardAudioId === id && isAmbientPlaying) {
+                stopAmbientAudio();
+              } else {
+                activeCardAudioId = id;
+                toggleAmbientSound(track);
+                renderFeed();
+              }
+            } else if (action === 'share-vibe') {
+              const shareText = `"${targetVibe.content}" — ${targetVibe.alias} trên VibeNest`;
+              if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(shareText).then(() => {
+                  showToast('Đã sao chép trích dẫn tâm sự');
+                }).catch(() => {
+                  showToast('Đã chuẩn bị trích dẫn để chia sẻ');
+                });
+              } else {
+                showToast('Đã sao chép trích dẫn tâm sự');
+              }
+            }
+          });
+
+          // Delegated Reply Form Submit
+          feedEl.addEventListener('submit', (e) => {
+            const form = e.target.closest('form[data-action="submit-reply"]');
+            if (!form) return;
+            e.preventDefault();
+
+            const id = form.getAttribute('data-id');
+            const input = form.querySelector('input[name="replyText"]');
+            const text = input ? input.value.trim() : '';
+            if (!text) return;
+
+            const targetVibe = vibes.find((v) => v.id === id);
+            if (!targetVibe) return;
+
+            targetVibe.replies.push({
+              author: currentAlias,
+              time: 'Vừa xong',
+              text
+            });
+
+            saveState();
+            renderFeed();
+            const reopened = document.getElementById(`replies-panel-${id}`);
+            if (reopened) reopened.classList.remove('hidden');
+            showToast('Đã gửi lời vỗ về ẩn danh');
+          });
+        }
+
+        // Mood Filter Tabs
+        document.querySelectorAll('.mood-filter-btn').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            setFilter(btn.getAttribute('data-filter') || 'all');
+          });
+        });
+
+        // Mobile Bottom Nav Tabs
+        document.querySelectorAll('.mobile-nav-btn').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            setFilter(btn.getAttribute('data-mobile-nav') || 'all');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          });
+        });
+
+        // Top Bar Desktop Nav Links
+        document.querySelectorAll('.nav-link').forEach((link) => {
+          link.addEventListener('click', (e) => {
+            e.preventDefault();
+            const navType = link.getAttribute('data-nav');
+            document.querySelectorAll('.nav-link').forEach((l) => {
+              l.className = 'nav-link hover:text-slate-900 dark:hover:text-white transition-colors whitespace-nowrap shrink-0';
+            });
+            link.className = 'nav-link text-slate-900 dark:text-white underline underline-offset-8 decoration-rose-500 decoration-2 transition-colors whitespace-nowrap shrink-0';
+
+            if (navType === 'healing') setFilter('Chữa lành');
+            else if (navType === 'latenight') setFilter('Đêm muộn');
+            else if (navType === 'saved') setFilter('saved');
+            else setFilter('all');
+          });
+        });
+
+        // Sort Buttons
+        document.querySelectorAll('.sort-btn').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            currentSort = btn.getAttribute('data-sort') || 'latest';
+            document.querySelectorAll('.sort-btn').forEach((b) => {
+              if (b.getAttribute('data-sort') === currentSort) {
+                b.className = 'sort-btn min-h-[36px] px-3 py-1 text-xs font-medium rounded-lg bg-slate-900 text-white dark:bg-white dark:text-slate-900 transition-colors whitespace-nowrap shrink-0';
+              } else {
+                b.className = 'sort-btn min-h-[36px] px-3 py-1 text-xs font-medium rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors whitespace-nowrap shrink-0';
+              }
+            });
+            renderFeed();
+          });
+        });
+
+        // Search Input
+        const searchInput = document.getElementById('searchFeedInput');
+        if (searchInput) {
+          searchInput.addEventListener('input', (e) => {
+            searchQuery = e.target.value;
+            renderFeed();
+          });
+        }
+
+        // Reset Filters Button
+        const resetBtn = document.getElementById('resetFiltersBtn');
+        if (resetBtn) {
+          resetBtn.addEventListener('click', () => {
+            searchQuery = '';
+            if (searchInput) searchInput.value = '';
+            setFilter('all');
+          });
+        }
+
+        // Open Composer Triggers
+        ['topComposeBtn', 'inlineComposerTrigger', 'floatingComposeBtn', 'mobileComposeTrigger'].forEach((id) => {
+          const el = document.getElementById(id);
+          if (el) el.addEventListener('click', () => openComposer());
+        });
+
+        // Quick Mood Triggers on Inline Prompt
+        document.querySelectorAll('.quick-mood-btn').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            openComposer(btn.getAttribute('data-quick-mood'));
+          });
+        });
+
+        // Close Composer Triggers
+        ['closeComposerBtn', 'cancelComposerBtn'].forEach((id) => {
+          const el = document.getElementById(id);
+          if (el) el.addEventListener('click', closeComposer);
+        });
+
+        const modalBackdrop = document.getElementById('composerModalBackdrop');
+        if (modalBackdrop) {
+          modalBackdrop.addEventListener('click', (e) => {
+            if (e.target === modalBackdrop) closeComposer();
+          });
+        }
+
+        // Composer Mood Selector
+        document.querySelectorAll('.compose-mood-option').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            selectComposeMood(btn.getAttribute('data-compose-mood'));
+          });
+        });
+
+        // Character Counter
+        const textarea = document.getElementById('composerTextarea');
+        const charCount = document.getElementById('charCountNum');
+        if (textarea && charCount) {
+          textarea.addEventListener('input', () => {
+            charCount.textContent = String(textarea.value.length);
+          });
+        }
+
+        // Randomize Alias Buttons
+        ['randomizeAliasBtn', 'shuffleIdentitySidebarBtn'].forEach((id) => {
+          const el = document.getElementById(id);
+          if (el) {
+            el.addEventListener('click', () => {
+              randomizeAlias();
+              showToast(`Đã đổi bút danh: ${currentAlias}`);
+            });
+          }
+        });
+
+        // Submit New Confession
+        const composeForm = document.getElementById('composeVibeForm');
+        if (composeForm) {
+          composeForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const content = textarea ? textarea.value.trim() : '';
+            if (!content) return;
+
+            const locationEl = document.getElementById('composerLocation');
+            const soundEl = document.getElementById('composerSoundSelect');
+
+            const newVibe = {
+              id: 'vn-' + Date.now(),
+              alias: currentAlias,
+              avatarChar: currentAlias.charAt(0).toUpperCase(),
+              mood: selectedComposeMood,
+              location: locationEl ? locationEl.value : 'Sài Gòn',
+              timeAgo: 'Vừa xong',
+              timestamp: Date.now(),
+              content,
+              soundTrack: soundEl ? soundEl.value : '',
+              empathyCount: 1,
+              empathized: true,
+              saved: false,
+              replies: []
+            };
+
+            vibes.unshift(newVibe);
+            saveState();
+            if (textarea) textarea.value = '';
+            if (charCount) charCount.textContent = '0';
+            closeComposer();
+            setFilter('all');
+            showToast('Tâm sự của bạn đã được gửi vào VibeNest');
+          });
+        }
+
+        // Daily Reflection Prompt Controls
+        const nextPromptBtn = document.getElementById('nextDailyPromptBtn');
+        const promptTextEl = document.getElementById('dailyPromptText');
+        const answerPromptBtn = document.getElementById('answerDailyPromptBtn');
+
+        if (nextPromptBtn && promptTextEl) {
+          nextPromptBtn.addEventListener('click', () => {
+            promptIndex = (promptIndex + 1) % DAILY_PROMPTS.length;
+            promptTextEl.textContent = DAILY_PROMPTS[promptIndex];
+          });
+        }
+
+        if (answerPromptBtn) {
+          answerPromptBtn.addEventListener('click', () => {
+            openComposer('Chữa lành', '');
+          });
+        }
+
+        // Ambient Audio Header Toggle
+        const ambientBtn = document.getElementById('ambientAudioBtn');
+        if (ambientBtn) {
+          ambientBtn.addEventListener('click', () => toggleAmbientSound());
+        }
+
+        // Theme Toggle (Light / Dark Glassmorphism)
+        const themeBtn = document.getElementById('themeToggleBtn');
+        if (themeBtn) {
+          themeBtn.addEventListener('click', () => {
+            const html = document.documentElement;
+            html.classList.toggle('dark');
+            const mode = html.classList.contains('dark') ? 'dark' : 'light';
+            try { localStorage.setItem(THEME_KEY, mode); } catch (_) {}
+            syncThemeLabel();
+          });
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
