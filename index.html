@@ -193,6 +193,17 @@
           <span id="topProfileLabel">Linh Đan (@linhdan.vibe)</span>
         </button>
 
+        <!-- Soul Match / Vibe Radar Trigger Button -->
+        <button
+          type="button"
+          id="topRadarMatchBtn"
+          class="min-h-[44px] px-3.5 py-2 rounded-xl glass-surface bg-rose-500/10 dark:bg-rose-500/15 border border-rose-500/35 text-xs font-semibold text-rose-600 dark:text-rose-300 hover:bg-rose-500/20 flex items-center gap-2 transition-all whitespace-nowrap shrink-0"
+          title="Soul Match · Ghép đôi tần số ngẫu nhiên 180s"
+        >
+          <span class="w-2 h-2 rounded-full bg-rose-500 animate-pulse shrink-0"></span>
+          <span>Vibe Radar · Ghép đôi</span>
+        </button>
+
         <!-- Theme Switcher (Dark / Light Glass) -->
         <button
           type="button"
@@ -485,8 +496,32 @@
 
       </section>
 
-      <!-- RIGHT COLUMN (Desktop 3 cols): Daily Topic & Community Vibe -->
+      <!-- RIGHT COLUMN (Desktop 3 cols): Soul Match Radar & Daily Topic -->
       <aside class="hidden lg:block lg:col-span-3 space-y-5 sticky top-20">
+        <!-- Litmatch Soul Match / Vibe Radar Quick Card -->
+        <div class="glass-surface rounded-3xl p-5 bg-gradient-to-br from-rose-500/10 via-indigo-500/5 to-transparent border border-rose-500/25">
+          <div class="flex items-center justify-between gap-2 mb-2">
+            <span class="text-xs font-semibold text-rose-600 dark:text-rose-400 flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span>
+              Soul Match · 180s
+            </span>
+            <span class="font-mono text-[11px] text-slate-500 dark:text-slate-400 tabular-nums">128 trực tuyến</span>
+          </div>
+          <h2 class="font-display text-base font-semibold text-slate-900 dark:text-white leading-snug mb-1.5">
+            Ghép đôi tần số ngẫu nhiên
+          </h2>
+          <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed mb-3.5">
+            Bật Radar để kết nối ngay với một người lạ đang có chung Vibe Tag và trò chuyện ẩn danh trong 3 phút.
+          </p>
+          <button
+            type="button"
+            id="sidebarRadarMatchBtn"
+            class="w-full min-h-[42px] px-4 py-2 rounded-xl bg-gradient-to-r from-rose-600 to-indigo-600 hover:from-rose-500 hover:to-indigo-500 text-white text-xs font-semibold shadow-md shadow-rose-600/20 transition-all"
+          >
+            Bật Vibe Radar ngay →
+          </button>
+        </div>
+
         <!-- Daily Reflection Card -->
         <div class="glass-surface rounded-3xl p-5 bg-white/80 dark:bg-white/[0.035] border border-slate-200/80 dark:border-white/[0.08]">
           <p class="text-xs font-medium text-rose-600 dark:text-rose-400 mb-1.5">Chủ đề kết nối hôm nay</p>
@@ -1098,6 +1133,197 @@
           </button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- SOUL MATCH / VIBE RADAR MODAL (Litmatch + Snapchat Fast Frequency Matching & 180s Chat) -->
+  <div
+    id="vibeRadarBackdrop"
+    class="fixed inset-0 z-50 hidden bg-black/75 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="vibeRadarModalTitle"
+  >
+    <div class="w-full max-w-[460px] rounded-t-3xl sm:rounded-3xl glass-nav bg-white/95 dark:bg-[#0b101d]/95 border-t sm:border border-slate-200/80 dark:border-white/10 p-5 sm:p-6 shadow-2xl max-h-[92vh] flex flex-col overflow-hidden">
+      <div class="w-10 h-1.5 bg-slate-300 dark:bg-white/20 rounded-full mx-auto mb-3.5 sm:hidden shrink-0"></div>
+
+      <!-- Radar Modal Header -->
+      <div class="flex items-center justify-between gap-3 pb-3.5 border-b border-slate-200/70 dark:border-white/[0.07] shrink-0">
+        <div class="flex items-center gap-2.5 min-w-0">
+          <span class="w-2.5 h-2.5 rounded-full bg-rose-500 shadow-[0_0_12px_rgba(244,63,94,0.85)] shrink-0"></span>
+          <div class="min-w-0">
+            <h2 id="vibeRadarModalTitle" class="font-display text-base sm:text-lg font-semibold text-slate-900 dark:text-white truncate">
+              Soul Match · Vibe Radar
+            </h2>
+            <p class="text-[11px] text-slate-500 dark:text-slate-400 truncate">
+              Ghép đôi ngẫu nhiên theo tần số cảm xúc trực tuyến
+            </p>
+          </div>
+        </div>
+        <button
+          type="button"
+          id="closeVibeRadarBtn"
+          aria-label="Đóng Vibe Radar"
+          class="min-h-[44px] min-w-[44px] -mr-1 rounded-xl flex items-center justify-center text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/[0.06] transition-colors shrink-0"
+        >
+          ✕
+        </button>
+      </div>
+
+      <!-- VIEW 1: RADAR SCANNER (IDLE & SCANNING) -->
+      <div id="radarScannerStage" class="py-5 space-y-5 overflow-y-auto">
+        <div class="relative h-56 rounded-3xl bg-gradient-to-b from-slate-900 via-[#11172a] to-[#090d18] border border-white/10 flex flex-col items-center justify-center overflow-hidden p-4">
+          <div class="w-32 h-32 rounded-full border border-white/[0.07] absolute pointer-events-none"></div>
+          <div class="w-48 h-48 rounded-full border border-white/[0.05] absolute pointer-events-none"></div>
+          <div id="radarPulseRing1" class="hidden w-28 h-28 rounded-full border-2 border-rose-500/60 absolute pointer-events-none animate-ping"></div>
+
+          <div class="relative z-10 flex flex-col items-center">
+            <div id="radarCenterAvatar" class="w-16 h-16 rounded-2xl border-2 flex items-center justify-center font-display font-semibold text-xl shadow-xl transition-transform duration-300">
+              L
+            </div>
+            <p id="radarCenterTitle" class="mt-2.5 text-xs font-semibold text-white">
+              Linh Đan (@linhdan.vibe)
+            </p>
+            <p id="radarCenterSubtitle" class="text-[11px] font-mono text-rose-300/90 mt-0.5 tabular-nums">
+              128 người đang bật Radar quanh bạn
+            </p>
+          </div>
+        </div>
+
+        <div>
+          <div class="flex items-center justify-between text-xs mb-2">
+            <span class="font-medium text-slate-700 dark:text-slate-300">Chọn tần số Vibe muốn ghép đôi</span>
+            <span class="font-mono text-[11px] text-slate-400 tabular-nums">180s / phiên</span>
+          </div>
+          <div class="flex flex-wrap gap-2" id="radarFreqGroup">
+            <button type="button" data-radar-freq="Nhiếp Ảnh Phim & Cà Phê" class="radar-freq-btn min-h-[38px] px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-rose-600 text-white shadow-sm shadow-rose-600/25 transition-all">
+              Nhiếp Ảnh Phim & Cà Phê
+            </button>
+            <button type="button" data-radar-freq="Kẻ Mộng Mơ Đêm Muộn" class="radar-freq-btn min-h-[38px] px-3.5 py-1.5 rounded-xl text-xs font-medium bg-slate-100 dark:bg-white/[0.05] text-slate-700 dark:text-slate-300 hover:bg-slate-200/80 dark:hover:bg-white/10 transition-all">
+              Kẻ Mộng Mơ Đêm Muộn
+            </button>
+            <button type="button" data-radar-freq="Tần Số Chữa Lành" class="radar-freq-btn min-h-[38px] px-3.5 py-1.5 rounded-xl text-xs font-medium bg-slate-100 dark:bg-white/[0.05] text-slate-700 dark:text-slate-300 hover:bg-slate-200/80 dark:hover:bg-white/10 transition-all">
+              Tần Số Chữa Lành
+            </button>
+            <button type="button" data-radar-freq="Acoustic & Mưa Rào" class="radar-freq-btn min-h-[38px] px-3.5 py-1.5 rounded-xl text-xs font-medium bg-slate-100 dark:bg-white/[0.05] text-slate-700 dark:text-slate-300 hover:bg-slate-200/80 dark:hover:bg-white/10 transition-all">
+              Acoustic & Mưa Rào
+            </button>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          id="startRadarScanBtn"
+          class="w-full min-h-[48px] px-5 py-3 rounded-2xl text-sm font-semibold bg-gradient-to-r from-rose-600 to-indigo-600 hover:from-rose-500 hover:to-indigo-500 active:scale-[0.99] text-white shadow-lg shadow-rose-600/20 transition-all"
+        >
+          Quét Radar · Tìm người cùng tần số
+        </button>
+      </div>
+
+      <!-- VIEW 2: MATCHED SOUL REVEAL -->
+      <div id="radarMatchedStage" class="hidden py-5 space-y-5 overflow-y-auto">
+        <div class="p-5 rounded-3xl bg-gradient-to-br from-rose-500/15 via-indigo-500/10 to-transparent border border-rose-500/30 space-y-4">
+          <div class="flex items-center justify-between text-xs">
+            <span class="font-semibold text-rose-600 dark:text-rose-400">Đã tìm thấy tần số tương thích</span>
+            <span id="radarMatchResonance" class="font-mono font-semibold text-emerald-600 dark:text-emerald-400 tabular-nums">96% đồng điệu · Cách 2.4km</span>
+          </div>
+
+          <div class="flex items-center gap-3.5">
+            <div id="radarMatchAvatar" class="w-14 h-14 rounded-2xl border flex items-center justify-center font-display font-semibold text-xl shrink-0">
+              A
+            </div>
+            <div class="min-w-0 flex-1">
+              <div class="flex items-center gap-1.5">
+                <h3 id="radarMatchName" class="text-base font-semibold text-slate-900 dark:text-white truncate">An Nhiên</h3>
+                <span id="radarMatchHandle" class="text-xs font-mono text-slate-500 dark:text-slate-400 truncate">@annhien.35mm</span>
+              </div>
+              <p id="radarMatchMeta" class="text-xs text-rose-600 dark:text-rose-400 font-medium mt-0.5 truncate">
+                Nhiếp Ảnh Phim & Cà Phê · Sài Gòn
+              </p>
+            </div>
+          </div>
+
+          <p id="radarMatchBio" class="text-xs sm:text-sm text-slate-700 dark:text-slate-200 leading-relaxed bg-white/60 dark:bg-black/25 p-3.5 rounded-2xl border border-slate-200/60 dark:border-white/[0.06]">
+            “Hay rửa ảnh phim ở Quận 1 và thích ngồi ban công nghe tiếng mưa đêm.”
+          </p>
+        </div>
+
+        <div class="flex items-center gap-2.5">
+          <button
+            type="button"
+            id="rescanRadarBtn"
+            class="min-h-[46px] px-4 py-2.5 rounded-2xl text-xs font-semibold bg-slate-100 dark:bg-white/[0.06] text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-white/10 transition-colors whitespace-nowrap"
+          >
+            Quét người khác
+          </button>
+          <button
+            type="button"
+            id="enterRadarChatBtn"
+            class="flex-1 min-h-[46px] px-5 py-2.5 rounded-2xl text-xs sm:text-sm font-semibold bg-gradient-to-r from-rose-600 to-indigo-600 hover:from-rose-500 hover:to-indigo-500 text-white shadow-lg shadow-rose-600/20 transition-all"
+          >
+            Vào phòng trò chuyện 180s →
+          </button>
+        </div>
+      </div>
+
+      <!-- VIEW 3: EPHEMERAL 180-SECOND SOUL CHAT -->
+      <div id="radarChatStage" class="hidden flex-1 flex flex-col min-h-[380px] max-h-[70vh] pt-3">
+        <div class="flex items-center justify-between gap-2 pb-3 mb-3 border-b border-slate-200/60 dark:border-white/[0.06] shrink-0">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div id="radarChatPeerAvatar" class="w-9 h-9 rounded-xl border flex items-center justify-center font-display font-semibold text-xs shrink-0">
+              A
+            </div>
+            <div class="min-w-0">
+              <div class="flex items-center gap-1.5">
+                <span id="radarChatPeerName" class="text-xs font-semibold text-slate-900 dark:text-white truncate">An Nhiên</span>
+                <span id="radarChatPeerScore" class="text-[11px] font-mono text-rose-500">96%</span>
+              </div>
+              <p id="radarChatPeerMeta" class="text-[11px] text-slate-500 dark:text-slate-400 truncate">
+                Nhiếp Ảnh Phim & Cà Phê · Sài Gòn
+              </p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2 shrink-0">
+            <span id="radarChatCountdown" class="font-mono text-xs font-semibold px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-white/[0.06] text-slate-800 dark:text-slate-200 tabular-nums">
+              03:00
+            </span>
+            <button
+              type="button"
+              id="radarConnectSoulBtn"
+              class="min-h-[36px] px-3 py-1 rounded-xl bg-rose-600/15 hover:bg-rose-600/25 border border-rose-500/30 text-rose-600 dark:text-rose-300 text-xs font-semibold transition-colors whitespace-nowrap"
+            >
+              + Kết nối
+            </button>
+          </div>
+        </div>
+
+        <div id="radarChatMessagesList" class="flex-1 overflow-y-auto space-y-3 pr-1 pb-2"></div>
+
+        <form id="radarChatForm" class="pt-2 border-t border-slate-200/60 dark:border-white/[0.06] flex items-center gap-2 shrink-0">
+          <button
+            type="button"
+            id="radarChatSwitchBtn"
+            class="min-h-[44px] px-3 rounded-xl bg-slate-100 dark:bg-white/[0.05] text-xs font-medium text-slate-600 dark:text-slate-300 hover:text-rose-500 transition-colors shrink-0"
+          >
+            Đổi tần số
+          </button>
+          <input
+            type="text"
+            id="radarChatInput"
+            maxlength="240"
+            required
+            placeholder="Nhắn tin cho người lạ cùng tần số..."
+            class="flex-1 min-h-[44px] px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-white/[0.05] border border-slate-200/80 dark:border-white/10 text-xs sm:text-sm text-slate-900 dark:text-white focus:outline-none focus:border-rose-500"
+          />
+          <button
+            type="submit"
+            class="min-h-[44px] px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold transition-colors shrink-0"
+          >
+            Gửi
+          </button>
+        </form>
+      </div>
     </div>
   </div>
 
@@ -2679,12 +2905,223 @@
           showToast('Đã đăng Khoảnh khắc 24h lên đầu bảng tin');
         });
 
+        // ====================================================================
+        // SOUL MATCH / VIBE RADAR LOGIC (180s Ephemeral Frequency Matching)
+        // ====================================================================
+        const RADAR_CANDIDATES = [
+          {
+            displayName: 'An Nhiên',
+            handle: 'annhien.35mm',
+            city: 'Sài Gòn',
+            vibeTag: 'Nhiếp Ảnh Phim & Cà Phê',
+            resonanceScore: 96,
+            distanceKm: 2.4,
+            bio: 'Hay rửa ảnh phim ở Quận 1 và thích ngồi ban công nghe tiếng mưa đêm.',
+            openingLine: 'Chào bạn, trùng hợp ghê! Mình cũng vừa bật Vibe Radar khi đang ngồi chỉnh lại cuộn phim mới tráng.',
+            replies: [
+              'Mình đồng cảm lắm luôn. Những lúc phố vắng thế này nói chuyện với một người hợp tần số thấy nhẹ lòng hẳn.',
+              'Ở Sài Gòn tầm giờ này gió ngoài cầu Ba Son mát cực kỳ. Hôm nay của bạn thế nào?',
+              'Rất vui vì tối nay bắt trúng tần số của bạn. Mình giữ kết nối trên bảng tin nhé!'
+            ]
+          },
+          {
+            displayName: 'Gia Bảo',
+            handle: 'baogia.indie',
+            city: 'Hà Nội',
+            vibeTag: 'Kẻ Mộng Mơ Đêm Muộn',
+            resonanceScore: 94,
+            distanceKm: 4.1,
+            bio: 'Đàn guitar thùng, trà bá tước nóng và những câu chuyện không tên lúc 1h sáng.',
+            openingLine: 'Xin chào! Tần số đêm muộn của tụi mình khớp tới 94% luôn này. Bạn cũng chưa ngủ được à?',
+            replies: [
+              'Mình vừa pha một cốc trà ấm. Đôi khi nói chuyện với một người chưa từng gặp lại dễ giãi bày hơn.',
+              'Góc nhìn của bạn thú vị thật đấy. Nghe bạn kể mà mình thấy yên bình lây.'
+            ]
+          },
+          {
+            displayName: 'Phương Thảo',
+            handle: 'thao.pinehill',
+            city: 'Đà Lạt',
+            vibeTag: 'Tần Số Chữa Lành',
+            resonanceScore: 98,
+            distanceKm: 1.8,
+            bio: 'Trồng sen đá, đọc tản văn và sưu tầm những khoảnh khắc dịu dàng mỗi ngày.',
+            openingLine: 'Chào bạn nhé! Trên Đà Lạt chỗ mình sương đang xuống dày lắm, gửi bạn một chút không khí se lạnh từ đây.',
+            replies: [
+              'Cảm ơn bạn nhiều nha. Một lời hỏi thăm ấm áp đúng lúc thật sự quý giá lắm.',
+              'Trò chuyện với bạn dễ chịu thật sự, tụi mình giữ liên lạc lâu dài nha!'
+            ]
+          }
+        ];
+
+        let radarCandidateIdx = 0;
+        let currentMatchedSoul = RADAR_CANDIDATES[0];
+        let radarCountdownTimer = null;
+        let radarRemainingSec = 180;
+        let radarReplyStep = 0;
+
+        function openVibeRadar() {
+          const backdrop = document.getElementById('vibeRadarBackdrop');
+          if (!backdrop) return;
+          backdrop.classList.remove('hidden');
+          document.getElementById('radarScannerStage')?.classList.remove('hidden');
+          document.getElementById('radarMatchedStage')?.classList.add('hidden');
+          document.getElementById('radarChatStage')?.classList.add('hidden');
+
+          applyAvatarThemeToElement(document.getElementById('radarCenterAvatar'), userProfile.handle, userProfile.displayName);
+          document.getElementById('radarCenterTitle').textContent = `${userProfile.displayName} (@${userProfile.handle})`;
+          document.getElementById('radarCenterSubtitle').textContent = '128 người đang bật Radar quanh bạn';
+        }
+
+        function closeVibeRadar() {
+          if (radarCountdownTimer) {
+            clearInterval(radarCountdownTimer);
+            radarCountdownTimer = null;
+          }
+          document.getElementById('vibeRadarBackdrop')?.classList.add('hidden');
+        }
+
+        function triggerRadarScan() {
+          document.getElementById('radarScannerStage')?.classList.remove('hidden');
+          document.getElementById('radarMatchedStage')?.classList.add('hidden');
+          document.getElementById('radarChatStage')?.classList.add('hidden');
+
+          const pulseRing = document.getElementById('radarPulseRing1');
+          const scanBtn = document.getElementById('startRadarScanBtn');
+          pulseRing?.classList.remove('hidden');
+          if (scanBtn) scanBtn.textContent = 'Đang kết nối sóng cảm xúc...';
+          document.getElementById('radarCenterTitle').textContent = 'Đang dò tìm tâm hồn đồng điệu...';
+
+          setTimeout(() => {
+            pulseRing?.classList.add('hidden');
+            if (scanBtn) scanBtn.textContent = 'Quét Radar · Tìm người cùng tần số';
+            currentMatchedSoul = RADAR_CANDIDATES[radarCandidateIdx % RADAR_CANDIDATES.length];
+            radarCandidateIdx++;
+
+            document.getElementById('radarScannerStage')?.classList.add('hidden');
+            document.getElementById('radarMatchedStage')?.classList.remove('hidden');
+
+            applyAvatarThemeToElement(document.getElementById('radarMatchAvatar'), currentMatchedSoul.handle, currentMatchedSoul.displayName);
+            document.getElementById('radarMatchName').textContent = currentMatchedSoul.displayName;
+            document.getElementById('radarMatchHandle').textContent = `@${currentMatchedSoul.handle}`;
+            document.getElementById('radarMatchMeta').textContent = `${currentMatchedSoul.vibeTag} · ${currentMatchedSoul.city}`;
+            document.getElementById('radarMatchResonance').textContent = `${currentMatchedSoul.resonanceScore}% đồng điệu · Cách ${currentMatchedSoul.distanceKm}km`;
+            document.getElementById('radarMatchBio').textContent = `“${currentMatchedSoul.bio}”`;
+
+            showToast(`Đã bắt trúng tần số của ${currentMatchedSoul.displayName} (${currentMatchedSoul.resonanceScore}%)`);
+          }, 1450);
+        }
+
+        function startRadarChatRoom() {
+          document.getElementById('radarMatchedStage')?.classList.add('hidden');
+          document.getElementById('radarChatStage')?.classList.remove('hidden');
+
+          applyAvatarThemeToElement(document.getElementById('radarChatPeerAvatar'), currentMatchedSoul.handle, currentMatchedSoul.displayName);
+          document.getElementById('radarChatPeerName').textContent = currentMatchedSoul.displayName;
+          document.getElementById('radarChatPeerScore').textContent = `${currentMatchedSoul.resonanceScore}%`;
+          document.getElementById('radarChatPeerMeta').textContent = `${currentMatchedSoul.vibeTag} · ${currentMatchedSoul.city}`;
+
+          radarRemainingSec = 180;
+          radarReplyStep = 0;
+          const countdownEl = document.getElementById('radarChatCountdown');
+          if (countdownEl) countdownEl.textContent = '03:00';
+
+          const listEl = document.getElementById('radarChatMessagesList');
+          if (listEl) {
+            listEl.innerHTML = `
+              <div class="text-center px-3 py-2 rounded-xl bg-slate-100/70 dark:bg-white/[0.03] text-[11px] text-slate-500 dark:text-slate-400">
+                Phiên trò chuyện 180s cùng @${escapeHTML(currentMatchedSoul.handle)} đã bắt đầu.
+              </div>
+              <div class="flex flex-col items-start">
+                <div class="max-w-[82%] px-3.5 py-2.5 rounded-2xl rounded-bl-sm bg-slate-100 dark:bg-white/[0.07] text-xs sm:text-sm text-slate-900 dark:text-slate-100 leading-relaxed">
+                  ${escapeHTML(currentMatchedSoul.openingLine)}
+                </div>
+              </div>
+            `;
+          }
+
+          if (radarCountdownTimer) clearInterval(radarCountdownTimer);
+          radarCountdownTimer = setInterval(() => {
+            if (radarRemainingSec <= 1) {
+              clearInterval(radarCountdownTimer);
+              if (countdownEl) countdownEl.textContent = '00:00';
+              return;
+            }
+            radarRemainingSec--;
+            const m = String(Math.floor(radarRemainingSec / 60)).padStart(2, '0');
+            const s = String(radarRemainingSec % 60).padStart(2, '0');
+            if (countdownEl) countdownEl.textContent = `${m}:${s}`;
+          }, 1000);
+        }
+
+        ['topRadarMatchBtn', 'sidebarRadarMatchBtn'].forEach((id) => {
+          document.getElementById(id)?.addEventListener('click', openVibeRadar);
+        });
+        document.getElementById('closeVibeRadarBtn')?.addEventListener('click', closeVibeRadar);
+        document.getElementById('startRadarScanBtn')?.addEventListener('click', triggerRadarScan);
+        document.getElementById('rescanRadarBtn')?.addEventListener('click', triggerRadarScan);
+        document.getElementById('radarChatSwitchBtn')?.addEventListener('click', triggerRadarScan);
+        document.getElementById('enterRadarChatBtn')?.addEventListener('click', startRadarChatRoom);
+
+        document.querySelectorAll('.radar-freq-btn').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const target = btn.getAttribute('data-radar-freq');
+            document.querySelectorAll('.radar-freq-btn').forEach((b) => {
+              const active = b.getAttribute('data-radar-freq') === target;
+              b.className = active
+                ? 'radar-freq-btn min-h-[38px] px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-rose-600 text-white shadow-sm shadow-rose-600/25 transition-all'
+                : 'radar-freq-btn min-h-[38px] px-3.5 py-1.5 rounded-xl text-xs font-medium bg-slate-100 dark:bg-white/[0.05] text-slate-700 dark:text-slate-300 hover:bg-slate-200/80 dark:hover:bg-white/10 transition-all';
+            });
+          });
+        });
+
+        document.getElementById('radarConnectSoulBtn')?.addEventListener('click', () => {
+          if (radarCountdownTimer) clearInterval(radarCountdownTimer);
+          const countdownEl = document.getElementById('radarChatCountdown');
+          if (countdownEl) countdownEl.textContent = '∞ Đã kết nối';
+          showToast(`Đã kết nối tri kỷ với @${currentMatchedSoul.handle}`);
+        });
+
+        document.getElementById('radarChatForm')?.addEventListener('submit', (e) => {
+          e.preventDefault();
+          const inputEl = document.getElementById('radarChatInput');
+          const listEl = document.getElementById('radarChatMessagesList');
+          const text = inputEl ? inputEl.value.trim() : '';
+          if (!text || !listEl) return;
+
+          inputEl.value = '';
+          const myBubble = document.createElement('div');
+          myBubble.className = 'flex flex-col items-end';
+          myBubble.innerHTML = `
+            <div class="max-w-[82%] px-3.5 py-2.5 rounded-2xl rounded-br-sm bg-rose-600 text-white text-xs sm:text-sm leading-relaxed">
+              ${escapeHTML(text)}
+            </div>
+          `;
+          listEl.appendChild(myBubble);
+          listEl.scrollTop = listEl.scrollHeight;
+
+          setTimeout(() => {
+            const replyText = currentMatchedSoul.replies[radarReplyStep % currentMatchedSoul.replies.length];
+            radarReplyStep++;
+            const peerBubble = document.createElement('div');
+            peerBubble.className = 'flex flex-col items-start';
+            peerBubble.innerHTML = `
+              <div class="max-w-[82%] px-3.5 py-2.5 rounded-2xl rounded-bl-sm bg-slate-100 dark:bg-white/[0.07] text-xs sm:text-sm text-slate-900 dark:text-slate-100 leading-relaxed">
+                ${escapeHTML(replyText)}
+              </div>
+            `;
+            listEl.appendChild(peerBubble);
+            listEl.scrollTop = listEl.scrollHeight;
+          }, 950);
+        });
+
         // Escape key closes active modals
         document.addEventListener('keydown', (e) => {
           if (e.key === 'Escape') {
             closeComposer();
             closeProfileModal();
             closeStoryViewer();
+            closeVibeRadar();
             document.getElementById('storyComposerBackdrop')?.classList.add('hidden');
           }
         });
