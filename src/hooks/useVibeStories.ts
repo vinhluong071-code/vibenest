@@ -26,6 +26,7 @@ export function useVibeStories(enabled = true, limit = 60) {
       setLoading(false);
       return;
     }
+
     setLoading(true);
     try {
       const supabase = createClient();
@@ -36,7 +37,28 @@ export function useVibeStories(enabled = true, limit = 60) {
         .order("created_at", { ascending: false })
         .limit(limit);
       if (queryError) throw queryError;
-      setStories((data ?? []) as VibeStory[]);
+
+      const rows = (data ?? []) as Omit<VibeStory, "my_reaction">[];
+      const reactionByStory = new Map<string, VibeStoryReaction>();
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError) throw userError;
+
+      if (user && rows.length > 0) {
+        const { data: reactions, error: reactionError } = await supabase
+          .from("story_warmths")
+          .select("story_id,reaction_type")
+          .eq("user_id", user.id)
+          .in("story_id", rows.map((story) => story.id));
+        if (reactionError) throw reactionError;
+        for (const reaction of reactions ?? []) {
+          reactionByStory.set(reaction.story_id, reaction.reaction_type as VibeStoryReaction);
+        }
+      }
+
+      setStories(rows.map((story) => ({
+        ...story,
+        my_reaction: reactionByStory.get(story.id) ?? null,
+      })));
       setError(null);
     } catch (loadError) {
       setError(getErrorMessage(loadError));
@@ -51,6 +73,7 @@ export function useVibeStories(enabled = true, limit = 60) {
       setLoading(false);
       return;
     }
+
     void refreshStories();
     const supabase = createClient();
     const channel = supabase
@@ -59,10 +82,24 @@ export function useVibeStories(enabled = true, limit = 60) {
         void refreshStories();
       })
       .subscribe();
+
     return () => {
       void supabase.removeChannel(channel);
     };
   }, [enabled, refreshStories]);
+
+  // Remove stories locally at their exact expiry time even if no Realtime event arrives.
+  useEffect(() => {
+    if (!stories.length) return;
+    const nextExpiry = Math.min(...stories.map((story) => new Date(story.expires_at).getTime()));
+    const timeoutId = window.setTimeout(() => {
+      setStories((current) =>
+        current.filter((story) => new Date(story.expires_at).getTime() > Date.now()),
+      );
+      void refreshStories();
+    }, Math.max(0, nextExpiry - Date.now() + 50));
+    return () => window.clearTimeout(timeoutId);
+  }, [stories, refreshStories]);
 
   const createStory = useCallback(async (input: CreateVibeStoryInput) => {
     const supabase = createClient();
@@ -85,7 +122,7 @@ export function useVibeStories(enabled = true, limit = 60) {
       .single();
     if (insertError) throw insertError;
 
-    const story = data as VibeStory;
+    const story = { ...(data as Omit<VibeStory, "my_reaction">), my_reaction: null } satisfies VibeStory;
     setStories((current) =>
       [story, ...current.filter((item) => item.id !== story.id)].filter(
         (item) => new Date(item.expires_at).getTime() > Date.now(),
@@ -109,7 +146,10 @@ export function useVibeStories(enabled = true, limit = 60) {
     if (lookupError) throw lookupError;
 
     if (existing?.reaction_type === reactionType) {
-      const { error: deleteError } = await supabase.from("story_warmths").delete().eq("id", existing.id);
+      const { error: deleteError } = await supabase
+        .from("story_warmths")
+        .delete()
+        .eq("id", existing.id);
       if (deleteError) throw deleteError;
     } else if (existing) {
       const { error: updateError } = await supabase
@@ -130,7 +170,10 @@ export function useVibeStories(enabled = true, limit = 60) {
 
   const deleteStory = useCallback(async (storyId: string) => {
     const supabase = createClient();
-    const { error: deleteError } = await supabase.from("vibe_stories").delete().eq("id", storyId);
+    const { error: deleteError } = await supabase
+      .from("vibe_stories")
+      .delete()
+      .eq("id", storyId);
     if (deleteError) throw deleteError;
     setStories((current) => current.filter((story) => story.id !== storyId));
   }, []);

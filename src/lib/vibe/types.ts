@@ -36,6 +36,7 @@ export type VibeStory = {
   expires_at: string;
   heart_count: number;
   warmth_count: number;
+  my_reaction: VibeStoryReaction | null;
 };
 
 export type CreateVibeStoryInput = {
