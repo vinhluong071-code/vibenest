@@ -21,3 +21,28 @@ export type VibePost = {
   empathized: boolean;
   saved: boolean;
 };
+
+export type VibeStoryReaction = "heart" | "warmth";
+
+export type VibeStory = {
+  id: string;
+  alias: string;
+  mood: string;
+  location: string | null;
+  caption: string | null;
+  image_url: string | null;
+  canvas_preset: string;
+  created_at: string;
+  expires_at: string;
+  heart_count: number;
+  warmth_count: number;
+};
+
+export type CreateVibeStoryInput = {
+  alias: string;
+  mood: string;
+  location?: string | null;
+  caption?: string | null;
+  imageUrl?: string | null;
+  canvasPreset?: string;
+};
