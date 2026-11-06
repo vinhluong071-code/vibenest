@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { getAvatarThemeFromIdentity } from '../../lib/avatar-hash';
 import { VibeNestLogo } from '../brand/VibeNestLogo';
 
@@ -63,6 +63,15 @@ export const LitmatchOnboardingModal: React.FC<LitmatchOnboardingModalProps> = (
   const [city, setCity] = useState<string>(currentUser.city);
   const [vibeTag, setVibeTag] = useState<string>(currentUser.vibeTag);
   const [bio, setBio] = useState<string>(currentUser.bio);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    setDisplayName(currentUser.displayName);
+    setHandle(currentUser.handle.replace(/^@/, ''));
+    setCity(currentUser.city);
+    setVibeTag(currentUser.vibeTag);
+    setBio(currentUser.bio);
+  }, [isOpen, currentUser.displayName, currentUser.handle, currentUser.city, currentUser.vibeTag, currentUser.bio]);
 
   if (!isOpen) return null;
 
