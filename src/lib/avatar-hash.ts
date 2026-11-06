@@ -80,3 +80,9 @@ export function getAvatarThemeFromIdentity(identityKey: string): AvatarTheme {
     initial: cleanInitial,
   };
 }
+
+
+/** Backward-compatible alias for older account-linking UI callers. */
+export function getAvatarThemeFromAlias(alias: string): AvatarTheme {
+  return getAvatarThemeFromIdentity(alias);
+}
