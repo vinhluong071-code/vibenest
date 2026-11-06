@@ -17,25 +17,22 @@ function verifyPrimitiveSignature(rawBody: string, signatureHeader: string | nul
   if (!Number.isSafeInteger(timestamp) || Math.abs(Date.now() / 1000 - timestamp) > 300) return false;
 
   const expected = createHmac("sha256", secret)
-    .update(`${timestampMatch[1]}.${rawBody}`)
+    .update(`${timestampMatch[1]}.`)
+    .update(rawBody)
     .digest();
   const supplied = Buffer.from(signatureMatch[1], "hex");
-  return supplied.length === expected.length && timingSafeEqual(leftBytes(expected), supplied);
-}
-
-function leftBytes(value: Buffer): Buffer {
-  return Buffer.from(value);
+  return supplied.length === expected.length && timingSafeEqual(expected, supplied);
 }
 
 export async function POST(request: NextRequest) {
-  const rawBody = await request.text();
+  const rawBody = Buffer.from(await request.arrayBuffer());
   if (!verifyPrimitiveSignature(rawBody, request.headers.get("primitive-signature"))) {
     return NextResponse.json({ error: "invalid_primitive_signature" }, { status: 401 });
   }
 
   let event: { id?: unknown; event?: unknown; email?: { id?: unknown } };
   try {
-    event = JSON.parse(rawBody) as typeof event;
+    event = JSON.parse(rawBody.toString("utf8")) as typeof event;
   } catch {
     return NextResponse.json({ error: "invalid_json" }, { status: 400 });
   }
