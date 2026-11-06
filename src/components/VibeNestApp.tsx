@@ -9,7 +9,7 @@ import { ComposerModal } from "@/components/ComposerModal";
 import { ChatDialog } from "@/components/ChatDialog";
 import { Sidebar } from "@/components/Sidebar";
 import { VibeFeed } from "@/components/VibeFeed";
-import { AccountDialog } from "@/components/AccountDialog";
+import { AccountLinkingModal } from "@/components/auth/AccountLinkingModal";
 import { InboxCenter } from "@/components/InboxCenter";
 import type { InteractionType, Mood, VibePost, VibeReply } from "@/lib/vibe/types";
 
@@ -333,6 +333,35 @@ export function VibeNestApp() {
     }
   }
 
+  async function handleAccountLinked(_payload: { email: string; method: "otp" | "password"; mode: "link" | "recover" }) {
+    const supabase = createClient();
+    const { data: { user }, error } = await supabase.auth.getUser();
+    if (error) {
+      setNotice("Xác thực thành công nhưng chưa tải được hồ sơ phiên. Vui lòng làm mới trang.");
+      return;
+    }
+    if (user) {
+      setAuthUser(user);
+      setUserId(user.id);
+      setNotice("Đã cập nhật trạng thái tài khoản VibeNest.");
+    }
+  }
+
+  async function handleAccountUnlinked() {
+    try {
+      const supabase = createClient();
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      const session = await signInAnonymously();
+      setAuthUser(session?.user ?? null);
+      setUserId(session?.user.id ?? null);
+      setAccountOpen(false);
+      setNotice("Thiết bị này đã đăng xuất khỏi tài khoản được liên kết và chuyển sang phiên ẩn danh mới. Tài khoản cũ vẫn được giữ nguyên.");
+    } catch (error) {
+      setNotice(getFriendlyError(error, "Không thể chuyển thiết bị về chế độ ẩn danh."));
+    }
+  }
+
   const savedCount = posts.filter((post) => post.saved).length;
   const ownPostCount = posts.filter((post) => post.alias === alias).length;
 
@@ -392,7 +421,15 @@ export function VibeNestApp() {
       <nav className="mobile-bottom-nav" aria-label="Điều hướng di động"><a className="selected" href="#feed">⌂<span>Bảng tin</span></a><button onClick={() => setFilter("Chữa lành")}>♡<span>Chữa lành</span></button><button className="mobile-create" onClick={() => setComposerOpen(true)}>＋<span>Viết nhanh</span></button><button onClick={() => setFilter("Đã lưu")}>⌑<span>Đã lưu</span></button></nav>
       {chatPost && <ChatDialog post={chatPost} alias={alias} onClose={() => setChatPost(null)} onEnsureIdentity={ensureChatIdentity} onMessagesRead={handleChatMessagesRead} />}
       {inboxTab && userId && <InboxCenter key={inboxTab} userId={userId} initialTab={inboxTab} onClose={() => setInboxTab(null)} onOpenConversation={(post) => { setInboxTab(null); setChatPost(post); }} onNotificationsRead={() => { void refreshBadges(); }} />}
-      <AccountDialog open={accountOpen} onClose={() => setAccountOpen(false)} />
+      <AccountLinkingModal
+        isOpen={accountOpen}
+        onClose={() => setAccountOpen(false)}
+        currentAlias={alias}
+        onAliasChange={setAlias}
+        linkedEmail={authUser?.email && authUser.email_confirmed_at ? authUser.email : undefined}
+        onAccountLinked={handleAccountLinked}
+        onAccountUnlinked={() => void handleAccountUnlinked()}
+      />
       <ComposerModal key={composerOpen ? composerMood : "closed"} open={composerOpen} alias={alias} initialMood={composerMood} busy={busy} onClose={() => setComposerOpen(false)} onSubmit={publish} />
     </div>
   );
