@@ -489,12 +489,22 @@
             >
               Đã lưu (<span id="filterSavedCount" class="font-mono tabular-nums">2</span>)
             </button>
+            <button
+              type="button"
+              id="seedBulkVibesBtn"
+              class="min-h-[40px] px-3.5 py-1.5 rounded-xl text-xs font-medium glass-surface bg-white/75 dark:bg-white/[0.04] border border-dashed border-slate-300 dark:border-white/15 text-slate-600 dark:text-slate-300 hover:border-rose-500/50 hover:text-rose-600 dark:hover:text-rose-400 transition-all whitespace-nowrap shrink-0"
+              title="Tạo thêm tâm sự mẫu để kiểm thử hiệu năng Virtual Scrolling"
+            >
+              + Nạp 200 tâm sự (<span id="totalVibesCountBadge" class="font-mono tabular-nums">4</span>)
+            </button>
           </div>
         </div>
 
-        <!-- VIBE CARDS FEED CONTAINER -->
-        <div id="vibeFeedList" class="space-y-4" aria-live="polite">
-          <!-- Cards dynamically rendered via clean modern JS -->
+        <!-- VIBE CARDS FEED CONTAINER (Window-Synchronized Virtual Scrolling) -->
+        <div id="vibeFeedList" class="relative" aria-live="polite">
+          <div id="virtualSpacerTop" style="height: 0px;" aria-hidden="true"></div>
+          <div id="virtualItemsViewport" class="space-y-4"></div>
+          <div id="virtualSpacerBottom" style="height: 0px;" aria-hidden="true"></div>
         </div>
 
         <!-- Empty State (Hidden when cards match) -->
@@ -1174,15 +1184,14 @@
     </div>
   </div>
 
-  <!-- TOAST NOTIFICATION -->
+  <!-- STACKING TOAST NOTIFICATION CONTAINER -->
   <div
-    id="vibeToast"
-    role="status"
+    id="vibeToastStack"
+    role="region"
     aria-live="polite"
-    class="fixed bottom-20 md:bottom-8 left-1/2 -translate-x-1/2 z-50 pointer-events-none opacity-0 translate-y-3 transition-all duration-200 glass-nav bg-slate-900/90 dark:bg-white/95 text-white dark:text-slate-900 px-4 py-2.5 rounded-xl text-xs font-medium shadow-lg whitespace-nowrap"
-  >
-    Đã gửi lời đồng cảm
-  </div>
+    aria-label="Thông báo hệ thống"
+    class="fixed bottom-20 md:bottom-8 left-1/2 -translate-x-1/2 z-50 flex flex-col-reverse items-center gap-2 pointer-events-none w-full max-w-sm px-4"
+  ></div>
 
   <!-- MODERN VANILLA JAVASCRIPT (Deterministic Alias Color Hashing, Account Linking & Recovery, Web Audio Synth) -->
   <script>
@@ -1565,10 +1574,12 @@
         const savedEl = document.getElementById('statSavedCount');
         const filterSavedEl = document.getElementById('filterSavedCount');
         const empEl = document.getElementById('statEmpathyGiven');
+        const totalBadge = document.getElementById('totalVibesCountBadge');
 
         if (savedEl) savedEl.textContent = String(savedCount);
         if (filterSavedEl) filterSavedEl.textContent = String(savedCount);
         if (empEl) empEl.textContent = String(empathyGiven);
+        if (totalBadge) totalBadge.textContent = String(vibes.length);
       }
 
       function escapeHTML(str) {
@@ -1577,36 +1588,109 @@
         return div.innerHTML;
       }
 
-      let toastTimeout = null;
-      function showToast(message) {
-        const toast = document.getElementById('vibeToast');
-        if (!toast) return;
-        toast.textContent = message;
-        toast.classList.remove('opacity-0', 'translate-y-3');
-        toast.classList.add('opacity-100', 'translate-y-0');
-        clearTimeout(toastTimeout);
-        toastTimeout = setTimeout(() => {
-          toast.classList.remove('opacity-100', 'translate-y-0');
-          toast.classList.add('opacity-0', 'translate-y-3');
-        }, 2400);
+      // ====================================================================
+      // STACKING TOAST NOTIFICATION MANAGER
+      // Automatically stacks multiple consecutive notifications without overwriting
+      // ====================================================================
+      const MAX_VISIBLE_TOASTS = 4;
+      const TOAST_DURATION_MS = 2600;
+      let activeToasts = [];
+
+      function updateToastStackVisuals() {
+        activeToasts.forEach((item, idx) => {
+          // Newest toast is at the end of activeToasts; in flex-col-reverse it sits at the bottom front
+          const reverseIdx = activeToasts.length - 1 - idx;
+          const scale = Math.max(0.9, 1 - reverseIdx * 0.035);
+          const opacity = Math.max(0.65, 1 - reverseIdx * 0.12);
+          item.el.style.transform = `translateY(0px) scale(${scale})`;
+          item.el.style.opacity = String(opacity);
+        });
       }
 
-      // Render Vibe Cards Feed with Deterministic Hashed Avatar Colors
-      function renderFeed() {
-        const listEl = document.getElementById('vibeFeedList');
-        const emptyEl = document.getElementById('emptyFeedState');
-        if (!listEl || !emptyEl) return;
+      function dismissToastItem(id) {
+        const index = activeToasts.findIndex((t) => t.id === id);
+        if (index === -1) return;
+        const [removed] = activeToasts.splice(index, 1);
+        clearTimeout(removed.timer);
+        removed.el.style.opacity = '0';
+        removed.el.style.transform = 'translateY(10px) scale(0.92)';
+        updateToastStackVisuals();
+        setTimeout(() => {
+          if (removed.el.parentNode) {
+            removed.el.parentNode.removeChild(removed.el);
+          }
+        }, 200);
+      }
 
-        let filtered = vibes.filter((item) => {
+      function showToast(message) {
+        const stackContainer = document.getElementById('vibeToastStack');
+        if (!stackContainer) return;
+
+        // If exceeding max visible stack, gracefully dismiss the oldest toast first
+        if (activeToasts.length >= MAX_VISIBLE_TOASTS) {
+          dismissToastItem(activeToasts[0].id);
+        }
+
+        const toastId = 'toast-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6);
+        const toastEl = document.createElement('div');
+        toastEl.setAttribute('role', 'status');
+        toastEl.className =
+          'pointer-events-auto cursor-pointer glass-nav bg-slate-900/92 dark:bg-white/95 text-white dark:text-slate-900 px-4 py-2.5 rounded-xl text-xs font-medium shadow-lg border border-white/10 dark:border-slate-200/80 flex items-center gap-2 transition-all duration-200 opacity-0 translate-y-3 scale-95 max-w-full';
+        toastEl.innerHTML = `
+          <span class="w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0" aria-hidden="true"></span>
+          <span class="truncate">${escapeHTML(message)}</span>
+        `;
+
+        toastEl.addEventListener('click', () => dismissToastItem(toastId));
+        stackContainer.appendChild(toastEl);
+
+        const timer = setTimeout(() => {
+          dismissToastItem(toastId);
+        }, TOAST_DURATION_MS);
+
+        activeToasts.push({ id: toastId, el: toastEl, timer });
+
+        requestAnimationFrame(() => {
+          updateToastStackVisuals();
+        });
+      }
+
+      // ====================================================================
+      // WINDOW-SYNCHRONIZED DYNAMIC-HEIGHT VIRTUAL SCROLLING FOR vibeFeedList
+      // Only renders cards visible within the viewport + overscan buffer
+      // ====================================================================
+      const VIRTUAL_CARD_GAP = 16; // space-y-4 (16px)
+      const VIRTUAL_OVERSCAN_PX = 560; // Buffer above & below viewport
+      const cardHeightCache = new Map();
+      const expandedReplyIds = new Set();
+      let cachedFilteredVibes = [];
+      let virtualRafId = null;
+      let lastRenderedRangeKey = '';
+
+      function estimateCardHeight(item) {
+        const cached = cardHeightCache.get(item.id);
+        if (cached) return cached;
+        let base = 210;
+        if (item.content && item.content.length > 180) base += 44;
+        if (item.soundTrack) base += 56;
+        if (expandedReplyIds.has(item.id)) {
+          base += 80 + (item.replies ? item.replies.length * 64 : 0);
+        }
+        return base;
+      }
+
+      function computeFilteredVibes() {
+        const filtered = vibes.filter((item) => {
           if (currentFilter === 'saved') return item.saved;
           if (currentFilter !== 'all' && item.mood !== currentFilter) return false;
           if (searchQuery.trim() !== '') {
             const q = searchQuery.toLowerCase();
-            const matchContent = item.content.toLowerCase().includes(q);
-            const matchAlias = item.alias.toLowerCase().includes(q);
-            const matchLocation = item.location.toLowerCase().includes(q);
-            const matchMood = item.mood.toLowerCase().includes(q);
-            return matchContent || matchAlias || matchLocation || matchMood;
+            return (
+              item.content.toLowerCase().includes(q) ||
+              item.alias.toLowerCase().includes(q) ||
+              item.location.toLowerCase().includes(q) ||
+              item.mood.toLowerCase().includes(q)
+            );
           }
           return true;
         });
@@ -1616,196 +1700,266 @@
         } else {
           filtered.sort((a, b) => b.timestamp - a.timestamp);
         }
+        cachedFilteredVibes = filtered;
+        return filtered;
+      }
 
+      function buildVibeCardHTML(item) {
+        const isPlayingThisCard = isAmbientPlaying && activeCardAudioId === item.id;
+        const avatarTheme = getAvatarThemeFromAlias(item.alias);
+        const isRepliesOpen = expandedReplyIds.has(item.id);
+
+        return `
+          <article
+            class="glass-surface rounded-2xl p-5 bg-white/80 dark:bg-white/[0.035] border border-slate-200/80 dark:border-white/[0.08] hover:border-slate-300 dark:hover:border-white/[0.15] shadow-sm"
+            data-card-id="${item.id}"
+          >
+            <!-- Card Header: Deterministic Hashed Avatar + Clean Unboxed Metadata -->
+            <div class="flex items-start justify-between gap-3 mb-3.5">
+              <div class="flex items-center gap-3 min-w-0">
+                <div
+                  class="w-10 h-10 rounded-xl border flex items-center justify-center font-display font-semibold text-sm ${avatarTheme.textClass} shrink-0"
+                  style="background: ${avatarTheme.bgStyle}; border-color: ${avatarTheme.borderStyle};"
+                  title="Mã màu định danh từ bút danh: ${avatarTheme.hashHex}"
+                >
+                  ${escapeHTML(avatarTheme.initial)}
+                </div>
+                <div class="min-w-0">
+                  <h3 class="text-sm font-semibold text-slate-900 dark:text-white truncate">
+                    ${escapeHTML(item.alias)}
+                  </h3>
+                  <div class="flex flex-wrap items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                    <span class="font-medium text-rose-600 dark:text-rose-400">${escapeHTML(item.mood)}</span>
+                    <span aria-hidden="true">·</span>
+                    <span>${escapeHTML(item.location)}</span>
+                    <span aria-hidden="true">·</span>
+                    <span>${escapeHTML(item.timeAgo)}</span>
+                  </div>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                data-action="toggle-save"
+                data-id="${item.id}"
+                aria-label="${item.saved ? 'Bỏ lưu tâm sự' : 'Lưu tâm sự'}"
+                class="min-h-[44px] min-w-[44px] -mr-2 -mt-1 rounded-xl flex items-center justify-center ${item.saved ? 'text-amber-500 dark:text-amber-400' : 'text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'} transition-colors shrink-0"
+              >
+                <svg class="w-5 h-5" fill="${item.saved ? 'currentColor' : 'none'}" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z" />
+                </svg>
+              </button>
+            </div>
+
+            <p class="text-[15px] leading-[1.68] text-slate-800 dark:text-slate-200 whitespace-pre-line mb-4">
+              ${escapeHTML(item.content)}
+            </p>
+
+            ${item.soundTrack ? `
+              <div class="mb-4">
+                <button
+                  type="button"
+                  data-action="play-card-sound"
+                  data-id="${item.id}"
+                  data-track="${escapeHTML(item.soundTrack)}"
+                  class="w-full min-h-[44px] px-3.5 py-2 rounded-xl bg-slate-100/80 dark:bg-white/[0.04] hover:bg-slate-200/70 dark:hover:bg-white/[0.07] border border-slate-200/70 dark:border-white/[0.07] flex items-center justify-between gap-3 text-xs transition-colors"
+                >
+                  <span class="flex items-center gap-2 font-medium ${isPlayingThisCard ? 'text-rose-600 dark:text-rose-400' : 'text-slate-700 dark:text-slate-300'} truncate">
+                    <svg class="w-4 h-4 shrink-0 ${isPlayingThisCard ? 'text-rose-500' : 'text-slate-400'}" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      ${isPlayingThisCard
+                        ? '<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25v13.5m-7.5-13.5v13.5" />'
+                        : '<path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z" />'}
+                    </svg>
+                    <span class="truncate">${escapeHTML(item.soundTrack)}</span>
+                  </span>
+                  <span class="text-[11px] font-mono tabular-nums text-slate-400 dark:text-slate-500 shrink-0">
+                    ${isPlayingThisCard ? 'Đang phát' : 'Nghe cùng'}
+                  </span>
+                </button>
+              </div>
+            ` : ''}
+
+            <div class="pt-3 border-t border-slate-200/60 dark:border-white/[0.06] flex items-center justify-between gap-2">
+              <div class="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  data-action="toggle-empathy"
+                  data-id="${item.id}"
+                  class="min-h-[44px] px-3.5 py-1.5 rounded-xl flex items-center gap-2 text-xs font-medium transition-colors ${
+                    item.empathized
+                      ? 'bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/30'
+                      : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/[0.05] hover:text-slate-900 dark:hover:text-white'
+                  }"
+                >
+                  <svg class="w-4 h-4 shrink-0" fill="${item.empathized ? 'currentColor' : 'none'}" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
+                  </svg>
+                  <span class="whitespace-nowrap">Đồng cảm</span>
+                  <span class="font-mono tabular-nums">${item.empathyCount}</span>
+                </button>
+
+                <button
+                  type="button"
+                  data-action="toggle-replies"
+                  data-id="${item.id}"
+                  class="min-h-[44px] px-3.5 py-1.5 rounded-xl flex items-center gap-2 text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/[0.05] hover:text-slate-900 dark:hover:text-white transition-colors"
+                >
+                  <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 20.25c4.97 0 9-3.694 9-8.25s-4.03-8.25-9-8.25S3 7.444 3 12c0 2.104.859 4.023 2.273 5.48.432.447.74 1.04.586 1.641a4.483 4.483 0 01-.923 1.785A5.969 5.969 0 006 21c1.282 0 2.47-.402 3.445-1.087.81.22 1.668.337 2.555.337z" />
+                  </svg>
+                  <span class="whitespace-nowrap">Lời vỗ về</span>
+                  <span class="font-mono tabular-nums">${item.replies.length}</span>
+                </button>
+              </div>
+
+              <button
+                type="button"
+                data-action="share-vibe"
+                data-id="${item.id}"
+                aria-label="Sao chép trích dẫn tâm sự"
+                class="min-h-[44px] px-3 py-1.5 rounded-xl flex items-center gap-1.5 text-xs font-medium text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/[0.05] hover:text-slate-900 dark:hover:text-white transition-colors whitespace-nowrap shrink-0"
+              >
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935 2.186 2.25 2.25 0 00-3.935-2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z" />
+                </svg>
+                <span class="hidden sm:inline">Chia sẻ</span>
+              </button>
+            </div>
+
+            <div id="replies-panel-${item.id}" class="${isRepliesOpen ? '' : 'hidden '}mt-3 pt-3 border-t border-slate-200/60 dark:border-white/[0.06] space-y-3">
+              <div class="space-y-2.5">
+                ${item.replies.map((r) => {
+                  const replyTheme = getAvatarThemeFromAlias(r.author);
+                  return `
+                    <div class="p-3 rounded-xl bg-slate-100/70 dark:bg-white/[0.03] text-xs flex items-start gap-2.5">
+                      <div
+                        class="w-6 h-6 rounded-lg border flex items-center justify-center font-display font-semibold text-[11px] ${replyTheme.textClass} shrink-0 mt-0.5"
+                        style="background: ${replyTheme.bgStyle}; border-color: ${replyTheme.borderStyle};"
+                      >
+                        ${escapeHTML(replyTheme.initial)}
+                      </div>
+                      <div class="min-w-0 flex-1">
+                        <div class="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 mb-0.5">
+                          <span class="font-semibold text-slate-800 dark:text-slate-200">${escapeHTML(r.author)}</span>
+                          <span aria-hidden="true">·</span>
+                          <span>${escapeHTML(r.time)}</span>
+                        </div>
+                        <p class="text-slate-700 dark:text-slate-300 leading-relaxed">${escapeHTML(r.text)}</p>
+                      </div>
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+
+              <form data-action="submit-reply" data-id="${item.id}" class="flex items-center gap-2">
+                <input
+                  type="text"
+                  name="replyText"
+                  required
+                  maxlength="240"
+                  placeholder="Gửi một lời vỗ về ấm áp..."
+                  class="flex-1 min-h-[42px] px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/[0.08] text-xs text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:border-rose-500"
+                />
+                <button
+                  type="submit"
+                  class="min-h-[42px] px-3.5 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold transition-colors whitespace-nowrap shrink-0"
+                >
+                  Gửi
+                </button>
+              </form>
+            </div>
+          </article>
+        `;
+      }
+
+      function measureVisibleCards() {
+        const viewportEl = document.getElementById('virtualItemsViewport');
+        if (!viewportEl) return;
+        const articles = viewportEl.querySelectorAll('article[data-card-id]');
+        articles.forEach((el) => {
+          const id = el.getAttribute('data-card-id');
+          if (id && el.offsetHeight > 0) {
+            cardHeightCache.set(id, el.offsetHeight);
+          }
+        });
+      }
+
+      function updateVirtualFeedSlice(forceRender = false) {
+        const listEl = document.getElementById('vibeFeedList');
+        const viewportEl = document.getElementById('virtualItemsViewport');
+        const spacerTop = document.getElementById('virtualSpacerTop');
+        const spacerBottom = document.getElementById('virtualSpacerBottom');
+        const emptyEl = document.getElementById('emptyFeedState');
+        if (!listEl || !viewportEl || !spacerTop || !spacerBottom || !emptyEl) return;
+
+        const filtered = cachedFilteredVibes;
         if (filtered.length === 0) {
-          listEl.innerHTML = '';
+          viewportEl.innerHTML = '';
+          spacerTop.style.height = '0px';
+          spacerBottom.style.height = '0px';
           emptyEl.classList.remove('hidden');
+          lastRenderedRangeKey = 'empty';
           updateSidebarStats();
           return;
         }
 
         emptyEl.classList.add('hidden');
 
-        listEl.innerHTML = filtered.map((item, idx) => {
-          const isPlayingThisCard = isAmbientPlaying && activeCardAudioId === item.id;
-          const delayMs = Math.min(idx * 45, 180);
-          const avatarTheme = getAvatarThemeFromAlias(item.alias);
+        // Calculate prefix offsets for each item
+        const totalCount = filtered.length;
+        const offsets = new Array(totalCount);
+        const heights = new Array(totalCount);
+        let runningOffset = 0;
 
-          return `
-            <article
-              class="vibe-card-enter glass-surface rounded-2xl p-5 bg-white/80 dark:bg-white/[0.035] border border-slate-200/80 dark:border-white/[0.08] hover:border-slate-300 dark:hover:border-white/[0.15] shadow-sm"
-              style="animation-delay: ${delayMs}ms"
-              data-card-id="${item.id}"
-            >
-              <!-- Card Header: Deterministic Hashed Avatar + Clean Unboxed Metadata -->
-              <div class="flex items-start justify-between gap-3 mb-3.5">
-                <div class="flex items-center gap-3 min-w-0">
-                  <div
-                    class="w-10 h-10 rounded-xl border flex items-center justify-center font-display font-semibold text-sm ${avatarTheme.textClass} shrink-0"
-                    style="background: ${avatarTheme.bgStyle}; border-color: ${avatarTheme.borderStyle};"
-                    title="Mã màu định danh từ bút danh: ${avatarTheme.hashHex}"
-                  >
-                    ${escapeHTML(avatarTheme.initial)}
-                  </div>
-                  <div class="min-w-0">
-                    <h3 class="text-sm font-semibold text-slate-900 dark:text-white truncate">
-                      ${escapeHTML(item.alias)}
-                    </h3>
-                    <!-- Clean unboxed metadata with typographic dots (Zero-Pill Discipline) -->
-                    <div class="flex flex-wrap items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                      <span class="font-medium text-rose-600 dark:text-rose-400">${escapeHTML(item.mood)}</span>
-                      <span aria-hidden="true">·</span>
-                      <span>${escapeHTML(item.location)}</span>
-                      <span aria-hidden="true">·</span>
-                      <span>${escapeHTML(item.timeAgo)}</span>
-                    </div>
-                  </div>
-                </div>
+        for (let i = 0; i < totalCount; i++) {
+          offsets[i] = runningOffset;
+          const h = estimateCardHeight(filtered[i]);
+          heights[i] = h;
+          runningOffset += h + (i < totalCount - 1 ? VIRTUAL_CARD_GAP : 0);
+        }
 
-                <!-- Bookmark / Save Button (>=44x44px hitbox) -->
-                <button
-                  type="button"
-                  data-action="toggle-save"
-                  data-id="${item.id}"
-                  aria-label="${item.saved ? 'Bỏ lưu tâm sự' : 'Lưu tâm sự'}"
-                  class="min-h-[44px] min-w-[44px] -mr-2 -mt-1 rounded-xl flex items-center justify-center ${item.saved ? 'text-amber-500 dark:text-amber-400' : 'text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'} transition-colors shrink-0"
-                >
-                  <svg class="w-5 h-5" fill="${item.saved ? 'currentColor' : 'none'}" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z" />
-                  </svg>
-                </button>
-              </div>
+        const totalHeight = runningOffset;
+        const listRect = listEl.getBoundingClientRect();
+        const feedPageTop = listRect.top + window.scrollY;
 
-              <!-- Confession Prose Body -->
-              <p class="text-[15px] leading-[1.68] text-slate-800 dark:text-slate-200 whitespace-pre-line mb-4">
-                ${escapeHTML(item.content)}
-              </p>
+        const visibleTop = Math.max(0, window.scrollY - feedPageTop - VIRTUAL_OVERSCAN_PX);
+        const visibleBottom = Math.max(
+          visibleTop + window.innerHeight + VIRTUAL_OVERSCAN_PX * 2,
+          window.scrollY + window.innerHeight - feedPageTop + VIRTUAL_OVERSCAN_PX
+        );
 
-              <!-- Optional Ambient Sound Attachment Bar -->
-              ${item.soundTrack ? `
-                <div class="mb-4">
-                  <button
-                    type="button"
-                    data-action="play-card-sound"
-                    data-id="${item.id}"
-                    data-track="${escapeHTML(item.soundTrack)}"
-                    class="w-full min-h-[44px] px-3.5 py-2 rounded-xl bg-slate-100/80 dark:bg-white/[0.04] hover:bg-slate-200/70 dark:hover:bg-white/[0.07] border border-slate-200/70 dark:border-white/[0.07] flex items-center justify-between gap-3 text-xs transition-colors"
-                  >
-                    <span class="flex items-center gap-2 font-medium ${isPlayingThisCard ? 'text-rose-600 dark:text-rose-400' : 'text-slate-700 dark:text-slate-300'} truncate">
-                      <svg class="w-4 h-4 shrink-0 ${isPlayingThisCard ? 'text-rose-500' : 'text-slate-400'}" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        ${isPlayingThisCard
-                          ? '<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25v13.5m-7.5-13.5v13.5" />'
-                          : '<path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z" />'}
-                      </svg>
-                      <span class="truncate">${escapeHTML(item.soundTrack)}</span>
-                    </span>
-                    <span class="text-[11px] font-mono tabular-nums text-slate-400 dark:text-slate-500 shrink-0">
-                      ${isPlayingThisCard ? 'Đang phát' : 'Nghe cùng'}
-                    </span>
-                  </button>
-                </div>
-              ` : ''}
+        let startIndex = 0;
+        while (startIndex < totalCount - 1 && offsets[startIndex] + heights[startIndex] < visibleTop) {
+          startIndex++;
+        }
 
-              <!-- Interactive Action Footer (Minimum 44px Touch Targets) -->
-              <div class="pt-3 border-t border-slate-200/60 dark:border-white/[0.06] flex items-center justify-between gap-2">
-                <div class="flex items-center gap-1.5">
-                  <!-- Empathy / Hug Button -->
-                  <button
-                    type="button"
-                    data-action="toggle-empathy"
-                    data-id="${item.id}"
-                    class="min-h-[44px] px-3.5 py-1.5 rounded-xl flex items-center gap-2 text-xs font-medium transition-colors ${
-                      item.empathized
-                        ? 'bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/30'
-                        : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/[0.05] hover:text-slate-900 dark:hover:text-white'
-                    }"
-                  >
-                    <svg class="w-4 h-4 shrink-0" fill="${item.empathized ? 'currentColor' : 'none'}" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
-                    </svg>
-                    <span class="whitespace-nowrap">Đồng cảm</span>
-                    <span class="font-mono tabular-nums">${item.empathyCount}</span>
-                  </button>
+        let endIndex = startIndex;
+        while (endIndex < totalCount - 1 && offsets[endIndex] < visibleBottom) {
+          endIndex++;
+        }
 
-                  <!-- Toggle Comforting Replies Drawer -->
-                  <button
-                    type="button"
-                    data-action="toggle-replies"
-                    data-id="${item.id}"
-                    class="min-h-[44px] px-3.5 py-1.5 rounded-xl flex items-center gap-2 text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/[0.05] hover:text-slate-900 dark:hover:text-white transition-colors"
-                  >
-                    <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M12 20.25c4.97 0 9-3.694 9-8.25s-4.03-8.25-9-8.25S3 7.444 3 12c0 2.104.859 4.023 2.273 5.48.432.447.74 1.04.586 1.641a4.483 4.483 0 01-.923 1.785A5.969 5.969 0 006 21c1.282 0 2.47-.402 3.445-1.087.81.22 1.668.337 2.555.337z" />
-                    </svg>
-                    <span class="whitespace-nowrap">Lời vỗ về</span>
-                    <span class="font-mono tabular-nums">${item.replies.length}</span>
-                  </button>
-                </div>
+        const rangeKey = `${startIndex}:${endIndex}:${totalCount}`;
+        if (!forceRender && rangeKey === lastRenderedRangeKey) {
+          return;
+        }
+        lastRenderedRangeKey = rangeKey;
 
-                <!-- Copy Quote / Share Button -->
-                <button
-                  type="button"
-                  data-action="share-vibe"
-                  data-id="${item.id}"
-                  aria-label="Sao chép trích dẫn tâm sự"
-                  class="min-h-[44px] px-3 py-1.5 rounded-xl flex items-center gap-1.5 text-xs font-medium text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/[0.05] hover:text-slate-900 dark:hover:text-white transition-colors whitespace-nowrap shrink-0"
-                >
-                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935 2.186 2.25 2.25 0 00-3.935-2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z" />
-                  </svg>
-                  <span class="hidden sm:inline">Chia sẻ</span>
-                </button>
-              </div>
+        const topSpace = offsets[startIndex];
+        const bottomSpace = Math.max(0, totalHeight - (offsets[endIndex] + heights[endIndex]));
 
-              <!-- Expandable Comforting Replies Section -->
-              <div id="replies-panel-${item.id}" class="hidden mt-3 pt-3 border-t border-slate-200/60 dark:border-white/[0.06] space-y-3">
-                <div class="space-y-2.5">
-                  ${item.replies.map((r) => {
-                    const replyTheme = getAvatarThemeFromAlias(r.author);
-                    return `
-                      <div class="p-3 rounded-xl bg-slate-100/70 dark:bg-white/[0.03] text-xs flex items-start gap-2.5">
-                        <div
-                          class="w-6 h-6 rounded-lg border flex items-center justify-center font-display font-semibold text-[11px] ${replyTheme.textClass} shrink-0 mt-0.5"
-                          style="background: ${replyTheme.bgStyle}; border-color: ${replyTheme.borderStyle};"
-                        >
-                          ${escapeHTML(replyTheme.initial)}
-                        </div>
-                        <div class="min-w-0 flex-1">
-                          <div class="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 mb-0.5">
-                            <span class="font-semibold text-slate-800 dark:text-slate-200">${escapeHTML(r.author)}</span>
-                            <span aria-hidden="true">·</span>
-                            <span>${escapeHTML(r.time)}</span>
-                          </div>
-                          <p class="text-slate-700 dark:text-slate-300 leading-relaxed">${escapeHTML(r.text)}</p>
-                        </div>
-                      </div>
-                    `;
-                  }).join('')}
-                </div>
+        spacerTop.style.height = `${topSpace}px`;
+        spacerBottom.style.height = `${bottomSpace}px`;
 
-                <!-- Quick Reply Form -->
-                <form data-action="submit-reply" data-id="${item.id}" class="flex items-center gap-2">
-                  <input
-                    type="text"
-                    name="replyText"
-                    required
-                    maxlength="240"
-                    placeholder="Gửi một lời vỗ về ấm áp..."
-                    class="flex-1 min-h-[42px] px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/[0.08] text-xs text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:border-rose-500"
-                  />
-                  <button
-                    type="submit"
-                    class="min-h-[42px] px-3.5 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold transition-colors whitespace-nowrap shrink-0"
-                  >
-                    Gửi
-                  </button>
-                </form>
-              </div>
-            </article>
-          `;
-        }).join('');
+        const visibleSlice = filtered.slice(startIndex, endIndex + 1);
+        viewportEl.innerHTML = visibleSlice.map((item) => buildVibeCardHTML(item)).join('');
 
+        measureVisibleCards();
         updateSidebarStats();
+      }
+
+      function renderFeed() {
+        computeFilteredVibes();
+        updateVirtualFeedSlice(true);
       }
 
       // Filter UI updates
@@ -1974,6 +2128,56 @@
         loadState();
         renderFeed();
 
+        // Window Scroll & Resize Listeners for Virtual Scrolling
+        const onScrollOrResize = () => {
+          if (virtualRafId) return;
+          virtualRafId = requestAnimationFrame(() => {
+            virtualRafId = null;
+            updateVirtualFeedSlice(false);
+          });
+        };
+        window.addEventListener('scroll', onScrollOrResize, { passive: true });
+        window.addEventListener('resize', onScrollOrResize, { passive: true });
+
+        // Bulk Seed Button for testing Virtual Scrolling performance
+        const seedBulkBtn = document.getElementById('seedBulkVibesBtn');
+        if (seedBulkBtn) {
+          seedBulkBtn.addEventListener('click', () => {
+            const sampleMoods = ['Đêm muộn', 'Chênh vênh', 'Chữa lành', 'Thầm thương'];
+            const sampleLocations = ['Sài Gòn', 'Hà Nội', 'Đà Lạt', 'Đà Nẵng'];
+            const sampleTexts = [
+              'Đôi khi chỉ cần một người ngồi cạnh im lặng nghe tiếng mưa rơi ngoài hiên là thấy lòng nhẹ đi biết bao nhiêu.',
+              'Hôm nay tan làm muộn, ghé tiệm tạp hóa đầu ngõ mua gói mì mà cô chủ quán tặng thêm quả trứng gà. Tự nhiên thấy ấm lòng.',
+              'Mình đang tập viết nhật ký mỗi tối trước khi ngủ thay vì lướt mạng xã hội trong vô thức. Giấc ngủ đến dịu dàng hơn hẳn.',
+              'Gửi đến bất kỳ ai đang đọc dòng này lúc đêm khuya: Mọi chuyện rồi sẽ ổn thôi, ngày mai nắng vẫn ấm áp.'
+            ];
+            const now = Date.now();
+            const generated = [];
+            for (let i = 1; i <= 200; i++) {
+              const aliasPick = ALIAS_POOL[i % ALIAS_POOL.length].replace(/#\d+/, `#${100 + ((i * 37) % 899)}`);
+              generated.push({
+                id: `vn-bulk-${now}-${i}`,
+                alias: aliasPick,
+                avatarChar: aliasPick.charAt(0).toUpperCase(),
+                mood: sampleMoods[i % sampleMoods.length],
+                location: sampleLocations[i % sampleLocations.length],
+                timeAgo: `${(i % 11) + 1} giờ trước`,
+                timestamp: now - i * 180000,
+                content: sampleTexts[i % sampleTexts.length] + ` (Tâm sự ẩn danh #${vibes.length + i})`,
+                soundTrack: i % 4 === 0 ? 'Mưa rơi hiên nhà · Lo-fi' : '',
+                empathyCount: (i * 7) % 120 + 5,
+                empathized: false,
+                saved: false,
+                replies: []
+              });
+            }
+            vibes.push(...generated);
+            saveState();
+            renderFeed();
+            showToast(`Đã nạp thêm 200 tâm sự (Tổng: ${vibes.length} thẻ · Virtual Scroll)`);
+          });
+        }
+
         // Delegated Clicks on Feed Cards
         const feedEl = document.getElementById('vibeFeedList');
         if (feedEl) {
@@ -1990,7 +2194,7 @@
               targetVibe.empathized = !targetVibe.empathized;
               targetVibe.empathyCount += targetVibe.empathized ? 1 : -1;
               saveState();
-              renderFeed();
+              updateVirtualFeedSlice(true);
               if (targetVibe.empathized) {
                 showToast('Đã gửi một cái ôm đồng cảm');
               }
@@ -2000,13 +2204,17 @@
               renderFeed();
               showToast(targetVibe.saved ? 'Đã lưu vào góc riêng của bạn' : 'Đã bỏ lưu tâm sự');
             } else if (action === 'toggle-replies') {
-              const panel = document.getElementById(`replies-panel-${id}`);
-              if (panel) {
-                panel.classList.toggle('hidden');
-                if (!panel.classList.contains('hidden')) {
-                  const input = panel.querySelector('input[name="replyText"]');
-                  if (input) input.focus();
-                }
+              if (expandedReplyIds.has(id)) {
+                expandedReplyIds.delete(id);
+              } else {
+                expandedReplyIds.add(id);
+              }
+              cardHeightCache.delete(id);
+              updateVirtualFeedSlice(true);
+              if (expandedReplyIds.has(id)) {
+                const panel = document.getElementById(`replies-panel-${id}`);
+                const input = panel ? panel.querySelector('input[name="replyText"]') : null;
+                if (input) input.focus();
               }
             } else if (action === 'play-card-sound') {
               const track = btn.getAttribute('data-track');
@@ -2015,7 +2223,7 @@
               } else {
                 activeCardAudioId = id;
                 toggleAmbientSound(track);
-                renderFeed();
+                updateVirtualFeedSlice(true);
               }
             } else if (action === 'share-vibe') {
               const shareText = `"${targetVibe.content}" — ${targetVibe.alias} trên VibeNest`;
@@ -2051,10 +2259,10 @@
               text
             });
 
+            expandedReplyIds.add(id);
+            cardHeightCache.delete(id);
             saveState();
-            renderFeed();
-            const reopened = document.getElementById(`replies-panel-${id}`);
-            if (reopened) reopened.classList.remove('hidden');
+            updateVirtualFeedSlice(true);
             showToast('Đã gửi lời vỗ về ẩn danh');
           });
         }
