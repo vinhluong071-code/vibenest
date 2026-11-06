@@ -12,6 +12,7 @@ export interface VibeStoriesBarProps {
   currentUserName: string;
   currentUserHandle: string;
   onNotify?: (message: string) => void;
+  enabled?: boolean;
 }
 
 const STORY_PRESETS: Record<StoryCanvasPreset, { label: string; cardGradient: string }> = {
@@ -57,8 +58,9 @@ export const VibeStoriesBar: React.FC<VibeStoriesBarProps> = ({
   currentUserName,
   currentUserHandle,
   onNotify,
+  enabled = true,
 }) => {
-  const { stories, loading, error, refreshStories, createStory, toggleWarmth } = useVibeStories(true);
+  const { stories, loading, error, refreshStories, createStory, toggleWarmth } = useVibeStories(enabled);
   const [isComposerOpen, setIsComposerOpen] = useState(false);
   const [activeStory, setActiveStory] = useState<VibeStory | null>(null);
   const [caption, setCaption] = useState('');
