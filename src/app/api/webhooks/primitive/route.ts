@@ -5,7 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-function verifyPrimitiveSignature(rawBody: string, signatureHeader: string | null): boolean {
+function verifyPrimitiveSignature(rawBody: Buffer, signatureHeader: string | null): boolean {
   const secret = process.env.PRIMITIVE_WEBHOOK_SECRET;
   if (!secret || !signatureHeader) return false;
 
