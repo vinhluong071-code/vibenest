@@ -17,7 +17,7 @@ export interface LitmatchOnboardingModalProps {
   isOpen: boolean;
   onClose: () => void;
   currentUser: UserProfile;
-  onCompleteAuth: (profile: UserProfile) => void;
+  onCompleteAuth: (profile: UserProfile) => Promise<void> | void;
 }
 
 const VIBE_ARCHETYPES = [
@@ -63,6 +63,8 @@ export const LitmatchOnboardingModal: React.FC<LitmatchOnboardingModalProps> = (
   const [city, setCity] = useState<string>(currentUser.city);
   const [vibeTag, setVibeTag] = useState<string>(currentUser.vibeTag);
   const [bio, setBio] = useState<string>(currentUser.bio);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState('');
 
   useEffect(() => {
     if (!isOpen) return;
@@ -78,18 +80,26 @@ export const LitmatchOnboardingModal: React.FC<LitmatchOnboardingModalProps> = (
   const cleanHandle = handle.trim().toLowerCase().replace(/[^a-z0-9._]/g, '') || 'vibenest.user';
   const avatarTheme = getAvatarThemeFromIdentity(cleanHandle);
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!displayName.trim()) return;
+    if (!displayName.trim() || isSaving) return;
 
-    onCompleteAuth({
-      displayName: displayName.trim(),
-      handle: cleanHandle,
-      city,
-      vibeTag,
-      bio: bio.trim() || 'Đang tìm kiếm những tần số đồng điệu tại VibeNest.',
-    });
-    onClose();
+    setIsSaving(true);
+    setSaveError('');
+    try {
+      await onCompleteAuth({
+        displayName: displayName.trim(),
+        handle: cleanHandle,
+        city: city.trim(),
+        vibeTag: vibeTag.trim(),
+        bio: bio.trim() || 'Đang tìm kiếm những tần số đồng điệu tại VibeNest.',
+      });
+      onClose();
+    } catch (error) {
+      setSaveError(error instanceof Error ? error.message : 'Không thể lưu hồ sơ. Vui lòng thử lại.');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const applyQuickPreset = (preset: UserProfile) => {
@@ -195,8 +205,9 @@ export const LitmatchOnboardingModal: React.FC<LitmatchOnboardingModalProps> = (
             <input type="text" maxLength={120} value={bio} onChange={(e) => setBio(e.target.value)} placeholder="Viết một câu ngắn thể hiện chất riêng của bạn..." className="w-full min-h-[44px] px-3.5 py-2 rounded-xl bg-slate-100/90 dark:bg-white/[0.05] border border-slate-200/80 dark:border-white/10 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-rose-500" />
           </div>
 
-          <button type="submit" className="w-full min-h-[48px] px-5 py-3 rounded-2xl text-sm font-semibold bg-gradient-to-r from-rose-600 to-indigo-600 hover:from-rose-500 hover:to-indigo-500 active:scale-[0.99] text-white shadow-lg shadow-rose-600/20 transition-all">
-            Vào không gian VibeNest ngay
+          {saveError && <p className="text-xs text-rose-600 dark:text-rose-400" role="alert">{saveError}</p>}
+          <button type="submit" disabled={isSaving} className="w-full min-h-[48px] px-5 py-3 rounded-2xl text-sm font-semibold bg-gradient-to-r from-rose-600 to-indigo-600 hover:from-rose-500 hover:to-indigo-500 active:scale-[0.99] text-white shadow-lg shadow-rose-600/20 transition-all disabled:cursor-wait disabled:opacity-60">
+            {isSaving ? 'Đang lưu hồ sơ…' : 'Vào không gian VibeNest ngay'}
           </button>
         </form>
       </div>
