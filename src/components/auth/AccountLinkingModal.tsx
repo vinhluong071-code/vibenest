@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { getAvatarThemeFromAlias } from "@/lib/avatar-hash";
 import { VibeNestLogo } from "@/components/brand/VibeNestLogo";
