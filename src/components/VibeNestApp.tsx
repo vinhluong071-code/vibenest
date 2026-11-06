@@ -517,6 +517,7 @@ export function VibeNestApp() {
                     <VibeFeedCard
                       key={cardPost.id}
                       post={cardPost}
+                      busy={busyId === sourcePost.id}
                       onToggleEmpathy={(postId) => {
                         const target = posts.find((item) => item.id === postId);
                         if (target) void toggleInteraction(target, "empathy");
