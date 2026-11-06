@@ -1,4 +1,6 @@
 const productionOrigin = "https://vibenest-vinhluong071-code.vercel.app";
+const serverUrl = process.env.CAPACITOR_SERVER_URL || productionOrigin;
+const serverHost = new URL(serverUrl).host;
 
 const config = {
   appId: "vn.vibenest.app",
@@ -7,9 +9,9 @@ const config = {
   server: {
     // This hybrid shell loads the hosted Next.js app so API routes and Supabase
     // Auth remain server-backed. Override for a dedicated release domain.
-    url: process.env.CAPACITOR_SERVER_URL || productionOrigin,
+    url: serverUrl,
     cleartext: false,
-    allowNavigation: ["vibenest-vinhluong071-code.vercel.app"],
+    allowNavigation: [serverHost],
   },
   ios: {
     contentInset: "automatic",
