@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { getAvatarThemeFromAlias } from "@/lib/avatar-hash";
 import { VibeNestLogo } from "@/components/brand/VibeNestLogo";
@@ -49,6 +49,10 @@ export function AccountLinkingModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [status, setStatus] = useState("");
 
+  useEffect(() => {
+    if (isOpen) setEmail(linkedEmail ?? "");
+  }, [isOpen, linkedEmail]);
+
   if (!isOpen) return null;
 
   const avatarTheme = getAvatarThemeFromAlias(currentAlias);
@@ -88,6 +92,10 @@ export function AccountLinkingModal({
             throw new Error("Email này đã được xác minh. Tài khoản đã được liên kết.");
           }
           throw new Error("Phiên hiện tại không còn là phiên ẩn danh. Hãy đăng xuất hoặc dùng mục khôi phục.");
+        }
+
+        if (authMethod === "password" && password.length < 8) {
+          throw new Error("Mật khẩu cần có ít nhất 8 ký tự.");
         }
 
         const { error } = await supabase.auth.updateUser(
