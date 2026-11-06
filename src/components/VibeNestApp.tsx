@@ -151,7 +151,9 @@ export function VibeNestApp() {
     if (!userId) return;
     let alive = true;
     const supabase = createClient();
-    void refreshBadges();
+    const badgeRefreshTimer = window.setTimeout(() => {
+      void refreshBadges();
+    }, 0);
     const channel = supabase.channel(`vibenest-app-events:${userId}`)
       .on("postgres_changes", {
         event: "INSERT", schema: "public", table: "notifications",
@@ -181,6 +183,7 @@ export function VibeNestApp() {
       .subscribe();
     return () => {
       alive = false;
+      window.clearTimeout(badgeRefreshTimer);
       void supabase.removeChannel(channel);
     };
   }, [userId, chatPost, refreshBadges]);
