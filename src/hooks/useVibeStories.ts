@@ -21,11 +21,7 @@ export function useVibeStories(enabled = true, limit = 60) {
   const [error, setError] = useState<string | null>(null);
 
   const refreshStories = useCallback(async () => {
-    if (!enabled) {
-      setStories([]);
-      setLoading(false);
-      return;
-    }
+    if (!enabled) return;
 
     setLoading(true);
     try {
@@ -68,11 +64,7 @@ export function useVibeStories(enabled = true, limit = 60) {
   }, [enabled, limit]);
 
   useEffect(() => {
-    if (!enabled) {
-      setStories([]);
-      setLoading(false);
-      return;
-    }
+    if (!enabled) return;
 
     void refreshStories();
     const supabase = createClient();
@@ -178,5 +170,13 @@ export function useVibeStories(enabled = true, limit = 60) {
     setStories((current) => current.filter((story) => story.id !== storyId));
   }, []);
 
-  return { stories, loading, error, refreshStories, createStory, toggleWarmth, deleteStory };
+  return {
+    stories: enabled ? stories : [],
+    loading: enabled ? loading : false,
+    error: enabled ? error : null,
+    refreshStories,
+    createStory,
+    toggleWarmth,
+    deleteStory,
+  };
 }
