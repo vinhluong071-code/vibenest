@@ -31,6 +31,7 @@ export interface VibePostItem {
 export interface VibeFeedCardProps {
   post: VibePostItem;
   busy?: boolean;
+  onChat: () => void;
   onToggleEmpathy: (postId: string) => void;
   onToggleSave: (postId: string) => void;
   onAddReply: (postId: string, text: string) => void;
@@ -40,6 +41,7 @@ export interface VibeFeedCardProps {
 export const VibeFeedCard: React.FC<VibeFeedCardProps> = ({
   post,
   busy = false,
+  onChat,
   onToggleEmpathy,
   onToggleSave,
   onAddReply,
@@ -210,6 +212,14 @@ export const VibeFeedCard: React.FC<VibeFeedCardProps> = ({
             />
           </svg>
           <span className="hidden sm:inline">Chia sẻ</span>
+        </button>
+        <button
+          type="button"
+          onClick={onChat}
+          disabled={busy}
+          className="min-h-[44px] px-3 py-1.5 rounded-xl text-xs font-medium text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-colors shrink-0 disabled:opacity-50"
+        >
+          Nhắn riêng
         </button>
       </div>
 
