@@ -87,13 +87,15 @@ export function VirtualVibeFeed<T extends { id: string }>({
       return { visibleSlices: [] as LayoutMetric<T>[], topSpacerPx: 0, bottomSpacerPx: 0 };
     }
 
+    const metrics: LayoutMetric<T>[] = [];
     let runningOffset = 0;
-    const metrics: LayoutMetric<T>[] = items.map((item, index) => {
+    for (const [index, item] of items.entries()) {
       const height = heightCache.get(item.id) ?? estimateItemHeight(item);
       const top = runningOffset;
-      runningOffset += height;
-      return { item, index, top, height, bottom: runningOffset };
-    });
+      const bottom = top + height;
+      metrics.push({ item, index, top, height, bottom });
+      runningOffset = bottom;
+    }
 
     const totalHeight = runningOffset;
     if (!viewport) {
