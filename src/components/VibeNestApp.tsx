@@ -14,6 +14,7 @@ import { BottomTabBar } from "@/components/navigation/BottomTabBar";
 import { LitmatchOnboardingModal, type UserProfile } from "@/components/auth/LitmatchOnboardingModal";
 import { AccountLinkingModal } from "@/components/auth/AccountLinkingModal";
 import { InboxCenter } from "@/components/InboxCenter";
+import { VibeRadarModal } from "@/components/match/VibeRadarModal";
 import type { InteractionType, Mood, VibePost, VibeReply } from "@/lib/vibe/types";
 
 type VibePostRow = {
@@ -99,6 +100,7 @@ export function VibeNestApp() {
   const [realtimeToast, setRealtimeToast] = useState("");
   const [accountOpen, setAccountOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [radarOpen, setRadarOpen] = useState(false);
   const [inboxTab, setInboxTab] = useState<"messages" | "notifications" | null>(null);
   const [authUser, setAuthUser] = useState<Session["user"] | null>(null);
 
@@ -472,6 +474,7 @@ export function VibeNestApp() {
         </nav>
         <div className="topbar-actions">
           <span className="session-indicator">{authUser?.email ? "Đã liên kết Email" : userId ? "Đang ẩn danh" : "Đang xem ẩn danh"}</span>
+          <button className="realtime-badge" onClick={() => setRadarOpen(true)} aria-label="Mở Soul Match Vibe Radar"><span>✦ Vibe Radar</span></button>
           <button className="realtime-badge" onClick={() => setInboxTab("messages")} aria-label={`Hộp thư, ${chatUnreadCount} tin nhắn chưa đọc`}>
             <span>Hộp thư</span>{chatUnreadCount > 0 && <b>{chatUnreadCount > 99 ? "99+" : chatUnreadCount}</b>}
           </button>
@@ -551,6 +554,12 @@ export function VibeNestApp() {
         userInitial={alias.slice(0, 1).toUpperCase()}
       />
       {chatPost && <ChatDialog post={chatPost} alias={alias} onClose={() => setChatPost(null)} onEnsureIdentity={ensureChatIdentity} onMessagesRead={handleChatMessagesRead} />}
+      <VibeRadarModal
+        isOpen={radarOpen}
+        onClose={() => setRadarOpen(false)}
+        currentUser={{ displayName: profile.displayName, handle: profile.handle, city: profile.city, vibeTag: profile.vibeTag }}
+        onNotify={setNotice}
+      />
       {inboxTab && userId && <InboxCenter key={inboxTab} userId={userId} initialTab={inboxTab} onClose={() => setInboxTab(null)} onOpenConversation={(post) => { setInboxTab(null); setChatPost(post); }} onNotificationsRead={() => { void refreshBadges(); }} />}
       <LitmatchOnboardingModal
         isOpen={profileOpen}
