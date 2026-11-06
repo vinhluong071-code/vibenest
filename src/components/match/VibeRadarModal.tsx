@@ -222,7 +222,7 @@ export const VibeRadarModal: React.FC<VibeRadarModalProps> = ({
       candidateIndexRef.current += 1;
       setMatchedSoul(nextCandidate);
       setStage('matched');
-      onNotify?.(`Đã bắt trúng tần số của ${nextCandidate.displayName} (${nextCandidate.resonanceScore}% đồng điệu)`);
+      onNotify?.(`Đã tạo kết quả minh họa cho giao diện Radar (${nextCandidate.resonanceScore}%)`);
     }, 1650);
   };
 
@@ -234,7 +234,7 @@ export const VibeRadarModal: React.FC<VibeRadarModalProps> = ({
       {
         id: nextMessageId('sys'),
         sender: 'system',
-        text: `Phiên trò chuyện 180 giây cùng @${matchedSoul.handle} đã mở. Mọi chia sẻ đều được bảo mật trong phòng tần số này.`,
+        text: `Phiên chat mô phỏng 180 giây cùng @${matchedSoul.handle} đã mở. Chưa kết nối tới người dùng thật.`,
         timestamp: getCurrentTimeLabel(),
       },
       {
@@ -289,11 +289,11 @@ export const VibeRadarModal: React.FC<VibeRadarModalProps> = ({
       {
         id: nextMessageId('sys-unlock'),
         sender: 'system',
-        text: `Bạn và ${matchedSoul.displayName} (@${matchedSoul.handle}) đã mở khóa kết nối không giới hạn thời gian.`,
+        text: `Đây là kết quả mô phỏng; chưa tạo kết nối hoặc cuộc trò chuyện thật với ${matchedSoul.displayName}.`,
         timestamp: getCurrentTimeLabel(),
       },
     ]);
-    onNotify?.(`Đã kết nối tri kỷ với @${matchedSoul.handle}`);
+    onNotify?.(`Đã xem thử trạng thái kết nối mô phỏng`);
   };
 
   return (
@@ -338,7 +338,7 @@ export const VibeRadarModal: React.FC<VibeRadarModalProps> = ({
                 Soul Match · Vibe Radar
               </h2>
               <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
-                Ghép đôi ngẫu nhiên theo tần số cảm xúc trực tuyến
+                Preview tương tác · dữ liệu minh họa, chưa ghép người thật
               </p>
             </div>
           </div>
@@ -352,6 +352,8 @@ export const VibeRadarModal: React.FC<VibeRadarModalProps> = ({
             ✕
           </button>
         </div>
+
+        <div className="mb-3 rounded-xl border border-amber-400/25 bg-amber-400/10 px-3 py-2 text-[10px] leading-relaxed text-amber-700 dark:text-amber-200" role="note">BẢN PREVIEW: các hồ sơ, điểm tương thích, khoảng cách và tin nhắn bên dưới là dữ liệu minh họa chạy cục bộ. Chưa có ghép đôi, định vị hoặc chat realtime với người dùng thật.</div>
 
         {/* STAGE 1 & 2: IDLE OR SCANNING RADAR VIEW */}
         {(stage === 'idle' || stage === 'scanning') && (
@@ -391,7 +393,7 @@ export const VibeRadarModal: React.FC<VibeRadarModalProps> = ({
                 <p className="text-[11px] font-mono text-rose-300/90 mt-0.5 tabular-nums">
                   {stage === 'scanning'
                     ? `Tần số: ${selectedFrequency}`
-                    : '128 người đang bật Radar quanh bạn'}
+                    : 'Bản mô phỏng · không dùng vị trí thật'}
                 </p>
               </div>
             </div>
@@ -448,10 +450,10 @@ export const VibeRadarModal: React.FC<VibeRadarModalProps> = ({
             <div className="p-5 rounded-3xl bg-gradient-to-br from-rose-500/15 via-indigo-500/10 to-transparent border border-rose-500/30 space-y-4">
               <div className="flex items-center justify-between text-xs">
                 <span className="font-semibold text-rose-600 dark:text-rose-400">
-                  Đã tìm thấy tần số tương thích
+                  Kết quả ghép đôi mô phỏng
                 </span>
                 <span className="font-mono font-semibold text-emerald-600 dark:text-emerald-400 tabular-nums">
-                  {matchedSoul.resonanceScore}% đồng điệu · Cách {matchedSoul.distanceKm}km
+                  {matchedSoul.resonanceScore}% tương thích · khoảng cách minh họa
                 </span>
               </div>
 
