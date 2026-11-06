@@ -8,7 +8,10 @@ import { signInAnonymously } from "@/lib/supabase/anonymous-auth";
 import { ComposerModal } from "@/components/ComposerModal";
 import { ChatDialog } from "@/components/ChatDialog";
 import { Sidebar } from "@/components/Sidebar";
-import { VibeFeed } from "@/components/VibeFeed";
+import { VibeStoriesBar } from "@/components/stories/VibeStoriesBar";
+import { VibeFeedCard, type VibePostItem } from "@/components/feed/VibeFeedCard";
+import { BottomTabBar } from "@/components/navigation/BottomTabBar";
+import { LitmatchOnboardingModal } from "@/components/auth/LitmatchOnboardingModal";
 import { AccountLinkingModal } from "@/components/auth/AccountLinkingModal";
 import { InboxCenter } from "@/components/InboxCenter";
 import type { InteractionType, Mood, VibePost, VibeReply } from "@/lib/vibe/types";
@@ -73,6 +76,7 @@ export function VibeNestApp() {
   const [chatUnreadCount, setChatUnreadCount] = useState(0);
   const [realtimeToast, setRealtimeToast] = useState("");
   const [accountOpen, setAccountOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
   const [inboxTab, setInboxTab] = useState<"messages" | "notifications" | null>(null);
   const [authUser, setAuthUser] = useState<Session["user"] | null>(null);
 
@@ -236,6 +240,53 @@ export function VibeNestApp() {
     }).sort((a, b) => sort === "latest" ? new Date(b.created_at).getTime() - new Date(a.created_at).getTime() : b.empathy_count - a.empathy_count);
   }, [posts, filter, query, sort]);
 
+  const feedCardPosts = useMemo<VibePostItem[]>(() => filteredPosts.map((post) => {
+    const toHandle = (value: string) => value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, ".").replace(/^\.|\.$/g, "") || "vibenest.user";
+    const timestamp = new Date(post.created_at).getTime();
+    const elapsedMinutes = Math.max(0, Math.floor((Date.now() - timestamp) / 60000));
+    const timeAgo = elapsedMinutes < 1 ? "Vừa xong" : elapsedMinutes < 60 ? `${elapsedMinutes} phút trước` : elapsedMinutes < 1440 ? `${Math.floor(elapsedMinutes / 60)} giờ trước` : `${Math.floor(elapsedMinutes / 1440)} ngày trước`;
+    return {
+      id: post.id,
+      displayName: post.alias,
+      handle: toHandle(post.alias),
+      vibeTag: post.mood,
+      mood: post.mood,
+      location: post.location ?? "Chưa chia sẻ địa điểm",
+      timeAgo,
+      timestamp,
+      content: post.content,
+      empathyCount: post.empathy_count,
+      empathized: post.empathized,
+      saved: post.saved,
+      replies: post.replies.map((reply) => ({
+        id: reply.id,
+        displayName: reply.author_alias,
+        handle: toHandle(reply.author_alias),
+        timeAgo: new Intl.DateTimeFormat("vi-VN", { hour: "2-digit", minute: "2-digit" }).format(new Date(reply.created_at)),
+        text: reply.content,
+      })),
+    };
+  }), [filteredPosts]);
+
+  const handleSharePost = useCallback((post: VibePostItem) => {
+    const shareText = `${post.displayName}: ${post.content}`;
+    if (typeof navigator !== "undefined" && typeof navigator.share === "function") {
+      void navigator.share({ title: "VibeNest", text: shareText, url: window.location.href })
+        .catch((error: unknown) => {
+          if (error instanceof Error && error.name !== "AbortError") setNotice("Không thể mở bảng chia sẻ trên thiết bị này.");
+        });
+      return;
+    }
+    if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
+      void navigator.clipboard.writeText(shareText).then(
+        () => setNotice("Đã sao chép nội dung tâm sự để chia sẻ."),
+        () => setNotice("Thiết bị chưa cho phép sao chép nội dung."),
+      );
+    } else {
+      setNotice("Thiết bị này chưa hỗ trợ chia sẻ nhanh.");
+    }
+  }, []);
+
   const ensureIdentity = useCallback(async (actionLabel = "thực hiện thao tác này") => {
     if (userId) return userId;
     let session: Session | null;
@@ -396,6 +447,7 @@ export function VibeNestApp() {
         <div className="workspace-grid">
           <Sidebar alias={alias} postCount={ownPostCount} savedCount={savedCount} onChangeAlias={() => setAlias(makeAlias())} />
           <section className="feed-column" id="feed" aria-label="Luồng tâm sự">
+            <VibeStoriesBar currentUserName={alias} currentUserHandle={alias} enabled={Boolean(userId)} onNotify={setNotice} />
             <div className="composer-prompt glass-panel">
               <div className="avatar">{alias.slice(0, 1)}</div>
               <button className="prompt-trigger" onClick={() => setComposerOpen(true)}>Viết vài dòng trút bầu tâm sự ẩn danh…</button>
@@ -407,7 +459,35 @@ export function VibeNestApp() {
             </div>
             <div className="mood-tabs" role="tablist" aria-label="Lọc tâm trạng">{moods.map((item) => <button key={item} role="tab" aria-selected={filter === item} className={filter === item ? "selected" : ""} onClick={() => setFilter(item)}>{item}</button>)}</div>
             {notice && <div className="notice" role="status" aria-live="polite"><span>{notice}</span><button onClick={() => setNotice("")} aria-label="Đóng thông báo">×</button></div>}
-            {!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ? <div className="notice" role="alert">Hãy cấu hình Supabase URL và Publishable Key trong môi trường Preview để kết nối dữ liệu.</div> : loading ? <div className="loading-state" role="status">Đang lắng nghe những câu chuyện…</div> : feedError ? <div className="empty-state glass-panel" role="alert"><h2>Chưa tải được bảng tâm sự</h2><p>{feedError}</p><button className="secondary-button" onClick={() => { setLoading(true); setFeedError(""); void loadFeed().catch((error: unknown) => { console.error("[VibeNest] Tải lại bảng tin thất bại:", error); setFeedError(getFriendlyError(error, "Vẫn chưa thể tải bảng tin.")); }).finally(() => setLoading(false)); }}>Thử tải lại</button></div> : <VibeFeed posts={filteredPosts} busyId={busyId} onEmpathy={(post) => void toggleInteraction(post, "empathy")} onSave={(post) => void toggleInteraction(post, "save")} onReply={sendReply} onChat={(post) => setChatPost(post)} />}
+            {!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ? <div className="notice" role="alert">Hãy cấu hình Supabase URL và Publishable Key trong môi trường Preview để kết nối dữ liệu.</div> : loading ? <div className="loading-state" role="status">Đang lắng nghe những câu chuyện…</div> : feedError ? <div className="empty-state glass-panel" role="alert"><h2>Chưa tải được bảng tâm sự</h2><p>{feedError}</p><button className="secondary-button" onClick={() => { setLoading(true); setFeedError(""); void loadFeed().catch((error: unknown) => { console.error("[VibeNest] Tải lại bảng tin thất bại:", error); setFeedError(getFriendlyError(error, "Vẫn chưa thể tải bảng tin.")); }).finally(() => setLoading(false)); }}>Thử tải lại</button></div> : <div className="space-y-4">
+                {feedCardPosts.length === 0 ? (
+                  <div className="empty-state glass-panel"><span>✧</span><h2>Khoảng lặng cũng có ý nghĩa</h2><p>Chưa có lời tâm sự phù hợp. Bạn có thể là người đầu tiên mở lời.</p></div>
+                ) : feedCardPosts.map((cardPost) => {
+                  const sourcePost = posts.find((item) => item.id === cardPost.id);
+                  if (!sourcePost) return null;
+                  return (
+                    <VibeFeedCard
+                      key={cardPost.id}
+                      post={cardPost}
+                      busy={busyId === sourcePost.id}
+                      onToggleEmpathy={(postId) => {
+                        const target = posts.find((item) => item.id === postId);
+                        if (target) void toggleInteraction(target, "empathy");
+                      }}
+                      onToggleSave={(postId) => {
+                        const target = posts.find((item) => item.id === postId);
+                        if (target) void toggleInteraction(target, "save");
+                      }}
+                      onAddReply={(postId, text) => {
+                        const target = posts.find((item) => item.id === postId);
+                        if (target) void sendReply(target, text);
+                      }}
+                      onShare={handleSharePost}
+                      onChat={() => setChatPost(sourcePost)}
+                    />
+                  );
+                })}
+              </div>}
             <button className="refresh-button" onClick={() => { setLoading(true); setFeedError(""); void loadFeed().catch((error: unknown) => { console.error("[VibeNest] Làm mới bảng tin thất bại:", error); setFeedError(getFriendlyError(error, "Không thể làm mới bảng tin.")); }).finally(() => setLoading(false)); }}>↻ Làm mới bảng tâm sự</button>
           </section>
           <aside className="right-sidebar">
@@ -418,9 +498,30 @@ export function VibeNestApp() {
         </div>
       </main>
 
-      <nav className="mobile-bottom-nav" aria-label="Điều hướng di động"><a className="selected" href="#feed">⌂<span>Bảng tin</span></a><button onClick={() => setFilter("Chữa lành")}>♡<span>Chữa lành</span></button><button className="mobile-create" onClick={() => setComposerOpen(true)}>＋<span>Viết nhanh</span></button><button onClick={() => setFilter("Đã lưu")}>⌑<span>Đã lưu</span></button></nav>
+      <BottomTabBar
+        activeTab={filter === "Chữa lành" ? "Chữa lành" : filter === "Đã lưu" ? "saved" : "all"}
+        onSelectTab={(tab) => setFilter(tab === "all" ? "Tất cả" : tab === "saved" ? "Đã lưu" : "Chữa lành")}
+        onOpenComposer={() => setComposerOpen(true)}
+        onOpenProfile={() => setProfileOpen(true)}
+        userInitial={alias.slice(0, 1).toUpperCase()}
+      />
       {chatPost && <ChatDialog post={chatPost} alias={alias} onClose={() => setChatPost(null)} onEnsureIdentity={ensureChatIdentity} onMessagesRead={handleChatMessagesRead} />}
       {inboxTab && userId && <InboxCenter key={inboxTab} userId={userId} initialTab={inboxTab} onClose={() => setInboxTab(null)} onOpenConversation={(post) => { setInboxTab(null); setChatPost(post); }} onNotificationsRead={() => { void refreshBadges(); }} />}
+      <LitmatchOnboardingModal
+        isOpen={profileOpen}
+        onClose={() => setProfileOpen(false)}
+        currentUser={{
+          displayName: alias,
+          handle: alias.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, ".").replace(/^\.|\.$/g, "") || "vibenest.user",
+          city: "Sài Gòn",
+          vibeTag: "Kẻ Mộng Mơ Đêm Muộn",
+          bio: "",
+        }}
+        onCompleteAuth={(profile) => {
+          setAlias(profile.displayName);
+          setNotice("Đã cập nhật hồ sơ hiển thị của bạn.");
+        }}
+      />
       <AccountLinkingModal
         isOpen={accountOpen}
         onClose={() => setAccountOpen(false)}
