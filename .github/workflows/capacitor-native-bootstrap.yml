@@ -14,7 +14,7 @@ concurrency:
 
 jobs:
   bootstrap:
-    if: ${{ hashFiles('android/app/build.gradle', 'ios/App/App.xcodeproj/project.pbxproj') == '' }}
+    if: ${{ !contains(github.event.head_commit.message, '[native-bootstrap]') }}
     runs-on: macos-latest
     timeout-minutes: 45
     steps:
@@ -24,51 +24,72 @@ jobs:
           ref: ${{ github.ref_name }}
           fetch-depth: 0
 
+      - name: Detect existing native projects
+        id: native_state
+        run: |
+          if [ -f android/app/build.gradle ] && [ -f ios/App/App.xcodeproj/project.pbxproj ]; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Set up Node.js 22
+        if: steps.native_state.outputs.exists == 'false'
         uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
 
       - name: Install Capacitor runtime and native platforms
+        if: steps.native_state.outputs.exists == 'false'
         run: npm install @capacitor/core @capacitor/android @capacitor/ios --no-audit --no-fund
 
       - name: Install Capacitor CLI
+        if: steps.native_state.outputs.exists == 'false'
         run: npm install -D @capacitor/cli --no-audit --no-fund
 
       - name: Generate Android native project
+        if: steps.native_state.outputs.exists == 'false'
         run: npx cap add android
 
       - name: Generate iOS native project
+        if: steps.native_state.outputs.exists == 'false'
         run: npx cap add ios
 
       - name: Synchronize native projects
+        if: steps.native_state.outputs.exists == 'false'
         run: npx cap sync
 
       - name: Validate Capacitor configuration
+        if: steps.native_state.outputs.exists == 'false'
         run: npx cap doctor
 
       - name: Validate iOS project generation
+        if: steps.native_state.outputs.exists == 'false'
         run: xcodebuild -list -project ios/App/App.xcodeproj
 
       - name: Validate Android project scaffold
+        if: steps.native_state.outputs.exists == 'false'
         run: |
           test -f android/settings.gradle || test -f android/settings.gradle.kts
           test -f android/app/build.gradle || test -f android/app/build.gradle.kts
           test -x android/gradlew
 
       - name: TypeScript and ESLint
+        if: steps.native_state.outputs.exists == 'false'
         run: |
           npm run typecheck
           npm run lint
 
       - name: Next.js production build
+        if: steps.native_state.outputs.exists == 'false'
         run: npm run build
         env:
           NEXT_PUBLIC_SUPABASE_URL: https://vibenest-build-check.supabase.co
           NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_build_check
 
       - name: Commit native projects and exact npm lockfile
+        if: steps.native_state.outputs.exists == 'false'
         env:
           BRANCH_NAME: ${{ github.ref_name }}
         run: |
