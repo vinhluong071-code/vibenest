@@ -11,7 +11,7 @@ import { Sidebar } from "@/components/Sidebar";
 import { VibeStoriesBar } from "@/components/stories/VibeStoriesBar";
 import { VibeFeedCard, type VibePostItem } from "@/components/feed/VibeFeedCard";
 import { BottomTabBar } from "@/components/navigation/BottomTabBar";
-import { LitmatchOnboardingModal } from "@/components/auth/LitmatchOnboardingModal";
+import { LitmatchOnboardingModal, type UserProfile } from "@/components/auth/LitmatchOnboardingModal";
 import { AccountLinkingModal } from "@/components/auth/AccountLinkingModal";
 import { InboxCenter } from "@/components/InboxCenter";
 import type { InteractionType, Mood, VibePost, VibeReply } from "@/lib/vibe/types";
@@ -29,6 +29,27 @@ type VibePostRow = {
 const moods = ["Tất cả", "Đêm muộn", "Chênh vênh", "Chữa lành", "Thầm thương", "Đã lưu"] as const;
 const aliases = ["Mây Lang Thang", "Người Qua Đêm", "Kẻ Mộng Mơ", "Một Vì Sao", "Gió Nhẹ"];
 const makeAlias = () => aliases[Math.floor(Math.random() * aliases.length)] + " #" + Math.floor(100 + Math.random() * 900);
+
+function getProfileFromAuthUser(user: Session["user"] | null, fallbackName: string): UserProfile {
+  const rawProfile: unknown = user?.user_metadata?.vibenest_profile;
+  const stored = typeof rawProfile === "object" && rawProfile !== null
+    ? rawProfile as Record<string, unknown>
+    : {};
+  const read = (key: string, fallback: string, maxLength: number) => {
+    const value = stored[key];
+    return typeof value === "string" && value.trim() ? value.trim().slice(0, maxLength) : fallback;
+  };
+  const displayName = read("displayName", fallbackName, 32);
+  const fallbackHandle = displayName.normalize("NFD").replace(/[\\u0300-\\u036f]/g, "")
+    .toLowerCase().replace(/[^a-z0-9._]/g, ".").replace(/^\\.+|\\.+$/g, "") || "vibenest.user";
+  return {
+    displayName,
+    handle: read("handle", fallbackHandle, 24).toLowerCase().replace(/[^a-z0-9._]/g, "") || "vibenest.user",
+    city: read("city", "Sài Gòn", 48),
+    vibeTag: read("vibeTag", "Kẻ Mộng Mơ Đêm Muộn", 48),
+    bio: read("bio", "", 120),
+  };
+}
 
 function getFriendlyError(error: unknown, fallback: string): string {
   const value = error as { code?: string; message?: string; status?: number } | null;
@@ -59,6 +80,7 @@ function getFriendlyError(error: unknown, fallback: string): string {
 
 export function VibeNestApp() {
   const [alias, setAlias] = useState("Mây Lang Thang #409");
+  const [profile, setProfile] = useState<UserProfile>(() => getProfileFromAuthUser(null, "Mây Lang Thang #409"));
   const [userId, setUserId] = useState<string | null>(null);
   const [posts, setPosts] = useState<VibePost[]>([]);
   const [filter, setFilter] = useState<string>("Tất cả");
@@ -201,14 +223,28 @@ export function VibeNestApp() {
     const supabase = createClient();
     const { data: listener } = supabase.auth.onAuthStateChange(
       (_event: AuthChangeEvent, session: Session | null) => {
-        if (alive) { setUserId(session?.user.id ?? null); setAuthUser(session?.user ?? null); }
+        if (alive) {
+          const nextUser = session?.user ?? null;
+          const nextProfile = getProfileFromAuthUser(nextUser, "Mây Lang Thang #409");
+          setUserId(nextUser?.id ?? null);
+          setAuthUser(nextUser);
+          setProfile(nextProfile);
+          setAlias(nextProfile.displayName);
+        }
       },
     );
 
     // Start silently on first visit. The same promise is reused by publish,
     // reply and interaction handlers if the visitor acts before it resolves.
     void signInAnonymously().then((session) => {
-      if (alive) { setUserId(session?.user.id ?? null); setAuthUser(session?.user ?? null); }
+      if (alive) {
+        const nextUser = session?.user ?? null;
+        const nextProfile = getProfileFromAuthUser(nextUser, "Mây Lang Thang #409");
+        setUserId(nextUser?.id ?? null);
+        setAuthUser(nextUser);
+        setProfile(nextProfile);
+        setAlias(nextProfile.displayName);
+      }
     }).catch((error: unknown) => {
       // Keep browsing uninterrupted; show feedback only if an action needs auth.
       console.warn("[VibeNest] Silent anonymous session is not ready yet:", error);
@@ -302,8 +338,11 @@ export function VibeNestApp() {
     }
     setUserId(session.user.id);
     setAuthUser(session.user);
+    const nextProfile = getProfileFromAuthUser(session.user, alias);
+    setProfile(nextProfile);
+    setAlias(nextProfile.displayName);
     return session.user.id;
-  }, [userId]);
+  }, [userId, alias]);
 
   const ensureChatIdentity = useCallback(
     () => ensureIdentity("mở trò chuyện riêng"),
@@ -394,6 +433,9 @@ export function VibeNestApp() {
     if (user) {
       setAuthUser(user);
       setUserId(user.id);
+      const nextProfile = getProfileFromAuthUser(user, alias);
+      setProfile(nextProfile);
+      setAlias(nextProfile.displayName);
       setNotice("Đã cập nhật trạng thái tài khoản VibeNest.");
     }
   }
@@ -406,6 +448,9 @@ export function VibeNestApp() {
       const session = await signInAnonymously();
       setAuthUser(session?.user ?? null);
       setUserId(session?.user.id ?? null);
+      const nextProfile = getProfileFromAuthUser(session?.user ?? null, alias);
+      setProfile(nextProfile);
+      setAlias(nextProfile.displayName);
       setAccountOpen(false);
       setNotice("Thiết bị này đã đăng xuất khỏi tài khoản được liên kết và chuyển sang phiên ẩn danh mới. Tài khoản cũ vẫn được giữ nguyên.");
     } catch (error) {
@@ -510,16 +555,29 @@ export function VibeNestApp() {
       <LitmatchOnboardingModal
         isOpen={profileOpen}
         onClose={() => setProfileOpen(false)}
-        currentUser={{
-          displayName: alias,
-          handle: alias.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, ".").replace(/^\.|\.$/g, "") || "vibenest.user",
-          city: "Sài Gòn",
-          vibeTag: "Kẻ Mộng Mơ Đêm Muộn",
-          bio: "",
-        }}
-        onCompleteAuth={(profile) => {
-          setAlias(profile.displayName);
-          setNotice("Đã cập nhật hồ sơ hiển thị của bạn.");
+        currentUser={profile}
+        onCompleteAuth={async (nextProfile) => {
+          const ownerId = await ensureIdentity("lưu hồ sơ cá nhân");
+          const supabase = createClient();
+          const { data, error } = await supabase.auth.updateUser({
+            data: {
+              vibenest_profile: {
+                displayName: nextProfile.displayName.slice(0, 32),
+                handle: nextProfile.handle.slice(0, 24),
+                city: nextProfile.city.slice(0, 48),
+                vibeTag: nextProfile.vibeTag.slice(0, 48),
+                bio: nextProfile.bio.slice(0, 120),
+              },
+            },
+          });
+          if (error) throw error;
+          if (!data.user || data.user.id !== ownerId) {
+            throw new Error("Không xác nhận được tài khoản đã lưu hồ sơ. Vui lòng thử lại.");
+          }
+          setAuthUser(data.user);
+          setProfile(nextProfile);
+          setAlias(nextProfile.displayName);
+          setNotice("Hồ sơ cá nhân đã được lưu vào tài khoản VibeNest.");
         }}
       />
       <AccountLinkingModal
