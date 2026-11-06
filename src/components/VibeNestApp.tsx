@@ -40,8 +40,8 @@ function getProfileFromAuthUser(user: Session["user"] | null, fallbackName: stri
     return typeof value === "string" && value.trim() ? value.trim().slice(0, maxLength) : fallback;
   };
   const displayName = read("displayName", fallbackName, 32);
-  const fallbackHandle = displayName.normalize("NFD").replace(/[\\u0300-\\u036f]/g, "")
-    .toLowerCase().replace(/[^a-z0-9._]/g, ".").replace(/^\\.+|\\.+$/g, "") || "vibenest.user";
+  const fallbackHandle = displayName.normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase().replace(/[^a-z0-9._]/g, ".").replace(/^\.+|\.+$/g, "") || "vibenest.user";
   return {
     displayName,
     handle: read("handle", fallbackHandle, 24).toLowerCase().replace(/[^a-z0-9._]/g, "") || "vibenest.user",
