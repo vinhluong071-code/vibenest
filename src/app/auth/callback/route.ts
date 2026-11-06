@@ -32,8 +32,16 @@ export async function GET(request: NextRequest) {
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     authError = error;
   } else if (tokenHash && type) {
-    const { error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type: type as EmailOtpType });
-    authError = error;
+    const allowedTypes: EmailOtpType[] = ["signup", "invite", "magiclink", "recovery", "email_change", "email"];
+    if (!allowedTypes.includes(type as EmailOtpType)) {
+      authError = new Error("Unsupported email verification type.");
+    } else {
+      const { error } = await supabase.auth.verifyOtp({
+        token_hash: tokenHash,
+        type: type as EmailOtpType,
+      });
+      authError = error;
+    }
   } else {
     authError = new Error("Missing auth confirmation token.");
   }
