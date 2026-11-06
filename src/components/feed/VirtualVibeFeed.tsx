@@ -18,6 +18,12 @@ interface LayoutMetric<T> {
   bottom: number;
 }
 
+interface ViewportMetrics {
+  scrollY: number;
+  height: number;
+  listTop: number;
+}
+
 export function VirtualVibeFeed<T extends { id: string }>({
   items,
   estimateItemHeight,
@@ -28,11 +34,7 @@ export function VirtualVibeFeed<T extends { id: string }>({
   const containerRef = useRef<HTMLDivElement | null>(null);
   const viewportRef = useRef<HTMLDivElement | null>(null);
   const [heightCache, setHeightCache] = useState<Map<string, number>>(() => new Map());
-  const [viewport, setViewport] = useState<{
-    scrollY: number;
-    height: number;
-    listTop: number;
-  } | null>(null);
+  const [viewport, setViewport] = useState<ViewportMetrics | null>(null);
 
   const invalidateHeight = useCallback((id: string) => {
     setHeightCache((current) => {
@@ -43,7 +45,7 @@ export function VirtualVibeFeed<T extends { id: string }>({
     });
   }, []);
 
-  // Keep viewport measurements in state; refs are read only from effects.
+  // Read DOM geometry in an effect, then update React state on the next frame.
   useEffect(() => {
     let rafId: number | null = null;
     const measureViewport = () => {
@@ -71,11 +73,11 @@ export function VirtualVibeFeed<T extends { id: string }>({
     };
 
     scheduleMeasurement();
-    window.addEventListener("scroll", scheduleMeasurement, { passive: true });
-    window.addEventListener("resize", scheduleMeasurement, { passive: true });
+    window.addEventListener('scroll', scheduleMeasurement, { passive: true });
+    window.addEventListener('resize', scheduleMeasurement, { passive: true });
     return () => {
-      window.removeEventListener("scroll", scheduleMeasurement);
-      window.removeEventListener("resize", scheduleMeasurement);
+      window.removeEventListener('scroll', scheduleMeasurement);
+      window.removeEventListener('resize', scheduleMeasurement);
       if (rafId !== null) window.cancelAnimationFrame(rafId);
     };
   }, [items.length]);
@@ -86,17 +88,19 @@ export function VirtualVibeFeed<T extends { id: string }>({
     }
 
     let runningOffset = 0;
-    const metrics: LayoutMetric<T>[] = items.map((item, idx) => {
+    const metrics: LayoutMetric<T>[] = items.map((item, index) => {
       const height = heightCache.get(item.id) ?? estimateItemHeight(item);
       const top = runningOffset;
       runningOffset += height;
-      return { item, index: idx, top, height, bottom: runningOffset };
+      return { item, index, top, height, bottom: runningOffset };
     });
 
     const totalHeight = runningOffset;
     if (!viewport) {
       const initialSlice = metrics.slice(0, Math.min(items.length, 6));
-      const renderedBottom = initialSlice.length > 0 ? initialSlice[initialSlice.length - 1].bottom : 0;
+      const renderedBottom = initialSlice.length > 0
+        ? initialSlice[initialSlice.length - 1].bottom
+        : 0;
       return {
         visibleSlices: initialSlice,
         topSpacerPx: 0,
@@ -129,21 +133,23 @@ export function VirtualVibeFeed<T extends { id: string }>({
 
     const slice = metrics.slice(startIndex, endIndex);
     const topPx = slice.length > 0 ? slice[0].top : 0;
-    const bottomPx = slice.length > 0 ? Math.max(0, totalHeight - slice[slice.length - 1].bottom) : 0;
+    const bottomPx = slice.length > 0
+      ? Math.max(0, totalHeight - slice[slice.length - 1].bottom)
+      : 0;
     return { visibleSlices: slice, topSpacerPx: topPx, bottomSpacerPx: bottomPx };
   }, [items, estimateItemHeight, overscanPx, heightCache, viewport]);
 
-  // Measure DOM nodes after paint and publish changed heights on the next frame.
+  // Measure rendered rows after paint and publish changed heights asynchronously.
   useEffect(() => {
     const viewportEl = viewportRef.current;
     if (!viewportEl) return;
 
     const nodes = Array.from(
-      viewportEl.querySelectorAll<HTMLElement>("[data-virtual-id]"),
+      viewportEl.querySelectorAll<HTMLElement>('[data-virtual-id]'),
     ).map((node) => ({
-      id: node.getAttribute("data-virtual-id"),
+      id: node.getAttribute('data-virtual-id'),
       height: Math.round(node.getBoundingClientRect().height + 16),
-    })).filter((entry): entry is { id: string; height: number } => Boolean(entry.id));
+    })).filter((entry): entry is { id: string; height: number } => entry.id !== null);
 
     const rafId = window.requestAnimationFrame(() => {
       setHeightCache((current) => {
@@ -160,110 +166,6 @@ export function VirtualVibeFeed<T extends { id: string }>({
     });
 
     return () => window.cancelAnimationFrame(rafId);
-  }, [visibleSlices]);
-
-  return () => {
-      window.removeEventListener('scroll', handleViewportUpdate);
-      window.removeEventListener('resize', handleViewportUpdate);
-      if (rafId !== null) {
-        window.cancelAnimationFrame(rafId);
-      }
-    };
-  }, []);
-
-  const { visibleSlices, topSpacerPx, bottomSpacerPx } = useMemo(() => {
-    // Reference scrollTick so layout recalculates on scroll/resize/height invalidation
-    void scrollTick;
-
-    if (items.length === 0) {
-      return { visibleSlices: [] as LayoutMetric<T>[], topSpacerPx: 0, bottomSpacerPx: 0 };
-    }
-
-    let runningOffset = 0;
-    const metrics: LayoutMetric<T>[] = items.map((item, idx) => {
-      const height = heightCacheRef.current.get(item.id) ?? estimateItemHeight(item);
-      const top = runningOffset;
-      runningOffset += height;
-      return {
-        item,
-        index: idx,
-        top,
-        height,
-        bottom: runningOffset,
-      };
-    });
-
-    const totalHeight = runningOffset;
-    const containerEl = containerRef.current;
-
-    if (!containerEl || typeof window === 'undefined') {
-      const initialSlice = metrics.slice(0, Math.min(items.length, 6));
-      const renderedBottom = initialSlice.length > 0 ? initialSlice[initialSlice.length - 1].bottom : 0;
-      return {
-        visibleSlices: initialSlice,
-        topSpacerPx: 0,
-        bottomSpacerPx: Math.max(0, totalHeight - renderedBottom),
-      };
-    }
-
-    const listRect = containerEl.getBoundingClientRect();
-    const listTopPageY = listRect.top + window.scrollY;
-    const viewportTopPageY = window.scrollY;
-    const viewportBottomPageY = viewportTopPageY + window.innerHeight;
-
-    const relStart = Math.max(0, viewportTopPageY - listTopPageY - overscanPx);
-    const relEnd = Math.min(totalHeight, viewportBottomPageY - listTopPageY + overscanPx);
-
-    let startIndex = 0;
-    while (startIndex < metrics.length && metrics[startIndex].bottom < relStart) {
-      startIndex++;
-    }
-
-    let endIndex = startIndex;
-    while (endIndex < metrics.length && metrics[endIndex].top <= relEnd) {
-      endIndex++;
-    }
-
-    if (startIndex >= metrics.length) {
-      startIndex = Math.max(0, metrics.length - 4);
-      endIndex = metrics.length;
-    } else if (endIndex <= startIndex) {
-      endIndex = Math.min(metrics.length, startIndex + 4);
-    }
-
-    const slice = metrics.slice(startIndex, endIndex);
-    const topPx = slice.length > 0 ? slice[0].top : 0;
-    const bottomPx = slice.length > 0 ? Math.max(0, totalHeight - slice[slice.length - 1].bottom) : 0;
-
-    return {
-      visibleSlices: slice,
-      topSpacerPx: topPx,
-      bottomSpacerPx: bottomPx,
-    };
-  }, [items, estimateItemHeight, overscanPx, scrollTick]);
-
-  // Measure actual rendered heights and update cache if delta > 2px
-  useEffect(() => {
-    const viewportEl = viewportRef.current;
-    if (!viewportEl) return;
-
-    let hasSignificantDiff = false;
-    const nodes = viewportEl.querySelectorAll<HTMLElement>('[data-virtual-id]');
-    nodes.forEach((node) => {
-      const id = node.getAttribute('data-virtual-id');
-      if (!id) return;
-      const rect = node.getBoundingClientRect();
-      const measuredHeight = Math.round(rect.height + 16); // 16px = space-y-4 margin
-      const prevHeight = heightCacheRef.current.get(id);
-      if (prevHeight === undefined || Math.abs(prevHeight - measuredHeight) > 2) {
-        heightCacheRef.current.set(id, measuredHeight);
-        hasSignificantDiff = true;
-      }
-    });
-
-    if (hasSignificantDiff) {
-      setScrollTick((tick) => tick + 1);
-    }
   }, [visibleSlices]);
 
   return (
