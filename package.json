@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "check:vercel-env": "node scripts/check-vercel-production-env.mjs"
+    "check:vercel-env": "node scripts/check-vercel-production-env.mjs",
+    "prebuild": "npm run typecheck && npm run lint"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",
