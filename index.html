@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>VibeNest — Không Gian Tâm Sự Ẩn Danh</title>
-  <meta name="description" content="Nền tảng kết nối và chia sẻ tâm sự ẩn danh tối ưu cho di động với thiết kế Glassmorphism hiện đại, giàu cảm xúc." />
-  <meta property="og:title" content="VibeNest — Không Gian Tâm Sự Ẩn Danh" />
-  <meta property="og:description" content="Nền tảng kết nối và chia sẻ tâm sự ẩn danh tối ưu cho di động với thiết kế Glassmorphism hiện đại, giàu cảm xúc." />
+  <title>VibeNest — Mạng Xã Hội Kết Nối Cảm Xúc</title>
+  <meta name="description" content="Không gian mạng xã hội kết nối tần số cảm xúc, Khoảnh khắc 24h và chia sẻ đời sống tinh thần với thiết kế Glassmorphism hiện đại." />
+  <meta property="og:title" content="VibeNest — Mạng Xã Hội Kết Nối Cảm Xúc" />
+  <meta property="og:description" content="Không gian mạng xã hội kết nối tần số cảm xúc, Khoảnh khắc 24h và chia sẻ đời sống tinh thần với thiết kế Glassmorphism hiện đại." />
   <meta name="theme-color" content="#0b0f19" />
 
   <!-- Google Fonts: Plus Jakarta Sans (UI & Body), Fraunces (Expressive Editorial Display), JetBrains Mono (Tabular Metrics) -->
@@ -70,13 +70,13 @@
       position: absolute;
       border-radius: 9999px;
       filter: blur(90px);
-      opacity: 0.38;
+      opacity: 0.36;
       transform: translate3d(0, 0, 0);
       transition: opacity 400ms var(--ease-out-expo);
     }
 
     html:not(.dark) .ambient-orb {
-      opacity: 0.25;
+      opacity: 0.22;
       filter: blur(100px);
     }
 
@@ -92,33 +92,7 @@
       -webkit-backdrop-filter: blur(24px) saturate(180%);
     }
 
-    /* Smooth card entrance & micro-interactions using compositor-only properties */
-    @keyframes cardEnter {
-      from {
-        opacity: 0;
-        transform: translateY(14px) scale(0.985);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-      }
-    }
-
-    .vibe-card-enter {
-      animation: cardEnter 320ms var(--ease-out-expo) forwards;
-    }
-
-    @keyframes heartPop {
-      0% { transform: scale(1); }
-      45% { transform: scale(1.24); }
-      100% { transform: scale(1); }
-    }
-
-    .animate-heart-pop {
-      animation: heartPop 200ms var(--ease-out-expo);
-    }
-
-    /* Hide scrollbar for horizontal mood filter while preserving touch scroll */
+    /* Hide scrollbar for horizontal strips while preserving touch scroll */
     .no-scrollbar::-webkit-scrollbar {
       display: none;
     }
@@ -151,17 +125,29 @@
     <div class="ambient-orb w-[300px] h-[300px] md:w-[480px] md:h-[480px] bg-amber-500/15 -bottom-24 left-1/4"></div>
   </div>
 
-  <!-- TOP NAVIGATION BAR (Strict 3-Zone Contract, Compact <=56px Height for 15% Mobile Sticky Cap) -->
-  <header class="sticky top-0 z-30 h-14 glass-nav bg-white/75 dark:bg-night-950/75 border-b border-slate-200/80 dark:border-white/[0.07]">
+  <!-- TOP NAVIGATION BAR (Strict 3-Zone Contract, Compact 56px Height for <15% Sticky Cap) -->
+  <header class="sticky top-0 z-30 h-14 glass-nav bg-white/80 dark:bg-night-950/80 border-b border-slate-200/80 dark:border-white/[0.07]">
     <div class="max-w-6xl mx-auto h-full px-4 sm:px-6 flex items-center justify-between gap-8">
-      <!-- Zone 1: Single-line Brand Wordmark -->
-      <a href="#feed" id="brandHomeLink" class="font-display text-xl font-semibold tracking-tight text-slate-900 dark:text-white whitespace-nowrap shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 rounded">
-        VibeNest
+      <!-- Zone 1: Brand Wordmark with Custom Nest+Wave Geometric SVG Mark -->
+      <a href="#feed" id="brandHomeLink" class="group flex items-center gap-2.5 font-display text-xl font-semibold tracking-tight text-slate-900 dark:text-white whitespace-nowrap shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 rounded-lg">
+        <svg class="w-7 h-7 shrink-0 transition-transform duration-200 group-hover:scale-105" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <defs>
+            <linearGradient id="vibenestBrandGrad" x1="4" y1="4" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stop-color="#FB7185" />
+              <stop offset="52%" stop-color="#E11D48" />
+              <stop offset="100%" stop-color="#6366F1" />
+            </linearGradient>
+          </defs>
+          <path d="M5.5 19.5C5.5 26.956 11.096 31.5 18 31.5C24.904 31.5 30.5 26.956 30.5 19.5" stroke="url(#vibenestBrandGrad)" stroke-width="2.5" stroke-linecap="round" />
+          <path d="M9.5 21.5C11.3 25.3 14.35 27.25 18 27.25C21.65 27.25 24.7 25.3 26.5 21.5" stroke="url(#vibenestBrandGrad)" stroke-width="2" stroke-linecap="round" stroke-opacity="0.65" />
+          <path d="M8.5 15.25C11.2 15.25 11.8 9.5 14.5 9.5C17.2 9.5 16.8 18.5 19.5 18.5C22.2 18.5 22.5 11.5 25.2 11.5C26.8 11.5 27.3 14.25 28.5 14.25" stroke="currentColor" class="text-slate-900 dark:text-white" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+        <span>VibeNest</span>
       </a>
 
       <!-- Zone 2: 4 Concise Single-Line Navigation Links -->
       <nav class="hidden md:flex items-center gap-7 text-sm font-medium text-slate-600 dark:text-slate-300" aria-label="Điều hướng chính">
-        <a href="#feed" data-nav="all" class="nav-link text-slate-900 dark:text-white underline underline-offset-8 decoration-rose-500 decoration-2 transition-colors whitespace-nowrap shrink-0">Bảng tâm sự</a>
+        <a href="#feed" data-nav="all" class="nav-link text-slate-900 dark:text-white underline underline-offset-8 decoration-rose-500 decoration-2 transition-colors whitespace-nowrap shrink-0">Khám phá</a>
         <a href="#frequencies" data-nav="healing" class="nav-link hover:text-slate-900 dark:hover:text-white transition-colors whitespace-nowrap shrink-0">Góc chữa lành</a>
         <a href="#late-night" data-nav="latenight" class="nav-link hover:text-slate-900 dark:hover:text-white transition-colors whitespace-nowrap shrink-0">Tần số đêm</a>
         <a href="#saved" data-nav="saved" class="nav-link hover:text-slate-900 dark:hover:text-white transition-colors whitespace-nowrap shrink-0">Đã lưu</a>
@@ -172,41 +158,50 @@
         <button
           type="button"
           id="topComposeBtn"
-          class="min-h-[40px] px-4 py-2 text-xs sm:text-sm font-semibold text-white bg-rose-600 hover:bg-rose-500 active:scale-[0.98] rounded-xl shadow-sm shadow-rose-600/20 transition-all whitespace-nowrap shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500"
+          class="min-h-[40px] px-4 py-2 text-xs sm:text-sm font-semibold text-white bg-gradient-to-r from-rose-600 to-indigo-600 hover:from-rose-500 hover:to-indigo-500 active:scale-[0.98] rounded-xl shadow-sm shadow-rose-600/20 transition-all whitespace-nowrap shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500"
         >
-          Gửi tâm sự
+          Đăng bài mới
         </button>
       </div>
     </div>
   </header>
 
-  <!-- MAIN WORKSPACE CONTAINER (Mobile-First Ergonomics + Full Multi-Column Desktop Presence) -->
+  <!-- MAIN WORKSPACE CONTAINER -->
   <main class="max-w-6xl mx-auto px-4 sm:px-6 pt-5 pb-28 md:pb-16">
-    <!-- Secondary Workspace Controls & Mood Banner -->
+    <!-- Secondary Workspace Controls & Greeting Banner -->
     <section class="mb-6 flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-slate-200/70 dark:border-white/[0.06] pb-5">
       <div>
         <p class="text-xs font-medium text-slate-500 dark:text-slate-400 mb-1" id="greetingTimeText">
-          Không gian lắng nghe ẩn danh · Mọi câu chuyện đều được tôn trọng
+          Không gian kết nối cảm xúc · Gặp gỡ những tâm hồn đồng điệu
         </p>
         <h1 class="font-display text-2xl sm:text-3xl font-semibold tracking-tight text-slate-900 dark:text-white" style="text-wrap: balance;">
-          Hôm nay trong lòng bạn đang mang theo điều gì?
+          Hôm nay tần số cảm xúc của bạn thế nào?
         </h1>
       </div>
 
-      <!-- Utility Controls: Search, Ambient Sound, Theme Switch -->
-      <div class="flex items-center gap-2 self-start sm:self-auto">
-        <!-- Ambient Night Rain Sound Toggle -->
+      <!-- Utility Controls: Litmatch Profile Onboarding Trigger + Theme Switch -->
+      <div class="flex flex-wrap items-center gap-2 self-start sm:self-auto">
         <button
           type="button"
-          id="ambientAudioBtn"
-          aria-pressed="false"
-          class="min-h-[44px] px-3.5 py-2 rounded-xl glass-surface bg-white/70 dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/[0.08] text-xs font-medium text-slate-700 dark:text-slate-300 hover:border-rose-500/40 flex items-center gap-2 transition-all whitespace-nowrap shrink-0"
-          title="Bật âm thanh mưa đêm dịu nhẹ"
+          id="topProfileBtn"
+          class="min-h-[44px] px-3.5 py-2 rounded-xl glass-surface bg-white/75 dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/[0.08] text-xs font-medium text-slate-700 dark:text-slate-200 hover:border-rose-500/40 flex items-center gap-2 transition-all whitespace-nowrap shrink-0"
+          title="Chỉnh sửa hồ sơ hoặc chuyển đổi nhanh tài khoản"
         >
-          <svg class="w-4 h-4 text-rose-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
-          </svg>
-          <span id="ambientAudioLabel">Nhạc nền: Tắt</span>
+          <span id="topProfileAvatarDot" class="w-5 h-5 rounded-md border flex items-center justify-center font-display text-[11px] font-semibold shrink-0">
+            L
+          </span>
+          <span id="topProfileLabel">Linh Đan (@linhdan.vibe)</span>
+        </button>
+
+        <!-- Soul Match / Vibe Radar Trigger Button -->
+        <button
+          type="button"
+          id="topRadarMatchBtn"
+          class="min-h-[44px] px-3.5 py-2 rounded-xl glass-surface bg-rose-500/10 dark:bg-rose-500/15 border border-rose-500/35 text-xs font-semibold text-rose-600 dark:text-rose-300 hover:bg-rose-500/20 flex items-center gap-2 transition-all whitespace-nowrap shrink-0"
+          title="Soul Match · Ghép đôi tần số ngẫu nhiên 180s"
+        >
+          <span class="w-2 h-2 rounded-full bg-rose-500 animate-pulse shrink-0"></span>
+          <span>Vibe Radar · Ghép đôi</span>
         </button>
 
         <!-- Theme Switcher (Dark / Light Glass) -->
@@ -214,7 +209,7 @@
           type="button"
           id="themeToggleBtn"
           aria-label="Chuyển đổi giao diện Sáng hoặc Tối"
-          class="min-h-[44px] min-w-[44px] px-3 py-2 rounded-xl glass-surface bg-white/70 dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/[0.08] text-xs font-medium text-slate-700 dark:text-slate-300 hover:border-slate-300 dark:hover:border-white/20 flex items-center justify-center gap-1.5 transition-all whitespace-nowrap shrink-0"
+          class="min-h-[44px] min-w-[44px] px-3 py-2 rounded-xl glass-surface bg-white/75 dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/[0.08] text-xs font-medium text-slate-700 dark:text-slate-300 hover:border-slate-300 dark:hover:border-white/20 flex items-center justify-center gap-1.5 transition-all whitespace-nowrap shrink-0"
         >
           <svg id="themeIconSun" class="w-4 h-4 hidden dark:block text-amber-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" />
@@ -227,77 +222,98 @@
       </div>
     </section>
 
-    <!-- 12-COLUMN RESPONSIVE GRID: Left Context Sidebar (Desktop) + Center Mobile-First Feed + Right Reflection Panel -->
+    <!-- 12-COLUMN RESPONSIVE GRID -->
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
 
-      <!-- LEFT COLUMN (Desktop 3 cols): Mood Frequencies & Anonymous Identity -->
+      <!-- LEFT COLUMN (Desktop 3 cols): Personal Soul Profile Card & Emotional Frequency -->
       <aside class="hidden lg:block lg:col-span-3 space-y-5 sticky top-20">
-        <div class="glass-surface rounded-2xl p-5 bg-white/75 dark:bg-white/[0.03] border border-slate-200/80 dark:border-white/[0.08]">
-          <div class="flex items-center justify-between mb-3">
-            <h2 class="text-sm font-semibold text-slate-900 dark:text-white">Danh tính ẩn danh của bạn</h2>
-            <button
-              type="button"
-              id="shuffleIdentitySidebarBtn"
-              class="min-h-[36px] px-2.5 py-1 text-xs font-medium text-rose-600 dark:text-rose-400 hover:underline whitespace-nowrap shrink-0"
-            >
-              Đổi tên
-            </button>
+        <div class="glass-surface rounded-3xl p-5 bg-white/80 dark:bg-white/[0.035] border border-slate-200/80 dark:border-white/[0.08]">
+          <div className="flex items-center justify-between mb-3">
+            <div class="flex items-center justify-between mb-3">
+              <h2 class="text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">Hồ sơ của bạn</h2>
+              <button
+                type="button"
+                id="sidebarEditProfileBtn"
+                class="min-h-[32px] px-2 py-1 text-xs font-semibold text-rose-600 dark:text-rose-400 hover:underline whitespace-nowrap shrink-0"
+              >
+                Đổi tài khoản
+              </button>
+            </div>
           </div>
-          <div class="flex items-center gap-3">
-            <div id="sidebarAvatarBox" class="w-11 h-11 rounded-2xl bg-gradient-to-br from-rose-500/20 to-indigo-500/20 border border-slate-200/60 dark:border-white/10 flex items-center justify-center font-display font-semibold text-base text-rose-600 dark:text-rose-300 shrink-0">
-              M
+
+          <div class="flex items-center gap-3.5">
+            <div id="sidebarAvatarBox" class="w-12 h-12 rounded-2xl border flex items-center justify-center font-display font-semibold text-lg shrink-0 transition-colors duration-200">
+              L
             </div>
             <div class="min-w-0">
-              <p id="sidebarAliasName" class="text-sm font-semibold text-slate-900 dark:text-white truncate">Mây Lang Thang #409</p>
-              <p class="text-xs text-slate-500 dark:text-slate-400">Không lưu IP · Tự xóa dấu vết</p>
+              <p id="sidebarDisplayName" class="text-sm font-semibold text-slate-900 dark:text-white truncate">Linh Đan</p>
+              <p id="sidebarHandleText" class="text-xs font-mono text-rose-600 dark:text-rose-400 truncate">@linhdan.vibe</p>
+              <p id="sidebarVibeTagText" class="text-[11px] text-slate-500 dark:text-slate-400 truncate mt-0.5">Nhiếp Ảnh Phim & Cà Phê · Sài Gòn</p>
             </div>
+          </div>
+
+          <p id="sidebarBioText" class="mt-3 text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+            Thích chụp ảnh phố lên đèn và những cuộc trò chuyện không vội vã.
+          </p>
+
+          <div class="mt-4 pt-3.5 border-t border-slate-200/60 dark:border-white/[0.06]">
+            <button
+              type="button"
+              id="sidebarOpenOnboardingBtn"
+              class="w-full min-h-[40px] px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-white/[0.07] dark:hover:bg-white/[0.12] text-white text-xs font-medium flex items-center justify-between gap-2 transition-colors"
+            >
+              <span class="truncate">Tùy chỉnh hồ sơ & Vibe Tag</span>
+              <svg class="w-4 h-4 shrink-0 text-rose-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+              </svg>
+            </button>
           </div>
 
           <div class="mt-4 pt-4 border-t border-slate-200/60 dark:border-white/[0.06] grid grid-cols-2 gap-3 text-left">
             <div>
-              <p class="text-xs text-slate-500 dark:text-slate-400">Đã đồng cảm</p>
+              <p class="text-xs text-slate-500 dark:text-slate-400">Chạm vibe</p>
               <p id="statEmpathyGiven" class="font-mono text-lg font-medium text-slate-900 dark:text-white tabular-nums mt-0.5">0</p>
             </div>
             <div>
-              <p class="text-xs text-slate-500 dark:text-slate-400">Tâm sự đã lưu</p>
+              <p class="text-xs text-slate-500 dark:text-slate-400">Bài đã lưu</p>
               <p id="statSavedCount" class="font-mono text-lg font-medium text-slate-900 dark:text-white tabular-nums mt-0.5">2</p>
             </div>
           </div>
         </div>
 
         <!-- Emotional Frequency Index -->
-        <div class="glass-surface rounded-2xl p-5 bg-white/75 dark:bg-white/[0.03] border border-slate-200/80 dark:border-white/[0.08]">
-          <h2 class="text-sm font-semibold text-slate-900 dark:text-white mb-1">Nhịp cảm xúc đêm nay</h2>
-          <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">Tổng hợp từ các câu chuyện vừa chia sẻ</p>
+        <div class="glass-surface rounded-3xl p-5 bg-white/80 dark:bg-white/[0.035] border border-slate-200/80 dark:border-white/[0.08]">
+          <h2 class="text-sm font-semibold text-slate-900 dark:text-white mb-1">Tần số nổi bật hôm nay</h2>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">Cộng đồng đang chia sẻ nhiều nhất</p>
 
           <div class="space-y-3 text-xs">
             <div>
               <div class="flex justify-between text-slate-700 dark:text-slate-300 mb-1">
-                <span>Chênh vênh tuổi 20s</span>
-                <span class="font-mono tabular-nums text-slate-500 dark:text-slate-400">42%</span>
+                <span>Đêm muộn & Phố thị</span>
+                <span class="font-mono tabular-nums text-slate-500 dark:text-slate-400">44%</span>
               </div>
               <div class="h-1.5 w-full rounded-full bg-slate-200/80 dark:bg-white/[0.07] overflow-hidden">
-                <div class="h-full bg-rose-500 rounded-full" style="width: 42%"></div>
+                <div class="h-full bg-rose-500 rounded-full" style="width: 44%"></div>
               </div>
             </div>
 
             <div>
               <div class="flex justify-between text-slate-700 dark:text-slate-300 mb-1">
-                <span>Chữa lành & Biết ơn</span>
-                <span class="font-mono tabular-nums text-slate-500 dark:text-slate-400">31%</span>
+                <span>Chữa lành & Cà phê sáng</span>
+                <span class="font-mono tabular-nums text-slate-500 dark:text-slate-400">33%</span>
               </div>
               <div class="h-1.5 w-full rounded-full bg-slate-200/80 dark:bg-white/[0.07] overflow-hidden">
-                <div class="h-full bg-indigo-400 rounded-full" style="width: 31%"></div>
+                <div class="h-full bg-indigo-400 rounded-full" style="width: 33%"></div>
               </div>
             </div>
 
             <div>
               <div class="flex justify-between text-slate-700 dark:text-slate-300 mb-1">
-                <span>Tâm sự đêm muộn</span>
-                <span class="font-mono tabular-nums text-slate-500 dark:text-slate-400">27%</span>
+                <span>Thầm thương & Hẹn hò</span>
+                <span class="font-mono tabular-nums text-slate-500 dark:text-slate-400">23%</span>
               </div>
               <div class="h-1.5 w-full rounded-full bg-slate-200/80 dark:bg-white/[0.07] overflow-hidden">
-                <div class="h-full bg-amber-400 rounded-full" style="width: 27%"></div>
+                <div class="h-full bg-amber-400 rounded-full" style="width: 23%"></div>
               </div>
             </div>
           </div>
@@ -305,37 +321,55 @@
       </aside>
 
       <!-- CENTER COLUMN (Mobile Full Width / Desktop 6 cols): Interactive Home Feed -->
-      <section class="lg:col-span-6 space-y-4" aria-label="Luồng tâm sự">
+      <section class="lg:col-span-6 space-y-4" aria-label="Bảng tin VibeNest">
 
-        <!-- Quick Inline Prompt Card (Opens Quick Composer Sheet) -->
-        <div class="glass-surface rounded-2xl p-4 sm:p-5 bg-white/80 dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/[0.09] shadow-sm">
+        <!-- KHOẢNH KHẮC 24H (Snapchat / Instagram / Pinterest Portrait Visual Cards) -->
+        <div class="glass-surface rounded-3xl p-4 bg-white/85 dark:bg-white/[0.035] border border-slate-200/80 dark:border-white/[0.08] shadow-sm">
+          <div class="flex items-center justify-between gap-2 mb-3">
+            <div class="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+              <span class="text-sm font-semibold text-slate-900 dark:text-white tracking-tight">Khoảnh khắc 24h</span>
+              <span aria-hidden="true">·</span>
+              <span>Chạm để xem toàn màn hình</span>
+            </div>
+            <span id="storiesActiveCount" class="font-mono text-[11px] text-rose-600 dark:text-rose-400 tabular-nums">
+              4 khoảnh khắc
+            </span>
+          </div>
+
+          <div id="vibeStoriesStrip" class="flex items-center gap-3 overflow-x-auto no-scrollbar py-0.5" role="region" aria-label="Danh sách thẻ Khoảnh khắc 24h">
+            <!-- Dynamically rendered: Portrait Create Card + Active 24h Portrait Story Cards -->
+          </div>
+        </div>
+
+        <!-- Quick Inline Composer Trigger Card -->
+        <div class="glass-surface rounded-3xl p-4 sm:p-5 bg-white/85 dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/[0.09] shadow-sm">
           <div class="flex items-center gap-3">
-            <div id="quickPromptAvatar" class="w-10 h-10 rounded-xl bg-rose-500/15 border border-rose-500/20 flex items-center justify-center font-display font-semibold text-sm text-rose-600 dark:text-rose-300 shrink-0">
-              M
+            <div id="quickPromptAvatar" class="w-10 h-10 rounded-2xl border flex items-center justify-center font-display font-semibold text-sm shrink-0 transition-colors duration-200">
+              L
             </div>
             <button
               type="button"
               id="inlineComposerTrigger"
-              class="flex-1 min-h-[44px] text-left px-4 py-2.5 rounded-xl bg-slate-100/80 dark:bg-white/[0.04] hover:bg-slate-200/60 dark:hover:bg-white/[0.07] border border-slate-200/60 dark:border-white/[0.06] text-sm text-slate-500 dark:text-slate-400 transition-colors"
+              class="flex-1 min-h-[44px] text-left px-4 py-2.5 rounded-2xl bg-slate-100/80 dark:bg-white/[0.04] hover:bg-slate-200/60 dark:hover:bg-white/[0.07] border border-slate-200/60 dark:border-white/[0.06] text-sm text-slate-500 dark:text-slate-400 transition-colors"
             >
-              Viết vài dòng trút bầu tâm sự ẩn danh...
+              Chia sẻ khoảnh khắc hoặc suy nghĩ của bạn hôm nay...
             </button>
           </div>
           <div class="mt-3 pt-3 border-t border-slate-200/60 dark:border-white/[0.06] flex items-center justify-between gap-2 text-xs text-slate-500 dark:text-slate-400">
             <div class="flex items-center gap-2 overflow-x-auto no-scrollbar">
-              <button type="button" data-quick-mood="Đêm muộn" class="quick-mood-btn min-h-[36px] px-2.5 py-1 rounded-lg hover:bg-slate-200/60 dark:hover:bg-white/[0.06] hover:text-slate-900 dark:hover:text-white transition-colors whitespace-nowrap shrink-0">
+              <button type="button" data-quick-mood="Đêm muộn" class="quick-mood-btn min-h-[36px] px-2.5 py-1 rounded-xl hover:bg-slate-200/60 dark:hover:bg-white/[0.06] hover:text-slate-900 dark:hover:text-white transition-colors whitespace-nowrap shrink-0">
                 + Đêm muộn
               </button>
               <span aria-hidden="true">·</span>
-              <button type="button" data-quick-mood="Chênh vênh" class="quick-mood-btn min-h-[36px] px-2.5 py-1 rounded-lg hover:bg-slate-200/60 dark:hover:bg-white/[0.06] hover:text-slate-900 dark:hover:text-white transition-colors whitespace-nowrap shrink-0">
-                + Chênh vênh
-              </button>
-              <span aria-hidden="true">·</span>
-              <button type="button" data-quick-mood="Chữa lành" class="quick-mood-btn min-h-[36px] px-2.5 py-1 rounded-lg hover:bg-slate-200/60 dark:hover:bg-white/[0.06] hover:text-slate-900 dark:hover:text-white transition-colors whitespace-nowrap shrink-0">
+              <button type="button" data-quick-mood="Chữa lành" class="quick-mood-btn min-h-[36px] px-2.5 py-1 rounded-xl hover:bg-slate-200/60 dark:hover:bg-white/[0.06] hover:text-slate-900 dark:hover:text-white transition-colors whitespace-nowrap shrink-0">
                 + Chữa lành
               </button>
+              <span aria-hidden="true">·</span>
+              <button type="button" data-quick-mood="Thầm thương" class="quick-mood-btn min-h-[36px] px-2.5 py-1 rounded-xl hover:bg-slate-200/60 dark:hover:bg-white/[0.06] hover:text-slate-900 dark:hover:text-white transition-colors whitespace-nowrap shrink-0">
+                + Thầm thương
+              </button>
             </div>
-            <span class="hidden sm:inline text-slate-400 dark:text-slate-500 whitespace-nowrap shrink-0">Ẩn danh 100%</span>
+            <span id="inlineHandleIndicator" class="hidden sm:inline font-mono text-[11px] text-slate-400 dark:text-slate-500 whitespace-nowrap shrink-0">@linhdan.vibe</span>
           </div>
         </div>
 
@@ -349,31 +383,31 @@
               <input
                 type="search"
                 id="searchFeedInput"
-                placeholder="Tìm theo từ khóa, tâm trạng hoặc thành phố..."
-                class="w-full min-h-[44px] pl-10 pr-4 py-2 rounded-xl glass-surface bg-white/80 dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/[0.08] text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-rose-500/60 transition-colors"
+                placeholder="Tìm theo @username, cảm xúc hoặc thành phố..."
+                class="w-full min-h-[44px] pl-10 pr-4 py-2 rounded-2xl glass-surface bg-white/85 dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/[0.08] text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-rose-500/60 transition-colors"
               />
             </div>
 
             <!-- Sort Selector -->
-            <div class="flex items-center p-1 rounded-xl glass-surface bg-white/80 dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/[0.08] shrink-0">
+            <div class="flex items-center p-1 rounded-2xl glass-surface bg-white/85 dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/[0.08] shrink-0">
               <button
                 type="button"
                 data-sort="latest"
-                class="sort-btn min-h-[36px] px-3 py-1 text-xs font-medium rounded-lg bg-slate-900 text-white dark:bg-white dark:text-slate-900 transition-colors whitespace-nowrap shrink-0"
+                class="sort-btn min-h-[36px] px-3 py-1 text-xs font-medium rounded-xl bg-slate-900 text-white dark:bg-white dark:text-slate-900 transition-colors whitespace-nowrap shrink-0"
               >
                 Mới nhất
               </button>
               <button
                 type="button"
                 data-sort="popular"
-                class="sort-btn min-h-[36px] px-3 py-1 text-xs font-medium rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors whitespace-nowrap shrink-0"
+                class="sort-btn min-h-[36px] px-3 py-1 text-xs font-medium rounded-xl text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors whitespace-nowrap shrink-0"
               >
-                Đồng cảm nhiều
+                Nổi bật
               </button>
             </div>
           </div>
 
-          <!-- Interactive Filter Tabs (Functional Segmented Buttons, Touch-Friendly >= 44px Hitboxes) -->
+          <!-- Interactive Filter Tabs -->
           <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5" role="tablist" aria-label="Lọc theo cung bậc cảm xúc">
             <button
               type="button"
@@ -382,7 +416,7 @@
               data-filter="all"
               class="mood-filter-btn min-h-[40px] px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-rose-600 text-white shadow-sm shadow-rose-600/20 transition-all whitespace-nowrap shrink-0"
             >
-              Tất cả tâm sự
+              Tất cả
             </button>
             <button
               type="button"
@@ -429,36 +463,70 @@
             >
               Đã lưu (<span id="filterSavedCount" class="font-mono tabular-nums">2</span>)
             </button>
+            <button
+              type="button"
+              id="seedBulkVibesBtn"
+              class="min-h-[40px] px-3.5 py-1.5 rounded-xl text-xs font-medium glass-surface bg-white/75 dark:bg-white/[0.04] border border-dashed border-slate-300 dark:border-white/15 text-slate-600 dark:text-slate-300 hover:border-rose-500/50 hover:text-rose-600 dark:hover:text-rose-400 transition-all whitespace-nowrap shrink-0"
+              title="Tạo thêm bài đăng mẫu để kiểm thử hiệu năng Virtual Scrolling"
+            >
+              + Nạp 200 bài (<span id="totalVibesCountBadge" class="font-mono tabular-nums">4</span>)
+            </button>
           </div>
         </div>
 
-        <!-- VIBE CARDS FEED CONTAINER -->
-        <div id="vibeFeedList" class="space-y-4" aria-live="polite">
-          <!-- Cards dynamically rendered via clean modern JS -->
+        <!-- VIBE CARDS FEED CONTAINER (Window-Synchronized Virtual Scrolling) -->
+        <div id="vibeFeedList" class="relative" aria-live="polite">
+          <div id="virtualSpacerTop" style="height: 0px;" aria-hidden="true"></div>
+          <div id="virtualItemsViewport" class="space-y-4"></div>
+          <div id="virtualSpacerBottom" style="height: 0px;" aria-hidden="true"></div>
         </div>
 
-        <!-- Empty State (Hidden when cards match) -->
-        <div id="emptyFeedState" class="hidden glass-surface rounded-2xl p-8 text-center bg-white/75 dark:bg-white/[0.03] border border-slate-200/80 dark:border-white/[0.08]">
-          <p class="font-display text-lg font-medium text-slate-900 dark:text-white mb-1">Chưa tìm thấy lời tâm sự phù hợp</p>
-          <p class="text-sm text-slate-500 dark:text-slate-400 mb-4">Thử đổi từ khóa tìm kiếm hoặc là người đầu tiên sẻ chia cảm xúc này.</p>
+        <!-- Empty State -->
+        <div id="emptyFeedState" class="hidden glass-surface rounded-3xl p-8 text-center bg-white/80 dark:bg-white/[0.03] border border-slate-200/80 dark:border-white/[0.08]">
+          <p class="font-display text-lg font-medium text-slate-900 dark:text-white mb-1">Chưa tìm thấy bài viết phù hợp</p>
+          <p class="text-sm text-slate-500 dark:text-slate-400 mb-4">Thử đổi từ khóa tìm kiếm hoặc là người đầu tiên chia sẻ cảm xúc này.</p>
           <button
             type="button"
             id="resetFiltersBtn"
             class="min-h-[44px] px-4 py-2 rounded-xl text-xs font-semibold bg-slate-900 text-white dark:bg-white dark:text-slate-900 transition-transform active:scale-95"
           >
-            Xem lại toàn bộ tâm sự
+            Xem lại toàn bộ bảng tin
           </button>
         </div>
 
       </section>
 
-      <!-- RIGHT COLUMN (Desktop 3 cols): Daily Gentle Reflection & Community Guidelines -->
+      <!-- RIGHT COLUMN (Desktop 3 cols): Soul Match Radar & Daily Topic -->
       <aside class="hidden lg:block lg:col-span-3 space-y-5 sticky top-20">
+        <!-- Litmatch Soul Match / Vibe Radar Quick Card -->
+        <div class="glass-surface rounded-3xl p-5 bg-gradient-to-br from-rose-500/10 via-indigo-500/5 to-transparent border border-rose-500/25">
+          <div class="flex items-center justify-between gap-2 mb-2">
+            <span class="text-xs font-semibold text-rose-600 dark:text-rose-400 flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span>
+              Soul Match · 180s
+            </span>
+            <span class="font-mono text-[11px] text-slate-500 dark:text-slate-400 tabular-nums">128 trực tuyến</span>
+          </div>
+          <h2 class="font-display text-base font-semibold text-slate-900 dark:text-white leading-snug mb-1.5">
+            Ghép đôi tần số ngẫu nhiên
+          </h2>
+          <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed mb-3.5">
+            Bật Radar để kết nối ngay với một người lạ đang có chung Vibe Tag và trò chuyện ẩn danh trong 3 phút.
+          </p>
+          <button
+            type="button"
+            id="sidebarRadarMatchBtn"
+            class="w-full min-h-[42px] px-4 py-2 rounded-xl bg-gradient-to-r from-rose-600 to-indigo-600 hover:from-rose-500 hover:to-indigo-500 text-white text-xs font-semibold shadow-md shadow-rose-600/20 transition-all"
+          >
+            Bật Vibe Radar ngay →
+          </button>
+        </div>
+
         <!-- Daily Reflection Card -->
-        <div class="glass-surface rounded-2xl p-5 bg-white/75 dark:bg-white/[0.03] border border-slate-200/80 dark:border-white/[0.08]">
-          <p class="text-xs font-medium text-rose-600 dark:text-rose-400 mb-1.5">Câu hỏi gợi mở hôm nay</p>
+        <div class="glass-surface rounded-3xl p-5 bg-white/80 dark:bg-white/[0.035] border border-slate-200/80 dark:border-white/[0.08]">
+          <p class="text-xs font-medium text-rose-600 dark:text-rose-400 mb-1.5">Chủ đề kết nối hôm nay</p>
           <h2 id="dailyPromptText" class="font-display text-base font-medium text-slate-900 dark:text-white leading-snug mb-3">
-            "Nếu có thể gửi một tin nhắn ẩn danh đến chính mình của 3 năm trước, bạn sẽ nói điều gì?"
+            "Khoảnh khắc bình yên nhất mà bạn vô tình bắt gặp trong tuần qua là gì?"
           </h2>
           <div class="flex items-center justify-between gap-2 pt-2 border-t border-slate-200/60 dark:border-white/[0.06]">
             <button
@@ -466,28 +534,28 @@
               id="answerDailyPromptBtn"
               class="min-h-[38px] text-xs font-semibold text-rose-600 dark:text-rose-400 hover:underline whitespace-nowrap shrink-0"
             >
-              Viết câu trả lời →
+              Chia sẻ ngay →
             </button>
             <button
               type="button"
               id="nextDailyPromptBtn"
               class="min-h-[38px] px-2.5 py-1 rounded-lg text-xs text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors whitespace-nowrap shrink-0"
             >
-              Đổi câu hỏi
+              Đổi chủ đề
             </button>
           </div>
         </div>
 
-        <!-- Gentle Corner / Rules -->
-        <div class="glass-surface rounded-2xl p-5 bg-white/75 dark:bg-white/[0.03] border border-slate-200/80 dark:border-white/[0.08]">
-          <h2 class="text-sm font-semibold text-slate-900 dark:text-white mb-2">Quy ước nhỏ tại VibeNest</h2>
+        <!-- Community Culture -->
+        <div class="glass-surface rounded-3xl p-5 bg-white/80 dark:bg-white/[0.035] border border-slate-200/80 dark:border-white/[0.08]">
+          <h2 class="text-sm font-semibold text-slate-900 dark:text-white mb-2">Không gian VibeNest</h2>
           <ul class="space-y-2.5 text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-            <li>01. Lắng nghe không phán xét. Một lời vỗ về đúng lúc có thể làm ấm cả một đêm dài.</li>
-            <li>02. Tuyệt đối bảo mật danh tính cá nhân của bạn và người được nhắc đến.</li>
-            <li>03. Sử dụng ngôn từ dịu dàng, tôn trọng cảm xúc thật của nhau.</li>
+            <li>01. Kết nối chân thật qua hồ sơ cảm xúc cá nhân và những khung hình đời thường.</li>
+            <li>02. Khoảnh khắc 24h lưu giữ trọn vẹn nhịp sống của bạn và tự động làm mới mỗi ngày.</li>
+            <li>03. Tôn trọng sự khác biệt và lan tỏa năng lượng tích cực trong từng phản hồi.</li>
           </ul>
           <div class="mt-4 pt-3 border-t border-slate-200/60 dark:border-white/[0.06] text-[11px] text-slate-400 dark:text-slate-500">
-            VibeNest · omni.id.vn · Kết nối cảm xúc ẩn danh
+            VibeNest · omni.id.vn · Social Vibe Network
           </div>
         </div>
       </aside>
@@ -499,28 +567,28 @@
   <button
     type="button"
     id="floatingComposeBtn"
-    aria-label="Tạo tâm sự nhanh"
-    class="hidden md:flex fixed bottom-7 right-7 z-30 min-h-[52px] px-5 py-3 rounded-2xl bg-rose-600 hover:bg-rose-500 active:scale-95 text-white font-semibold text-sm shadow-lg shadow-rose-600/25 items-center gap-2.5 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400"
+    aria-label="Đăng bài mới"
+    class="hidden md:flex fixed bottom-7 right-7 z-30 min-h-[52px] px-5 py-3 rounded-2xl bg-gradient-to-r from-rose-600 to-indigo-600 hover:from-rose-500 hover:to-indigo-500 active:scale-95 text-white font-semibold text-sm shadow-lg shadow-rose-600/25 items-center gap-2.5 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400"
   >
-    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
       <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
     </svg>
-    <span>Tâm sự nhanh</span>
+    <span>Đăng bài mới</span>
   </button>
 
-  <!-- MOBILE FIXED BOTTOM TAB BAR (Ergonomic Thumb Zone, Compact 60px Height -> Combined Sticky <= 15% Viewport) -->
-  <nav
-    class="md:hidden fixed bottom-0 left-0 right-0 z-30 h-[60px] glass-nav bg-white/85 dark:bg-night-950/85 border-t border-slate-200/80 dark:border-white/[0.08] px-2"
-    aria-label="Điều hướng di động"
-  >
-    <div class="grid grid-cols-4 items-center h-full max-w-md mx-auto">
+  <!-- SLEEK ERGONOMIC ONE-HANDED FLOATING BOTTOM TAB BAR (Mobile Only, Compact 56px Height) -->
+  <div class="md:hidden fixed bottom-3 left-0 right-0 z-30 px-4 pointer-events-none">
+    <nav
+      class="pointer-events-auto max-w-[380px] mx-auto h-[56px] px-2 rounded-2xl glass-nav bg-white/90 dark:bg-night-900/90 border border-slate-200/80 dark:border-white/[0.09] shadow-xl shadow-black/25 grid grid-cols-5 items-center"
+      aria-label="Điều hướng di động một tay"
+    >
       <button
         type="button"
         data-mobile-nav="all"
-        class="mobile-nav-btn min-h-[48px] flex flex-col items-center justify-center text-rose-600 dark:text-rose-400 transition-colors"
+        class="mobile-nav-btn min-h-[44px] rounded-xl flex flex-col items-center justify-center text-rose-600 dark:text-rose-400 transition-colors"
       >
         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
+          <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
         </svg>
         <span class="text-[10px] font-semibold tracking-tight mt-0.5 whitespace-nowrap">Bảng tin</span>
       </button>
@@ -528,7 +596,7 @@
       <button
         type="button"
         data-mobile-nav="Chữa lành"
-        class="mobile-nav-btn min-h-[48px] flex flex-col items-center justify-center text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+        class="mobile-nav-btn min-h-[44px] rounded-xl flex flex-col items-center justify-center text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
       >
         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
           <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
@@ -536,36 +604,48 @@
         <span class="text-[10px] font-medium tracking-tight mt-0.5 whitespace-nowrap">Chữa lành</span>
       </button>
 
-      <button
-        type="button"
-        id="mobileComposeTrigger"
-        class="min-h-[48px] flex flex-col items-center justify-center text-slate-900 dark:text-white transition-transform active:scale-95"
-      >
-        <span class="w-8 h-8 rounded-xl bg-rose-600 text-white flex items-center justify-center shadow-sm shadow-rose-600/30">
-          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
+      <!-- Center Ergonomic Create Button -->
+      <div class="flex items-center justify-center">
+        <button
+          type="button"
+          id="mobileComposeTrigger"
+          aria-label="Đăng bài mới"
+          class="w-11 h-10 rounded-xl bg-gradient-to-tr from-rose-600 to-indigo-600 text-white flex items-center justify-center shadow-md shadow-rose-600/25 transition-transform active:scale-95"
+        >
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.4">
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
           </svg>
-        </span>
-        <span class="text-[10px] font-semibold tracking-tight mt-0.5 text-rose-600 dark:text-rose-400 whitespace-nowrap">Viết nhanh</span>
-      </button>
+        </button>
+      </div>
 
       <button
         type="button"
         data-mobile-nav="saved"
-        class="mobile-nav-btn min-h-[48px] flex flex-col items-center justify-center text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+        class="mobile-nav-btn min-h-[44px] rounded-xl flex flex-col items-center justify-center text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
       >
         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
           <path stroke-linecap="round" stroke-linejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z" />
         </svg>
         <span class="text-[10px] font-medium tracking-tight mt-0.5 whitespace-nowrap">Đã lưu</span>
       </button>
-    </div>
-  </nav>
 
-  <!-- QUICK COMPOSE BOTTOM SHEET / MODAL (Mobile Slide-Up Sheet + Desktop Centered Glass Modal) -->
+      <button
+        type="button"
+        id="mobileProfileTrigger"
+        class="min-h-[44px] rounded-xl flex flex-col items-center justify-center text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+      >
+        <span id="mobileNavAvatarBadge" class="w-5 h-5 rounded-md border flex items-center justify-center font-display text-[11px] font-semibold">
+          L
+        </span>
+        <span class="text-[10px] font-medium tracking-tight mt-0.5 whitespace-nowrap">Hồ sơ</span>
+      </button>
+    </nav>
+  </div>
+
+  <!-- QUICK POST COMPOSER MODAL -->
   <div
     id="composerModalBackdrop"
-    class="fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 opacity-0 transition-opacity duration-200"
+    class="fixed inset-0 z-50 hidden bg-black/65 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 opacity-0 transition-opacity duration-200"
     role="dialog"
     aria-modal="true"
     aria-labelledby="composerModalTitle"
@@ -574,13 +654,12 @@
       id="composerModalPanel"
       class="w-full max-w-lg rounded-t-3xl sm:rounded-3xl glass-nav bg-white/95 dark:bg-night-900/95 border-t sm:border border-slate-200/80 dark:border-white/10 p-5 sm:p-6 shadow-2xl transform translate-y-6 sm:translate-y-0 sm:scale-95 transition-transform duration-200 max-h-[90vh] overflow-y-auto"
     >
-      <!-- Mobile Sheet Drag Handle -->
       <div class="w-10 h-1.5 bg-slate-300 dark:bg-white/20 rounded-full mx-auto mb-4 sm:hidden"></div>
 
       <div class="flex items-center justify-between gap-4 mb-4">
         <div>
-          <h2 id="composerModalTitle" class="font-display text-lg font-semibold text-slate-900 dark:text-white">Gửi một lời tâm sự ẩn danh</h2>
-          <p class="text-xs text-slate-500 dark:text-slate-400">Danh tính được mã hóa ngẫu nhiên trên VibeNest</p>
+          <h2 id="composerModalTitle" class="font-display text-lg font-semibold text-slate-900 dark:text-white">Chia sẻ bài viết mới</h2>
+          <p class="text-xs text-slate-500 dark:text-slate-400">Đăng tải trực tiếp dưới hồ sơ cá nhân của bạn</p>
         </div>
         <button
           type="button"
@@ -595,19 +674,24 @@
       </div>
 
       <form id="composeVibeForm" class="space-y-4">
-        <!-- Alias & Location Row -->
+        <!-- Personal Profile & City Row -->
         <div class="flex flex-col sm:flex-row gap-2.5">
-          <div class="flex-1 flex items-center justify-between px-3.5 py-2 rounded-xl bg-slate-100/90 dark:bg-white/[0.05] border border-slate-200/70 dark:border-white/[0.07]">
-            <div class="min-w-0">
-              <span class="text-[11px] text-slate-500 dark:text-slate-400 block">Bút danh ẩn danh</span>
-              <span id="composerAliasPreview" class="text-xs font-semibold text-slate-900 dark:text-white truncate block">Mây Lang Thang #409</span>
+          <div class="flex-1 flex items-center justify-between gap-2.5 px-3.5 py-2 rounded-2xl bg-slate-100/90 dark:bg-white/[0.05] border border-slate-200/70 dark:border-white/[0.07]">
+            <div class="flex items-center gap-2.5 min-w-0">
+              <div id="composerAvatarPreview" class="w-9 h-9 rounded-xl border flex items-center justify-center font-display font-semibold text-xs shrink-0 transition-colors duration-200">
+                L
+              </div>
+              <div class="min-w-0">
+                <span id="composerNamePreview" class="text-xs font-semibold text-slate-900 dark:text-white truncate block">Linh Đan</span>
+                <span id="composerHandlePreview" class="text-[11px] font-mono text-rose-600 dark:text-rose-400 truncate block">@linhdan.vibe</span>
+              </div>
             </div>
             <button
               type="button"
-              id="randomizeAliasBtn"
-              class="min-h-[36px] px-2.5 py-1 text-xs font-medium text-rose-600 dark:text-rose-400 hover:underline whitespace-nowrap shrink-0"
+              id="composerSwitchProfileBtn"
+              class="min-h-[36px] px-2.5 py-1 text-xs font-medium text-slate-600 dark:text-slate-300 hover:text-rose-600 dark:hover:text-rose-400 whitespace-nowrap shrink-0"
             >
-              Đổi ngẫu nhiên
+              Sửa hồ sơ
             </button>
           </div>
 
@@ -615,13 +699,12 @@
             <label for="composerLocation" class="sr-only">Địa điểm</label>
             <select
               id="composerLocation"
-              class="w-full h-full min-h-[48px] px-3.5 py-2 rounded-xl bg-slate-100/90 dark:bg-white/[0.05] border border-slate-200/70 dark:border-white/[0.07] text-xs font-medium text-slate-800 dark:text-slate-200 focus:outline-none focus:border-rose-500"
+              class="w-full h-full min-h-[48px] px-3.5 py-2 rounded-2xl bg-slate-100/90 dark:bg-white/[0.05] border border-slate-200/70 dark:border-white/[0.07] text-xs font-medium text-slate-800 dark:text-slate-200 focus:outline-none focus:border-rose-500"
             >
               <option value="Sài Gòn">Sài Gòn</option>
               <option value="Hà Nội">Hà Nội</option>
               <option value="Đà Lạt">Đà Lạt</option>
               <option value="Đà Nẵng">Đà Nẵng</option>
-              <option value="Nơi xa">Từ một nơi xa</option>
             </select>
           </div>
         </div>
@@ -647,33 +730,19 @@
 
         <!-- Textarea Content -->
         <div>
-          <label for="composerTextarea" class="sr-only">Nội dung tâm sự</label>
+          <label for="composerTextarea" class="sr-only">Nội dung bài viết</label>
           <textarea
             id="composerTextarea"
             rows="4"
             maxlength="600"
             required
-            placeholder="Hãy viết ra điều bạn chưa thể nói cùng ai. Ở đây chỉ có sự lắng nghe..."
+            placeholder="Chia sẻ câu chuyện, góc nhìn hoặc khoảnh khắc đáng nhớ của bạn hôm nay..."
             class="w-full p-4 rounded-2xl bg-slate-100/90 dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/[0.08] text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 leading-relaxed focus:outline-none focus:border-rose-500 transition-colors resize-none"
           ></textarea>
           <div class="flex items-center justify-between text-xs text-slate-400 dark:text-slate-500 mt-1.5 px-1">
-            <span>Gợi ý: Đính kèm giai điệu để người đọc đồng điệu hơn</span>
+            <span>Hiển thị công khai trên bảng tin VibeNest</span>
             <span class="font-mono tabular-nums"><span id="charCountNum">0</span>/600</span>
           </div>
-        </div>
-
-        <!-- Ambient Sound Attachment Selector -->
-        <div>
-          <label for="composerSoundSelect" class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">Đính kèm thanh âm nền (tùy chọn)</label>
-          <select
-            id="composerSoundSelect"
-            class="w-full min-h-[44px] px-3.5 py-2 rounded-xl bg-slate-100/90 dark:bg-white/[0.05] border border-slate-200/70 dark:border-white/[0.07] text-xs font-medium text-slate-800 dark:text-slate-200 focus:outline-none focus:border-rose-500"
-          >
-            <option value="">Không đính kèm âm thanh</option>
-            <option value="Mưa rơi hiên nhà · Lo-fi">Mưa rơi hiên nhà · Lo-fi</option>
-            <option value="Sóng biển đêm khuya · 432Hz">Sóng biển đêm khuya · 432Hz</option>
-            <option value="Tiếng dương cầm trầm lắng">Tiếng dương cầm trầm lắng</option>
-          </select>
         </div>
 
         <!-- Submit & Cancel Actions -->
@@ -687,116 +756,760 @@
           </button>
           <button
             type="submit"
-            class="min-h-[44px] px-5 py-2.5 rounded-xl text-xs font-semibold bg-rose-600 hover:bg-rose-500 active:scale-[0.98] text-white shadow-md shadow-rose-600/20 transition-all whitespace-nowrap"
+            class="min-h-[44px] px-5 py-2.5 rounded-xl text-xs font-semibold bg-gradient-to-r from-rose-600 to-indigo-600 hover:from-rose-500 hover:to-indigo-500 active:scale-[0.98] text-white shadow-md shadow-rose-600/20 transition-all whitespace-nowrap"
           >
-            Đăng tâm sự ẩn danh
+            Đăng lên bảng tin
           </button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- TOAST NOTIFICATION -->
+  <!-- LITMATCH-STYLE ONBOARDING & PERSONAL IDENTITY MODAL -->
   <div
-    id="vibeToast"
-    role="status"
-    aria-live="polite"
-    class="fixed bottom-20 md:bottom-8 left-1/2 -translate-x-1/2 z-50 pointer-events-none opacity-0 translate-y-3 transition-all duration-200 glass-nav bg-slate-900/90 dark:bg-white/95 text-white dark:text-slate-900 px-4 py-2.5 rounded-xl text-xs font-medium shadow-lg whitespace-nowrap"
+    id="profileOnboardingBackdrop"
+    class="fixed inset-0 z-50 hidden bg-black/70 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4 opacity-0 transition-opacity duration-200"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="profileOnboardingTitle"
   >
-    Đã gửi lời đồng cảm
+    <div
+      id="profileOnboardingPanel"
+      class="w-full max-w-[440px] rounded-t-3xl sm:rounded-3xl glass-nav bg-white/95 dark:bg-night-900/95 border-t sm:border border-slate-200/80 dark:border-white/10 p-5 sm:p-6 shadow-2xl transform translate-y-6 sm:translate-y-0 sm:scale-95 transition-transform duration-200 max-h-[92vh] overflow-y-auto"
+    >
+      <div class="w-10 h-1.5 bg-slate-300 dark:bg-white/20 rounded-full mx-auto mb-4 sm:hidden"></div>
+
+      <!-- Modal Header -->
+      <div class="flex items-start justify-between gap-3 mb-5">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-2xl bg-rose-500/10 border border-rose-500/25 flex items-center justify-center shrink-0">
+            <svg class="w-6 h-6" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <path d="M5.5 19.5C5.5 26.956 11.096 31.5 18 31.5C24.904 31.5 30.5 26.956 30.5 19.5" stroke="#F43F5E" stroke-width="2.5" stroke-linecap="round" />
+              <path d="M9.5 21.5C11.3 25.3 14.35 27.25 18 27.25C21.65 27.25 24.7 25.3 26.5 21.5" stroke="#6366F1" stroke-width="2" stroke-linecap="round" stroke-opacity="0.7" />
+              <path d="M8.5 15.25C11.2 15.25 11.8 9.5 14.5 9.5C17.2 9.5 16.8 18.5 19.5 18.5C22.2 18.5 22.5 11.5 25.2 11.5C26.8 11.5 27.3 14.25 28.5 14.25" stroke="currentColor" class="text-slate-900 dark:text-white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </div>
+          <div>
+            <h2 id="profileOnboardingTitle" class="font-display text-lg font-semibold text-slate-900 dark:text-white">Hồ sơ kết nối VibeNest</h2>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Bước vào mạng xã hội với định danh cá nhân của bạn</p>
+          </div>
+        </div>
+        <button
+          type="button"
+          id="closeProfileModalBtn"
+          aria-label="Đóng cửa sổ"
+          class="min-h-[44px] min-w-[44px] -mr-1 -mt-1 rounded-xl flex items-center justify-center text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/[0.06] transition-colors"
+        >
+          ✕
+        </button>
+      </div>
+
+      <!-- Live Soul Card Preview -->
+      <div class="relative overflow-hidden p-4 rounded-2xl bg-gradient-to-br from-rose-500/[0.09] via-indigo-500/[0.06] to-transparent border border-slate-200/80 dark:border-white/10 mb-4">
+        <div class="flex items-center gap-3.5">
+          <div id="onboardingAvatarPreview" class="w-14 h-14 rounded-2xl border flex items-center justify-center font-display font-semibold text-xl shrink-0 shadow-sm">
+            L
+          </div>
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center gap-2">
+              <p id="onboardingNamePreview" class="text-base font-semibold text-slate-900 dark:text-white truncate">Linh Đan</p>
+              <span id="onboardingHandlePreview" class="text-xs font-mono text-rose-600 dark:text-rose-400 truncate">@linhdan.vibe</span>
+            </div>
+            <p id="onboardingMetaPreview" class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 truncate">
+              Nhiếp Ảnh Phim & Cà Phê · Sài Gòn
+            </p>
+            <p id="onboardingBioPreview" class="text-xs text-slate-600 dark:text-slate-300 mt-1.5 line-clamp-1">
+              Thích chụp ảnh phố lên đèn và những cuộc trò chuyện không vội vã.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 1-Tap Quick Demo Profiles -->
+      <div class="mb-4">
+        <span class="block text-[11px] font-medium text-slate-500 dark:text-slate-400 mb-2">
+          Đăng nhập nhanh tài khoản mẫu (1 chạm):
+        </span>
+        <div class="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
+          <button
+            type="button"
+            data-preset-profile="0"
+            class="preset-profile-btn min-h-[38px] px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-white/[0.05] hover:bg-slate-200/80 dark:hover:bg-white/10 border border-slate-200/80 dark:border-white/[0.08] text-xs font-medium text-slate-700 dark:text-slate-200 transition-colors whitespace-nowrap shrink-0"
+          >
+            Linh Đan (@linhdan)
+          </button>
+          <button
+            type="button"
+            data-preset-profile="1"
+            class="preset-profile-btn min-h-[38px] px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-white/[0.05] hover:bg-slate-200/80 dark:hover:bg-white/10 border border-slate-200/80 dark:border-white/[0.08] text-xs font-medium text-slate-700 dark:text-slate-200 transition-colors whitespace-nowrap shrink-0"
+          >
+            Minh Khôi (@khoi)
+          </button>
+          <button
+            type="button"
+            data-preset-profile="2"
+            class="preset-profile-btn min-h-[38px] px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-white/[0.05] hover:bg-slate-200/80 dark:hover:bg-white/10 border border-slate-200/80 dark:border-white/[0.08] text-xs font-medium text-slate-700 dark:text-slate-200 transition-colors whitespace-nowrap shrink-0"
+          >
+            Hạ Vy (@havy)
+          </button>
+        </div>
+      </div>
+
+      <form id="profileOnboardingForm" class="space-y-3.5">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label for="profileDisplayNameInput" class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+              Tên hiển thị
+            </label>
+            <input
+              type="text"
+              id="profileDisplayNameInput"
+              required
+              maxlength="32"
+              placeholder="VD: Linh Đan"
+              class="w-full min-h-[44px] px-3.5 py-2 rounded-xl bg-slate-100/90 dark:bg-white/[0.05] border border-slate-200/80 dark:border-white/10 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-rose-500"
+            />
+          </div>
+
+          <div>
+            <label for="profileHandleInput" class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+              ID định danh (@handle)
+            </label>
+            <div class="relative">
+              <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs font-mono text-slate-400">@</span>
+              <input
+                type="text"
+                id="profileHandleInput"
+                required
+                maxlength="24"
+                placeholder="linhdan.vibe"
+                class="w-full min-h-[44px] pl-7 pr-3.5 py-2 rounded-xl bg-slate-100/90 dark:bg-white/[0.05] border border-slate-200/80 dark:border-white/10 text-sm font-mono text-slate-900 dark:text-white focus:outline-none focus:border-rose-500"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label for="profileVibeTagSelect" class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+              Tần số cá nhân (Vibe Tag)
+            </label>
+            <select
+              id="profileVibeTagSelect"
+              class="w-full min-h-[44px] px-3.5 py-2 rounded-xl bg-slate-100/90 dark:bg-white/[0.05] border border-slate-200/80 dark:border-white/10 text-xs font-medium text-slate-800 dark:text-slate-200 focus:outline-none focus:border-rose-500"
+            >
+              <option value="Nhiếp Ảnh Phim & Cà Phê">Nhiếp Ảnh Phim & Cà Phê</option>
+              <option value="Kẻ Mộng Mơ Đêm Muộn">Kẻ Mộng Mơ Đêm Muộn</option>
+              <option value="Tần Số Chữa Lành">Tần Số Chữa Lành</option>
+              <option value="Acoustic & Mưa Rào">Acoustic & Mưa Rào</option>
+              <option value="Du Mục Đô Thị">Du Mục Đô Thị</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="profileCitySelect" class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+              Thành phố
+            </label>
+            <select
+              id="profileCitySelect"
+              class="w-full min-h-[44px] px-3.5 py-2 rounded-xl bg-slate-100/90 dark:bg-white/[0.05] border border-slate-200/80 dark:border-white/10 text-xs font-medium text-slate-800 dark:text-slate-200 focus:outline-none focus:border-rose-500"
+            >
+              <option value="Sài Gòn">Sài Gòn</option>
+              <option value="Hà Nội">Hà Nội</option>
+              <option value="Đà Lạt">Đà Lạt</option>
+              <option value="Đà Nẵng">Đà Nẵng</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label for="profileBioInput" class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+            Lời giới thiệu ngắn (Bio)
+          </label>
+          <input
+            type="text"
+            id="profileBioInput"
+            maxlength="120"
+            placeholder="Viết một câu ngắn thể hiện chất riêng của bạn..."
+            class="w-full min-h-[44px] px-3.5 py-2 rounded-xl bg-slate-100/90 dark:bg-white/[0.05] border border-slate-200/80 dark:border-white/10 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-rose-500"
+          />
+        </div>
+
+        <button
+          type="submit"
+          class="w-full min-h-[48px] px-5 py-3 rounded-2xl text-sm font-semibold bg-gradient-to-r from-rose-600 to-indigo-600 hover:from-rose-500 hover:to-indigo-500 active:scale-[0.99] text-white shadow-lg shadow-rose-600/20 transition-all"
+        >
+          Lưu hồ sơ & Vào bảng tin ngay
+        </button>
+      </form>
+    </div>
   </div>
 
-  <!-- MODERN VANILLA JAVASCRIPT (Zero External Dependencies, Web Audio API Synth, Full Interactivity) -->
+  <!-- 24H STORY VIEWER MODAL -->
+  <div
+    id="storyViewerBackdrop"
+    class="fixed inset-0 z-50 hidden bg-black/85 backdrop-blur-md flex items-center justify-center p-0 sm:p-4"
+    role="dialog"
+    aria-modal="true"
+    aria-label="Trình xem Khoảnh khắc 24h"
+  >
+    <div
+      id="storyViewerCanvas"
+      class="relative w-full h-full sm:h-[650px] sm:max-w-[400px] sm:rounded-3xl overflow-hidden flex flex-col justify-between border border-white/15 shadow-2xl bg-gradient-to-br from-[#3b122b] via-[#1c1330] to-[#0b0f19]"
+    >
+      <div id="storyViewerImageWrap" class="hidden absolute inset-0 z-0">
+        <img id="storyViewerImage" src="" alt="Khoảnh khắc 24h" referrerpolicy="no-referrer" class="w-full h-full object-cover" />
+        <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-black/60"></div>
+      </div>
+
+      <!-- Top Progress Bars & Author Identity Header -->
+      <div class="relative z-10 p-4 pt-5 space-y-3 bg-gradient-to-b from-black/70 to-transparent">
+        <div id="storyProgressBars" class="flex items-center gap-1.5"></div>
+
+        <div class="flex items-center justify-between gap-3">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div id="storyViewerAvatar" class="w-9 h-9 rounded-xl border flex items-center justify-center font-display font-semibold text-xs shrink-0">
+              B
+            </div>
+            <div class="min-w-0">
+              <div class="flex items-center gap-1.5">
+                <p id="storyViewerAuthor" class="text-xs font-semibold text-white truncate">Bảo Ngọc</p>
+                <span id="storyViewerHandle" class="text-[11px] font-mono text-white/75 truncate">@baongoc.film</span>
+              </div>
+              <div class="flex items-center gap-1.5 text-[11px] text-white/75">
+                <span id="storyViewerMood">Đêm muộn</span>
+                <span aria-hidden="true">·</span>
+                <span id="storyViewerLocation">Sài Gòn</span>
+                <span aria-hidden="true">·</span>
+                <span id="storyViewerRemaining" class="font-mono tabular-nums">Còn 22h</span>
+              </div>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            id="closeStoryViewerBtn"
+            aria-label="Đóng khoảnh khắc"
+            class="min-h-[44px] min-w-[44px] rounded-xl flex items-center justify-center text-white/80 hover:text-white hover:bg-white/10 transition-colors"
+          >
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Center Caption & Tap Zones -->
+      <div class="relative z-10 flex-1 flex items-center justify-center px-7 py-6 select-none">
+        <button type="button" id="prevStoryTapZone" aria-label="Khoảnh khắc trước" class="absolute inset-y-0 left-0 w-1/3 z-10 focus:outline-none"></button>
+        <button type="button" id="nextStoryTapZone" aria-label="Khoảnh khắc tiếp theo" class="absolute inset-y-0 right-0 w-1/3 z-10 focus:outline-none"></button>
+        <p id="storyViewerCaption" class="font-display text-xl sm:text-2xl font-medium text-white text-center leading-relaxed drop-shadow-sm" style="text-wrap: balance;"></p>
+      </div>
+
+      <!-- Bottom Quick Reply & Reaction Bar -->
+      <div class="relative z-20 p-4 bg-gradient-to-t from-black/85 via-black/50 to-transparent">
+        <div class="flex items-center gap-2">
+          <form id="storyReplyForm" class="flex-1 flex items-center gap-2">
+            <input
+              type="text"
+              id="storyReplyInput"
+              maxlength="180"
+              placeholder="Gửi tin nhắn phản hồi khoảnh khắc..."
+              class="flex-1 min-h-[44px] px-4 py-2 rounded-xl bg-white/10 border border-white/15 text-xs text-white placeholder:text-white/55 focus:outline-none focus:border-rose-400"
+            />
+            <button
+              type="submit"
+              class="min-h-[44px] px-3.5 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold whitespace-nowrap shrink-0"
+            >
+              Gửi
+            </button>
+          </form>
+
+          <button
+            type="button"
+            id="storyWarmthBtn"
+            class="min-h-[44px] px-3.5 py-2 rounded-xl border border-white/15 bg-white/10 text-white flex items-center gap-1.5 text-xs font-medium transition-all shrink-0"
+          >
+            <span>♥</span>
+            <span id="storyWarmthCount" class="font-mono tabular-nums">64</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CREATE 24H STORY MODAL -->
+  <div
+    id="storyComposerBackdrop"
+    class="fixed inset-0 z-50 hidden bg-black/70 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="storyComposerModalTitle"
+  >
+    <div class="w-full max-w-md rounded-t-3xl sm:rounded-3xl glass-nav bg-white/95 dark:bg-night-900/95 border-t sm:border border-slate-200/80 dark:border-white/10 p-5 sm:p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
+      <div class="w-10 h-1.5 bg-slate-300 dark:bg-white/20 rounded-full mx-auto mb-4 sm:hidden"></div>
+
+      <div class="flex items-center justify-between gap-4 mb-4">
+        <div>
+          <h2 id="storyComposerModalTitle" class="font-display text-lg font-semibold text-slate-900 dark:text-white">Đăng Khoảnh khắc 24h</h2>
+          <p class="text-xs text-slate-500 dark:text-slate-400">Hiển thị nổi bật trên đầu bảng tin trong 24 giờ</p>
+        </div>
+        <button
+          type="button"
+          id="closeStoryComposerBtn"
+          aria-label="Đóng cửa sổ"
+          class="min-h-[44px] min-w-[44px] rounded-xl flex items-center justify-center text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+        >
+          ✕
+        </button>
+      </div>
+
+      <form id="storyComposeForm" class="space-y-4">
+        <div
+          id="storyComposePreviewBox"
+          class="relative h-48 rounded-2xl overflow-hidden p-5 flex items-center justify-center border border-white/15 bg-gradient-to-br from-[#3b122b] via-[#1c1330] to-[#0b0f19]"
+        >
+          <div id="storyComposeImagePreviewWrap" class="hidden absolute inset-0">
+            <img id="storyComposeImagePreview" src="" alt="Xem trước ảnh" class="w-full h-full object-cover" />
+            <div class="absolute inset-0 bg-black/50"></div>
+          </div>
+          <p id="storyComposePreviewText" class="relative z-10 font-display text-base text-white text-center leading-relaxed line-clamp-4">
+            Viết vài dòng ngắn hoặc tải ảnh lên cho khoảnh khắc 24h...
+          </p>
+        </div>
+
+        <div class="flex items-center justify-between gap-2">
+          <div class="flex items-center gap-2" id="storyPresetButtons">
+            <button type="button" data-story-preset="dusk-rose" class="story-preset-btn w-8 h-8 rounded-full border-2 border-white ring-2 ring-rose-500 scale-110 transition-transform" style="background: linear-gradient(135deg, #e11d48 0%, #4f46e5 100%);" title="Chiều tà Sài Gòn"></button>
+            <button type="button" data-story-preset="midnight-indigo" class="story-preset-btn w-8 h-8 rounded-full border-2 border-transparent opacity-75 hover:opacity-100 transition-transform" style="background: linear-gradient(135deg, #6366f1 0%, #0ea5e9 100%);" title="Đêm sương Đà Lạt"></button>
+            <button type="button" data-story-preset="amber-rain" class="story-preset-btn w-8 h-8 rounded-full border-2 border-transparent opacity-75 hover:opacity-100 transition-transform" style="background: linear-gradient(135deg, #f59e0b 0%, #e11d48 100%);" title="Đèn vàng phố cũ"></button>
+            <button type="button" data-story-preset="emerald-mist" class="story-preset-btn w-8 h-8 rounded-full border-2 border-transparent opacity-75 hover:opacity-100 transition-transform" style="background: linear-gradient(135deg, #10b981 0%, #3b82f6 100%);" title="Mưa đầu mùa"></button>
+          </div>
+
+          <div>
+            <input type="file" id="storyImageFileInput" accept="image/*" class="hidden" />
+            <button
+              type="button"
+              id="storyImagePickBtn"
+              class="min-h-[38px] px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-white/[0.06] border border-slate-200 dark:border-white/10 text-xs font-medium text-slate-700 dark:text-slate-200 hover:border-rose-500/40 transition-colors whitespace-nowrap"
+            >
+              + Chọn ảnh nền
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2.5">
+          <select id="storyComposeMood" class="min-h-[42px] px-3 py-2 rounded-xl bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/10 text-xs font-medium text-slate-800 dark:text-slate-200">
+            <option value="Đêm muộn">Đêm muộn</option>
+            <option value="Chênh vênh">Chênh vênh</option>
+            <option value="Chữa lành">Chữa lành</option>
+            <option value="Thầm thương">Thầm thương</option>
+          </select>
+
+          <select id="storyComposeLocation" class="min-h-[42px] px-3 py-2 rounded-xl bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/10 text-xs font-medium text-slate-800 dark:text-slate-200">
+            <option value="Sài Gòn">Sài Gòn</option>
+            <option value="Hà Nội">Hà Nội</option>
+            <option value="Đà Lạt">Đà Lạt</option>
+            <option value="Đà Nẵng">Đà Nẵng</option>
+          </select>
+        </div>
+
+        <div>
+          <textarea
+            id="storyComposeCaption"
+            rows="3"
+            maxlength="180"
+            placeholder="Khoảnh khắc đáng nhớ bạn muốn chia sẻ hôm nay..."
+            class="w-full p-3.5 rounded-2xl bg-slate-100/90 dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/[0.08] text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:border-rose-500 resize-none"
+          ></textarea>
+        </div>
+
+        <div class="flex items-center justify-end gap-2 pt-1">
+          <button type="button" id="cancelStoryComposerBtn" class="min-h-[44px] px-4 py-2 rounded-xl text-xs font-medium text-slate-600 dark:text-slate-400">
+            Hủy
+          </button>
+          <button type="submit" class="min-h-[44px] px-5 py-2.5 rounded-xl text-xs font-semibold bg-rose-600 hover:bg-rose-500 text-white shadow-md shadow-rose-600/20 transition-all whitespace-nowrap">
+            Đăng Khoảnh khắc
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- SOUL MATCH / VIBE RADAR MODAL (Litmatch + Snapchat Fast Frequency Matching & 180s Chat) -->
+  <div
+    id="vibeRadarBackdrop"
+    class="fixed inset-0 z-50 hidden bg-black/75 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="vibeRadarModalTitle"
+  >
+    <div class="w-full max-w-[460px] rounded-t-3xl sm:rounded-3xl glass-nav bg-white/95 dark:bg-[#0b101d]/95 border-t sm:border border-slate-200/80 dark:border-white/10 p-5 sm:p-6 shadow-2xl max-h-[92vh] flex flex-col overflow-hidden">
+      <div class="w-10 h-1.5 bg-slate-300 dark:bg-white/20 rounded-full mx-auto mb-3.5 sm:hidden shrink-0"></div>
+
+      <!-- Radar Modal Header -->
+      <div class="flex items-center justify-between gap-3 pb-3.5 border-b border-slate-200/70 dark:border-white/[0.07] shrink-0">
+        <div class="flex items-center gap-2.5 min-w-0">
+          <span class="w-2.5 h-2.5 rounded-full bg-rose-500 shadow-[0_0_12px_rgba(244,63,94,0.85)] shrink-0"></span>
+          <div class="min-w-0">
+            <h2 id="vibeRadarModalTitle" class="font-display text-base sm:text-lg font-semibold text-slate-900 dark:text-white truncate">
+              Soul Match · Vibe Radar
+            </h2>
+            <p class="text-[11px] text-slate-500 dark:text-slate-400 truncate">
+              Ghép đôi ngẫu nhiên theo tần số cảm xúc trực tuyến
+            </p>
+          </div>
+        </div>
+        <button
+          type="button"
+          id="closeVibeRadarBtn"
+          aria-label="Đóng Vibe Radar"
+          class="min-h-[44px] min-w-[44px] -mr-1 rounded-xl flex items-center justify-center text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/[0.06] transition-colors shrink-0"
+        >
+          ✕
+        </button>
+      </div>
+
+      <!-- VIEW 1: RADAR SCANNER (IDLE & SCANNING) -->
+      <div id="radarScannerStage" class="py-5 space-y-5 overflow-y-auto">
+        <div class="relative h-56 rounded-3xl bg-gradient-to-b from-slate-900 via-[#11172a] to-[#090d18] border border-white/10 flex flex-col items-center justify-center overflow-hidden p-4">
+          <div class="w-32 h-32 rounded-full border border-white/[0.07] absolute pointer-events-none"></div>
+          <div class="w-48 h-48 rounded-full border border-white/[0.05] absolute pointer-events-none"></div>
+          <div id="radarPulseRing1" class="hidden w-28 h-28 rounded-full border-2 border-rose-500/60 absolute pointer-events-none animate-ping"></div>
+
+          <div class="relative z-10 flex flex-col items-center">
+            <div id="radarCenterAvatar" class="w-16 h-16 rounded-2xl border-2 flex items-center justify-center font-display font-semibold text-xl shadow-xl transition-transform duration-300">
+              L
+            </div>
+            <p id="radarCenterTitle" class="mt-2.5 text-xs font-semibold text-white">
+              Linh Đan (@linhdan.vibe)
+            </p>
+            <p id="radarCenterSubtitle" class="text-[11px] font-mono text-rose-300/90 mt-0.5 tabular-nums">
+              128 người đang bật Radar quanh bạn
+            </p>
+          </div>
+        </div>
+
+        <div>
+          <div class="flex items-center justify-between text-xs mb-2">
+            <span class="font-medium text-slate-700 dark:text-slate-300">Chọn tần số Vibe muốn ghép đôi</span>
+            <span class="font-mono text-[11px] text-slate-400 tabular-nums">180s / phiên</span>
+          </div>
+          <div class="flex flex-wrap gap-2" id="radarFreqGroup">
+            <button type="button" data-radar-freq="Nhiếp Ảnh Phim & Cà Phê" class="radar-freq-btn min-h-[38px] px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-rose-600 text-white shadow-sm shadow-rose-600/25 transition-all">
+              Nhiếp Ảnh Phim & Cà Phê
+            </button>
+            <button type="button" data-radar-freq="Kẻ Mộng Mơ Đêm Muộn" class="radar-freq-btn min-h-[38px] px-3.5 py-1.5 rounded-xl text-xs font-medium bg-slate-100 dark:bg-white/[0.05] text-slate-700 dark:text-slate-300 hover:bg-slate-200/80 dark:hover:bg-white/10 transition-all">
+              Kẻ Mộng Mơ Đêm Muộn
+            </button>
+            <button type="button" data-radar-freq="Tần Số Chữa Lành" class="radar-freq-btn min-h-[38px] px-3.5 py-1.5 rounded-xl text-xs font-medium bg-slate-100 dark:bg-white/[0.05] text-slate-700 dark:text-slate-300 hover:bg-slate-200/80 dark:hover:bg-white/10 transition-all">
+              Tần Số Chữa Lành
+            </button>
+            <button type="button" data-radar-freq="Acoustic & Mưa Rào" class="radar-freq-btn min-h-[38px] px-3.5 py-1.5 rounded-xl text-xs font-medium bg-slate-100 dark:bg-white/[0.05] text-slate-700 dark:text-slate-300 hover:bg-slate-200/80 dark:hover:bg-white/10 transition-all">
+              Acoustic & Mưa Rào
+            </button>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          id="startRadarScanBtn"
+          class="w-full min-h-[48px] px-5 py-3 rounded-2xl text-sm font-semibold bg-gradient-to-r from-rose-600 to-indigo-600 hover:from-rose-500 hover:to-indigo-500 active:scale-[0.99] text-white shadow-lg shadow-rose-600/20 transition-all"
+        >
+          Quét Radar · Tìm người cùng tần số
+        </button>
+      </div>
+
+      <!-- VIEW 2: MATCHED SOUL REVEAL -->
+      <div id="radarMatchedStage" class="hidden py-5 space-y-5 overflow-y-auto">
+        <div class="p-5 rounded-3xl bg-gradient-to-br from-rose-500/15 via-indigo-500/10 to-transparent border border-rose-500/30 space-y-4">
+          <div class="flex items-center justify-between text-xs">
+            <span class="font-semibold text-rose-600 dark:text-rose-400">Đã tìm thấy tần số tương thích</span>
+            <span id="radarMatchResonance" class="font-mono font-semibold text-emerald-600 dark:text-emerald-400 tabular-nums">96% đồng điệu · Cách 2.4km</span>
+          </div>
+
+          <div class="flex items-center gap-3.5">
+            <div id="radarMatchAvatar" class="w-14 h-14 rounded-2xl border flex items-center justify-center font-display font-semibold text-xl shrink-0">
+              A
+            </div>
+            <div class="min-w-0 flex-1">
+              <div class="flex items-center gap-1.5">
+                <h3 id="radarMatchName" class="text-base font-semibold text-slate-900 dark:text-white truncate">An Nhiên</h3>
+                <span id="radarMatchHandle" class="text-xs font-mono text-slate-500 dark:text-slate-400 truncate">@annhien.35mm</span>
+              </div>
+              <p id="radarMatchMeta" class="text-xs text-rose-600 dark:text-rose-400 font-medium mt-0.5 truncate">
+                Nhiếp Ảnh Phim & Cà Phê · Sài Gòn
+              </p>
+            </div>
+          </div>
+
+          <p id="radarMatchBio" class="text-xs sm:text-sm text-slate-700 dark:text-slate-200 leading-relaxed bg-white/60 dark:bg-black/25 p-3.5 rounded-2xl border border-slate-200/60 dark:border-white/[0.06]">
+            “Hay rửa ảnh phim ở Quận 1 và thích ngồi ban công nghe tiếng mưa đêm.”
+          </p>
+        </div>
+
+        <div class="flex items-center gap-2.5">
+          <button
+            type="button"
+            id="rescanRadarBtn"
+            class="min-h-[46px] px-4 py-2.5 rounded-2xl text-xs font-semibold bg-slate-100 dark:bg-white/[0.06] text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-white/10 transition-colors whitespace-nowrap"
+          >
+            Quét người khác
+          </button>
+          <button
+            type="button"
+            id="enterRadarChatBtn"
+            class="flex-1 min-h-[46px] px-5 py-2.5 rounded-2xl text-xs sm:text-sm font-semibold bg-gradient-to-r from-rose-600 to-indigo-600 hover:from-rose-500 hover:to-indigo-500 text-white shadow-lg shadow-rose-600/20 transition-all"
+          >
+            Vào phòng trò chuyện 180s →
+          </button>
+        </div>
+      </div>
+
+      <!-- VIEW 3: EPHEMERAL 180-SECOND SOUL CHAT -->
+      <div id="radarChatStage" class="hidden flex-1 flex flex-col min-h-[380px] max-h-[70vh] pt-3">
+        <div class="flex items-center justify-between gap-2 pb-3 mb-3 border-b border-slate-200/60 dark:border-white/[0.06] shrink-0">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div id="radarChatPeerAvatar" class="w-9 h-9 rounded-xl border flex items-center justify-center font-display font-semibold text-xs shrink-0">
+              A
+            </div>
+            <div class="min-w-0">
+              <div class="flex items-center gap-1.5">
+                <span id="radarChatPeerName" class="text-xs font-semibold text-slate-900 dark:text-white truncate">An Nhiên</span>
+                <span id="radarChatPeerScore" class="text-[11px] font-mono text-rose-500">96%</span>
+              </div>
+              <p id="radarChatPeerMeta" class="text-[11px] text-slate-500 dark:text-slate-400 truncate">
+                Nhiếp Ảnh Phim & Cà Phê · Sài Gòn
+              </p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2 shrink-0">
+            <span id="radarChatCountdown" class="font-mono text-xs font-semibold px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-white/[0.06] text-slate-800 dark:text-slate-200 tabular-nums">
+              03:00
+            </span>
+            <button
+              type="button"
+              id="radarConnectSoulBtn"
+              class="min-h-[36px] px-3 py-1 rounded-xl bg-rose-600/15 hover:bg-rose-600/25 border border-rose-500/30 text-rose-600 dark:text-rose-300 text-xs font-semibold transition-colors whitespace-nowrap"
+            >
+              + Kết nối
+            </button>
+          </div>
+        </div>
+
+        <div id="radarChatMessagesList" class="flex-1 overflow-y-auto space-y-3 pr-1 pb-2"></div>
+
+        <form id="radarChatForm" class="pt-2 border-t border-slate-200/60 dark:border-white/[0.06] flex items-center gap-2 shrink-0">
+          <button
+            type="button"
+            id="radarChatSwitchBtn"
+            class="min-h-[44px] px-3 rounded-xl bg-slate-100 dark:bg-white/[0.05] text-xs font-medium text-slate-600 dark:text-slate-300 hover:text-rose-500 transition-colors shrink-0"
+          >
+            Đổi tần số
+          </button>
+          <input
+            type="text"
+            id="radarChatInput"
+            maxlength="240"
+            required
+            placeholder="Nhắn tin cho người lạ cùng tần số..."
+            class="flex-1 min-h-[44px] px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-white/[0.05] border border-slate-200/80 dark:border-white/10 text-xs sm:text-sm text-slate-900 dark:text-white focus:outline-none focus:border-rose-500"
+          />
+          <button
+            type="submit"
+            class="min-h-[44px] px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold transition-colors shrink-0"
+          >
+            Gửi
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- STACKING TOAST NOTIFICATION CONTAINER -->
+  <div
+    id="vibeToastStack"
+    role="region"
+    aria-live="polite"
+    aria-label="Thông báo hệ thống"
+    class="fixed bottom-20 md:bottom-8 left-1/2 -translate-x-1/2 z-50 flex flex-col-reverse items-center gap-2 pointer-events-none w-full max-w-sm px-4"
+  ></div>
+
+  <!-- MODERN SOCIAL NETWORK LOGIC (Litmatch Profile Onboarding, Visual 24h Stories, Virtual Feed, Stacking Toasts) -->
   <script>
     (() => {
-      const STORAGE_KEY = 'vibenest_feed_v1';
+      const STORAGE_KEY = 'vibenest_social_feed_v2';
       const THEME_KEY = 'vibenest_theme_v1';
+      const PROFILE_KEY = 'vibenest_user_profile_v2';
 
-      const ALIAS_POOL = [
-        'Mây Lang Thang #409',
-        'Cú Đêm Sài Gòn #812',
-        'Tách Trà Nóng #204',
-        'Gió Mùa Thu #519',
-        'Người Lạ Cuối Phố #731',
-        'Ánh Đèn Vàng #108',
-        'Nắng Chiều Muộn #642'
+      const PRESET_PROFILES = [
+        {
+          displayName: 'Linh Đan',
+          handle: 'linhdan.vibe',
+          city: 'Sài Gòn',
+          vibeTag: 'Nhiếp Ảnh Phim & Cà Phê',
+          bio: 'Thích chụp ảnh phố lên đèn và những cuộc trò chuyện không vội vã.'
+        },
+        {
+          displayName: 'Minh Khôi',
+          handle: 'khoi.soulsync',
+          city: 'Hà Nội',
+          vibeTag: 'Kẻ Mộng Mơ Đêm Muộn',
+          bio: 'Kiến trúc sư trẻ, hay nghe indie và dạo hồ Tây lúc nửa đêm.'
+        },
+        {
+          displayName: 'Hạ Vy',
+          handle: 'havy.dalat',
+          city: 'Đà Lạt',
+          vibeTag: 'Tần Số Chữa Lành',
+          bio: 'Góc nhỏ bình yên giữa đồi thông và những trang sách dở.'
+        }
       ];
 
+      const AVATAR_PALETTES = [
+        {
+          name: 'Rose Ember',
+          bgStyle: 'linear-gradient(135deg, rgba(244, 63, 94, 0.24), rgba(251, 113, 133, 0.08))',
+          borderStyle: 'rgba(244, 63, 94, 0.38)',
+          textClass: 'text-rose-600 dark:text-rose-300'
+        },
+        {
+          name: 'Indigo Twilight',
+          bgStyle: 'linear-gradient(135deg, rgba(99, 102, 241, 0.25), rgba(129, 140, 248, 0.09))',
+          borderStyle: 'rgba(99, 102, 241, 0.38)',
+          textClass: 'text-indigo-600 dark:text-indigo-300'
+        },
+        {
+          name: 'Amber Glow',
+          bgStyle: 'linear-gradient(135deg, rgba(245, 158, 11, 0.24), rgba(251, 191, 36, 0.08))',
+          borderStyle: 'rgba(245, 158, 11, 0.38)',
+          textClass: 'text-amber-700 dark:text-amber-300'
+        },
+        {
+          name: 'Emerald Moss',
+          bgStyle: 'linear-gradient(135deg, rgba(16, 185, 129, 0.24), rgba(52, 211, 153, 0.08))',
+          borderStyle: 'rgba(16, 185, 129, 0.38)',
+          textClass: 'text-emerald-700 dark:text-emerald-300'
+        },
+        {
+          name: 'Sky Mist',
+          bgStyle: 'linear-gradient(135deg, rgba(14, 165, 233, 0.24), rgba(56, 189, 248, 0.08))',
+          borderStyle: 'rgba(14, 165, 233, 0.38)',
+          textClass: 'text-sky-700 dark:text-sky-300'
+        },
+        {
+          name: 'Violet Dusk',
+          bgStyle: 'linear-gradient(135deg, rgba(139, 92, 246, 0.24), rgba(167, 139, 250, 0.08))',
+          borderStyle: 'rgba(139, 92, 246, 0.38)',
+          textClass: 'text-violet-700 dark:text-violet-300'
+        }
+      ];
+
+      function getAvatarThemeFromIdentity(identityKey, displayNameFallback) {
+        const normalized = String(identityKey || 'vibenest').trim().toLowerCase();
+        let hash = 5381;
+        for (let i = 0; i < normalized.length; i++) {
+          hash = ((hash << 5) + hash) ^ normalized.charCodeAt(i);
+        }
+        const unsignedHash = Math.abs(hash >>> 0);
+        const palette = AVATAR_PALETTES[unsignedHash % AVATAR_PALETTES.length];
+        const shortHex = unsignedHash.toString(16).toUpperCase().slice(0, 4).padStart(4, '0');
+        const labelSource = displayNameFallback || identityKey || 'V';
+        return {
+          ...palette,
+          hashHex: `#${shortHex}`,
+          initial: String(labelSource).replace(/^@/, '').trim().charAt(0).toUpperCase() || 'V'
+        };
+      }
+
+      function applyAvatarThemeToElement(el, handle, displayName) {
+        if (!el) return;
+        const theme = getAvatarThemeFromIdentity(handle, displayName);
+        el.style.background = theme.bgStyle;
+        el.style.borderColor = theme.borderStyle;
+        el.textContent = theme.initial;
+        AVATAR_PALETTES.forEach((p) => {
+          p.textClass.split(' ').forEach((cls) => el.classList.remove(cls));
+        });
+        theme.textClass.split(' ').forEach((cls) => el.classList.add(cls));
+      }
+
       const DAILY_PROMPTS = [
-        '"Nếu có thể gửi một tin nhắn ẩn danh đến chính mình của 3 năm trước, bạn sẽ nói điều gì?"',
-        '"Khoảnh khắc nhỏ bé nào trong tuần qua khiến bạn nhận ra mình vẫn đang cố gắng rất tốt?"',
-        '"Có lời xin lỗi hay cảm ơn nào bạn vẫn giữ trong lòng chưa kịp nói ra?"',
-        '"Điều gì đang làm bạn trăn trở nhất mỗi khi tắt màn hình điện thoại lúc nửa đêm?"'
+        '"Khoảnh khắc bình yên nhất mà bạn vô tình bắt gặp trong tuần qua là gì?"',
+        '"Quán cà phê hay góc phố nào ở thành phố của bạn luôn làm bạn thấy dễ chịu khi ghé qua?"',
+        '"Bộ phim hoặc cuốn sách nào gần đây để lại cho bạn nhiều dư âm nhất?"',
+        '"Nếu cuối tuần này được xách balo đi ngay lập tức, bạn muốn thức dậy ở đâu?"'
       ];
 
       const INITIAL_VIBES = [
         {
-          id: 'vn-101',
-          alias: 'Cú Đêm Sài Gòn #812',
-          avatarChar: 'C',
+          id: 'vn-201',
+          displayName: 'Bảo Ngọc',
+          handle: 'baongoc.film',
           mood: 'Đêm muộn',
           location: 'Sài Gòn',
-          timeAgo: '12 phút trước',
-          timestamp: Date.now() - 12 * 60 * 1000,
-          content: '2 giờ sáng chạy xe qua cầu Thủ Thiêm sau ca làm thêm, gió thổi mát rượi mà tự nhiên sống mũi cay cay. Tuổi 25 không sợ vất vả, chỉ sợ lúc mệt nhất nhìn quanh chẳng biết gọi cho ai để không làm phiền họ. Mong những ai cũng đang thức giờ này sẽ có một giấc ngủ thật êm.',
-          soundTrack: 'Mưa rơi hiên nhà · Lo-fi',
-          empathyCount: 48,
+          timeAgo: '14 phút trước',
+          timestamp: Date.now() - 14 * 60 * 1000,
+          content: 'Chạy xe qua cầu Ba Son lúc thành phố vừa ngớt cơn mưa đêm, mặt đường phản chiếu ánh đèn vàng đẹp như một thước phim điện ảnh. Có ai cũng thích cảm giác lượn phố giờ này không?',
+          imageUrl: 'https://images.unsplash.com/photo-1514565131-fce0801e5785?auto=format&fit=crop&w=900&q=80',
+          empathyCount: 84,
           empathized: false,
           saved: true,
           replies: [
-            { author: 'Tách Trà Nóng #204', time: '6 phút trước', text: 'Cố lên nhé bạn ơi, Sài Gòn rộng thật nhưng bạn không cô đơn đâu. Về nhà tắm nước ấm rồi ngủ một giấc thật sâu nhé.' },
-            { author: 'Mây Lang Thang #409', time: '2 phút trước', text: 'Đọc mà thấy hình ảnh của chính mình tuần trước. Gửi bạn một cái ôm thật chặt từ Quận 3.' }
+            { displayName: 'Minh Khôi', handle: 'khoi.soulsync', time: '6 phút trước', text: 'Góc chụp màu sắc xuất sắc quá Ngọc ơi! Tầm 11h đêm chạy cung đường này gió mát cực kỳ.' },
+            { displayName: 'Linh Đan', handle: 'linhdan.vibe', time: '2 phút trước', text: 'Chuẩn vibe Sài Gòn sau mưa luôn, nhìn ảnh mà muốn xách máy ảnh ra đường ngay.' }
           ]
         },
         {
-          id: 'vn-102',
-          alias: 'Nắng Chiều Muộn #642',
-          avatarChar: 'N',
+          id: 'vn-202',
+          displayName: 'Hoàng Nam',
+          handle: 'nam.arch',
           mood: 'Chữa lành',
           location: 'Đà Lạt',
-          timeAgo: '38 phút trước',
-          timestamp: Date.now() - 38 * 60 * 1000,
-          content: 'Hôm nay mình đã tự nấu một bữa cơm tử tế, dọn lại góc bàn làm việc và xóa đi những đoạn tin nhắn cũ từng làm mình tổn thương suốt nửa năm qua. Hóa ra buông bỏ không phải là quên ngay lập tức, mà là thôi không còn tự trách bản thân nữa.',
-          soundTrack: 'Tiếng dương cầm trầm lắng',
-          empathyCount: 93,
+          timeAgo: '42 phút trước',
+          timestamp: Date.now() - 42 * 60 * 1000,
+          content: 'Sáng chủ nhật tắt hết thông báo công việc, tự pha một ly pour-over thơm lừng và ngồi nghe tiếng thông reo ngoài hiên. Hóa ra nạp lại năng lượng đôi khi chỉ đơn giản thế này.',
+          imageUrl: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=900&q=80',
+          empathyCount: 112,
           empathized: true,
           saved: true,
           replies: [
-            { author: 'Gió Mùa Thu #519', time: '21 phút trước', text: 'Tự hào về bạn thật nhiều. Những bước nhỏ như vậy chính là khởi đầu của bình yên đó.' }
+            { displayName: 'Hạ Vy', handle: 'havy.dalat', time: '20 phút trước', text: 'Quán này ở khu dốc Nhà Làng đúng không Nam? Ánh sáng buổi sáng dịu mắt thật sự.' }
           ]
         },
         {
-          id: 'vn-103',
-          alias: 'Người Lạ Cuối Phố #731',
-          avatarChar: 'N',
+          id: 'vn-203',
+          displayName: 'Khánh Linh',
+          handle: 'klinh.studio',
           mood: 'Chênh vênh',
           location: 'Hà Nội',
           timeAgo: '1 giờ trước',
-          timestamp: Date.now() - 65 * 60 * 1000,
-          content: 'Bạn bè đồng trang lứa người thì khoe mua nhà, người rục rịch cưới hỏi, còn mình vừa nộp đơn xin nghỉ việc vì kiệt sức sau 3 năm gồng mình ở một môi trường không thuộc về mình. Hơi sợ ngày mai thức dậy không có lịch họp, nhưng lần đầu tiên sau 3 năm mình thở phào nhẹ nhõm.',
-          soundTrack: '',
-          empathyCount: 74,
+          timestamp: Date.now() - 68 * 60 * 1000,
+          content: 'Vừa hoàn thành đồ án tốt nghiệp sau 4 tháng thức trắng. Cảm giác vừa nhẹ nhõm vừa bồi hồi vì sắp khép lại quãng đời sinh viên nhiều kỷ niệm nhất. Chúc cho tụi mình chân cứng đá mềm trên hành trình sắp tới!',
+          imageUrl: '',
+          empathyCount: 95,
           empathized: false,
           saved: false,
           replies: [
-            { author: 'Ánh Đèn Vàng #108', time: '40 phút trước', text: 'Mỗi người có một múi giờ riêng mà. Dừng lại để hồi phục cũng là một sự dũng cảm rất lớn rồi.' }
+            { displayName: 'Tuấn Kiệt', handle: 'kiet.wanders', time: '35 phút trước', text: 'Chúc mừng Linh nhé! Dành vài ngày nghỉ ngơi thật trọn vẹn trước khi bắt đầu chương mới nha.' }
           ]
         },
         {
-          id: 'vn-104',
-          alias: 'Gió Mùa Thu #519',
-          avatarChar: 'G',
+          id: 'vn-204',
+          displayName: 'Tuấn Kiệt',
+          handle: 'kiet.wanders',
           mood: 'Thầm thương',
           location: 'Đà Nẵng',
           timeAgo: '2 giờ trước',
           timestamp: Date.now() - 125 * 60 * 1000,
-          content: 'Có một người ngày nào cũng mua cùng một loại cà phê muối ở quán quen lúc 8h15 sáng. Mình chỉ dám đứng cách hai người trong hàng, nhìn người ta cười với nhân viên pha chế rồi cả ngày hôm đó tự nhiên thấy vui lây. Chẳng biết có nên bắt chuyện một lần không.',
-          soundTrack: 'Sóng biển đêm khuya · 432Hz',
-          empathyCount: 116,
+          content: 'Hôm nay tình cờ ngồi đối diện một bạn đọc cùng cuốn tiểu thuyết của Murakami ở tiệm cà phê sách đường Bạch Đằng. Hai đứa nhìn nhau mỉm cười rồi mình để lại một chiếc bookmark nhỏ trước khi về.',
+          imageUrl: '',
+          empathyCount: 146,
           empathized: false,
           saved: false,
           replies: [
-            { author: 'Cú Đêm Sài Gòn #812', time: '1 giờ trước', text: 'Bắt chuyện đi bạn ơi! Một câu chào buổi sáng nhẹ nhàng biết đâu mở ra cả một câu chuyện đẹp.' }
+            { displayName: 'Bảo Ngọc', handle: 'baongoc.film', time: '1 giờ trước', text: 'Dễ thương như phim Nhật vậy trời! Hy vọng bạn ấy cũng đang dùng VibeNest.' }
           ]
         }
       ];
@@ -806,96 +1519,12 @@
       let currentFilter = 'all';
       let currentSort = 'latest';
       let searchQuery = '';
-      let currentAlias = ALIAS_POOL[0];
       let selectedComposeMood = 'Đêm muộn';
       let promptIndex = 0;
 
-      // Web Audio API Synthesizer for Ambient Soundscape (Zero external MP3 fragility)
-      let audioCtx = null;
-      let ambientNodes = [];
-      let isAmbientPlaying = false;
-      let activeCardAudioId = null;
+      // Active Personal Identity State (Litmatch Style)
+      let userProfile = { ...PRESET_PROFILES[0] };
 
-      function toggleAmbientSound(forceTrackName) {
-        if (!audioCtx) {
-          const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-          if (!AudioContextClass) {
-            showToast('Trình duyệt không hỗ trợ âm thanh');
-            return;
-          }
-          audioCtx = new AudioContextClass();
-        }
-
-        if (isAmbientPlaying && !forceTrackName) {
-          stopAmbientAudio();
-          showToast('Đã tắt âm thanh nền');
-          return;
-        }
-
-        if (isAmbientPlaying && forceTrackName) {
-          stopAmbientAudio();
-        }
-
-        try {
-          if (audioCtx.state === 'suspended') {
-            audioCtx.resume();
-          }
-
-          const masterGain = audioCtx.createGain();
-          masterGain.gain.setValueAtTime(0.01, audioCtx.currentTime);
-          masterGain.gain.exponentialRampToValueAtTime(0.08, audioCtx.currentTime + 1.2);
-          masterGain.connect(audioCtx.destination);
-
-          // Warm Lo-Fi Pad Frequencies (Fmaj7 warm voicing)
-          const freqs = [174.61, 220.0, 261.63, 329.63];
-          freqs.forEach((f) => {
-            const osc = audioCtx.createOscillator();
-            const filter = audioCtx.createBiquadFilter();
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(f, audioCtx.currentTime);
-
-            filter.type = 'lowpass';
-            filter.frequency.setValueAtTime(600, audioCtx.currentTime);
-
-            osc.connect(filter);
-            filter.connect(masterGain);
-            osc.start();
-            ambientNodes.push(osc);
-          });
-
-          isAmbientPlaying = true;
-          updateAudioUI(forceTrackName || 'Đang phát: Mưa đêm');
-          showToast(forceTrackName ? `Đang phát: ${forceTrackName}` : 'Đã bật giai điệu đêm dịu nhẹ');
-        } catch (e) {
-          showToast('Không thể khởi tạo âm thanh');
-        }
-      }
-
-      function stopAmbientAudio() {
-        ambientNodes.forEach((node) => {
-          try { node.stop(); node.disconnect(); } catch (_) {}
-        });
-        ambientNodes = [];
-        isAmbientPlaying = false;
-        activeCardAudioId = null;
-        updateAudioUI('Nhạc nền: Tắt');
-        renderFeed();
-      }
-
-      function updateAudioUI(label) {
-        const btn = document.getElementById('ambientAudioBtn');
-        const txt = document.getElementById('ambientAudioLabel');
-        if (!btn || !txt) return;
-        txt.textContent = label;
-        btn.setAttribute('aria-pressed', String(isAmbientPlaying));
-        if (isAmbientPlaying) {
-          btn.classList.add('border-rose-500/60', 'text-rose-600', 'dark:text-rose-400');
-        } else {
-          btn.classList.remove('border-rose-500/60', 'text-rose-600', 'dark:text-rose-400');
-        }
-      }
-
-      // Load & Save Persistence
       function loadState() {
         try {
           const saved = localStorage.getItem(STORAGE_KEY);
@@ -905,6 +1534,13 @@
         }
 
         try {
+          const savedProf = localStorage.getItem(PROFILE_KEY);
+          if (savedProf) {
+            userProfile = { ...userProfile, ...JSON.parse(savedProf) };
+          }
+        } catch (_) {}
+
+        try {
           const savedTheme = localStorage.getItem(THEME_KEY);
           if (savedTheme === 'light') {
             document.documentElement.classList.remove('dark');
@@ -912,7 +1548,9 @@
             document.documentElement.classList.add('dark');
           }
         } catch (_) {}
+
         syncThemeLabel();
+        syncProfileUI();
       }
 
       function saveState() {
@@ -922,6 +1560,40 @@
         updateSidebarStats();
       }
 
+      function saveProfileState() {
+        try {
+          localStorage.setItem(PROFILE_KEY, JSON.stringify(userProfile));
+        } catch (_) {}
+        syncProfileUI();
+      }
+
+      function syncProfileUI() {
+        applyAvatarThemeToElement(document.getElementById('sidebarAvatarBox'), userProfile.handle, userProfile.displayName);
+        applyAvatarThemeToElement(document.getElementById('quickPromptAvatar'), userProfile.handle, userProfile.displayName);
+        applyAvatarThemeToElement(document.getElementById('composerAvatarPreview'), userProfile.handle, userProfile.displayName);
+        applyAvatarThemeToElement(document.getElementById('onboardingAvatarPreview'), userProfile.handle, userProfile.displayName);
+        applyAvatarThemeToElement(document.getElementById('topProfileAvatarDot'), userProfile.handle, userProfile.displayName);
+        applyAvatarThemeToElement(document.getElementById('mobileNavAvatarBadge'), userProfile.handle, userProfile.displayName);
+
+        const setTxt = (id, val) => {
+          const el = document.getElementById(id);
+          if (el) el.textContent = val;
+        };
+
+        setTxt('topProfileLabel', `${userProfile.displayName} (@${userProfile.handle})`);
+        setTxt('sidebarDisplayName', userProfile.displayName);
+        setTxt('sidebarHandleText', `@${userProfile.handle}`);
+        setTxt('sidebarVibeTagText', `${userProfile.vibeTag} · ${userProfile.city}`);
+        setTxt('sidebarBioText', userProfile.bio);
+        setTxt('inlineHandleIndicator', `@${userProfile.handle}`);
+        setTxt('composerNamePreview', userProfile.displayName);
+        setTxt('composerHandlePreview', `@${userProfile.handle}`);
+        setTxt('onboardingNamePreview', userProfile.displayName);
+        setTxt('onboardingHandlePreview', `@${userProfile.handle}`);
+        setTxt('onboardingMetaPreview', `${userProfile.vibeTag} · ${userProfile.city}`);
+        setTxt('onboardingBioPreview', userProfile.bio);
+      }
+
       function updateSidebarStats() {
         const savedCount = vibes.filter((v) => v.saved).length;
         const empathyGiven = vibes.filter((v) => v.empathized).length;
@@ -929,50 +1601,120 @@
         const savedEl = document.getElementById('statSavedCount');
         const filterSavedEl = document.getElementById('filterSavedCount');
         const empEl = document.getElementById('statEmpathyGiven');
+        const totalBadge = document.getElementById('totalVibesCountBadge');
 
         if (savedEl) savedEl.textContent = String(savedCount);
         if (filterSavedEl) filterSavedEl.textContent = String(savedCount);
         if (empEl) empEl.textContent = String(empathyGiven);
+        if (totalBadge) totalBadge.textContent = String(vibes.length);
       }
 
-      // Escape HTML to prevent XSS when users submit confessions or comments
       function escapeHTML(str) {
         const div = document.createElement('div');
         div.textContent = str;
         return div.innerHTML;
       }
 
-      // Toast helper
-      let toastTimeout = null;
-      function showToast(message) {
-        const toast = document.getElementById('vibeToast');
-        if (!toast) return;
-        toast.textContent = message;
-        toast.classList.remove('opacity-0', 'translate-y-3');
-        toast.classList.add('opacity-100', 'translate-y-0');
-        clearTimeout(toastTimeout);
-        toastTimeout = setTimeout(() => {
-          toast.classList.remove('opacity-100', 'translate-y-0');
-          toast.classList.add('opacity-0', 'translate-y-3');
-        }, 2200);
+      // ====================================================================
+      // STACKING TOAST NOTIFICATION MANAGER
+      // ====================================================================
+      const MAX_VISIBLE_TOASTS = 4;
+      const TOAST_DURATION_MS = 2600;
+      let activeToasts = [];
+
+      function updateToastStackVisuals() {
+        activeToasts.forEach((item, idx) => {
+          const reverseIdx = activeToasts.length - 1 - idx;
+          const scale = Math.max(0.9, 1 - reverseIdx * 0.035);
+          const opacity = Math.max(0.65, 1 - reverseIdx * 0.12);
+          item.el.style.transform = `translateY(0px) scale(${scale})`;
+          item.el.style.opacity = String(opacity);
+        });
       }
 
-      // Render Vibe Cards Feed
-      function renderFeed() {
-        const listEl = document.getElementById('vibeFeedList');
-        const emptyEl = document.getElementById('emptyFeedState');
-        if (!listEl || !emptyEl) return;
+      function dismissToastItem(id) {
+        const index = activeToasts.findIndex((t) => t.id === id);
+        if (index === -1) return;
+        const [removed] = activeToasts.splice(index, 1);
+        clearTimeout(removed.timer);
+        removed.el.style.opacity = '0';
+        removed.el.style.transform = 'translateY(10px) scale(0.92)';
+        updateToastStackVisuals();
+        setTimeout(() => {
+          if (removed.el.parentNode) {
+            removed.el.parentNode.removeChild(removed.el);
+          }
+        }, 200);
+      }
 
-        let filtered = vibes.filter((item) => {
+      function showToast(message) {
+        const stackContainer = document.getElementById('vibeToastStack');
+        if (!stackContainer) return;
+
+        if (activeToasts.length >= MAX_VISIBLE_TOASTS) {
+          dismissToastItem(activeToasts[0].id);
+        }
+
+        const toastId = 'toast-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6);
+        const toastEl = document.createElement('div');
+        toastEl.setAttribute('role', 'status');
+        toastEl.className =
+          'pointer-events-auto cursor-pointer glass-nav bg-slate-900/92 dark:bg-white/95 text-white dark:text-slate-900 px-4 py-2.5 rounded-xl text-xs font-medium shadow-lg border border-white/10 dark:border-slate-200/80 flex items-center gap-2 transition-all duration-200 opacity-0 translate-y-3 scale-95 max-w-full';
+        toastEl.innerHTML = `
+          <span class="w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0" aria-hidden="true"></span>
+          <span class="truncate">${escapeHTML(message)}</span>
+        `;
+
+        toastEl.addEventListener('click', () => dismissToastItem(toastId));
+        stackContainer.appendChild(toastEl);
+
+        const timer = setTimeout(() => {
+          dismissToastItem(toastId);
+        }, TOAST_DURATION_MS);
+
+        activeToasts.push({ id: toastId, el: toastEl, timer });
+
+        requestAnimationFrame(() => {
+          updateToastStackVisuals();
+        });
+      }
+
+      // ====================================================================
+      // WINDOW-SYNCHRONIZED DYNAMIC-HEIGHT VIRTUAL SCROLLING FOR vibeFeedList
+      // ====================================================================
+      const VIRTUAL_CARD_GAP = 16;
+      const VIRTUAL_OVERSCAN_PX = 560;
+      const cardHeightCache = new Map();
+      const expandedReplyIds = new Set();
+      let cachedFilteredVibes = [];
+      let virtualRafId = null;
+      let lastRenderedRangeKey = '';
+
+      function estimateCardHeight(item) {
+        const cached = cardHeightCache.get(item.id);
+        if (cached) return cached;
+        let base = 210;
+        if (item.content && item.content.length > 180) base += 44;
+        if (item.imageUrl) base += 240;
+        if (expandedReplyIds.has(item.id)) {
+          base += 80 + (item.replies ? item.replies.length * 64 : 0);
+        }
+        return base;
+      }
+
+      function computeFilteredVibes() {
+        const filtered = vibes.filter((item) => {
           if (currentFilter === 'saved') return item.saved;
           if (currentFilter !== 'all' && item.mood !== currentFilter) return false;
           if (searchQuery.trim() !== '') {
             const q = searchQuery.toLowerCase();
-            const matchContent = item.content.toLowerCase().includes(q);
-            const matchAlias = item.alias.toLowerCase().includes(q);
-            const matchLocation = item.location.toLowerCase().includes(q);
-            const matchMood = item.mood.toLowerCase().includes(q);
-            return matchContent || matchAlias || matchLocation || matchMood;
+            return (
+              item.content.toLowerCase().includes(q) ||
+              (item.displayName && item.displayName.toLowerCase().includes(q)) ||
+              (item.handle && item.handle.toLowerCase().includes(q)) ||
+              item.location.toLowerCase().includes(q) ||
+              item.mood.toLowerCase().includes(q)
+            );
           }
           return true;
         });
@@ -982,187 +1724,256 @@
         } else {
           filtered.sort((a, b) => b.timestamp - a.timestamp);
         }
+        cachedFilteredVibes = filtered;
+        return filtered;
+      }
 
+      function buildVibeCardHTML(item) {
+        const avatarTheme = getAvatarThemeFromIdentity(item.handle, item.displayName);
+        const isRepliesOpen = expandedReplyIds.has(item.id);
+
+        return `
+          <article
+            class="glass-surface rounded-3xl p-5 bg-white/85 dark:bg-white/[0.035] border border-slate-200/80 dark:border-white/[0.08] hover:border-slate-300 dark:hover:border-white/[0.15] shadow-sm"
+            data-card-id="${item.id}"
+          >
+            <!-- Card Header: Personal Identity + Unboxed Metadata -->
+            <div class="flex items-start justify-between gap-3 mb-3.5">
+              <div class="flex items-center gap-3 min-w-0">
+                <div
+                  class="w-10 h-10 rounded-2xl border flex items-center justify-center font-display font-semibold text-sm ${avatarTheme.textClass} shrink-0"
+                  style="background: ${avatarTheme.bgStyle}; border-color: ${avatarTheme.borderStyle};"
+                >
+                  ${escapeHTML(avatarTheme.initial)}
+                </div>
+                <div class="min-w-0">
+                  <div class="flex items-center gap-1.5">
+                    <h3 class="text-sm font-semibold text-slate-900 dark:text-white truncate">
+                      ${escapeHTML(item.displayName)}
+                    </h3>
+                    <span class="text-xs font-mono text-slate-400 dark:text-slate-500 truncate">
+                      @${escapeHTML(item.handle)}
+                    </span>
+                  </div>
+                  <div class="flex flex-wrap items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                    <span class="font-medium text-rose-600 dark:text-rose-400">${escapeHTML(item.mood)}</span>
+                    <span aria-hidden="true">·</span>
+                    <span>${escapeHTML(item.location)}</span>
+                    <span aria-hidden="true">·</span>
+                    <span>${escapeHTML(item.timeAgo)}</span>
+                  </div>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                data-action="toggle-save"
+                data-id="${item.id}"
+                aria-label="${item.saved ? 'Bỏ lưu bài viết' : 'Lưu bài viết'}"
+                class="min-h-[44px] min-w-[44px] -mr-2 -mt-1 rounded-xl flex items-center justify-center ${item.saved ? 'text-amber-500 dark:text-amber-400' : 'text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'} transition-colors shrink-0"
+              >
+                <svg class="w-5 h-5" fill="${item.saved ? 'currentColor' : 'none'}" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z" />
+                </svg>
+              </button>
+            </div>
+
+            <p class="text-[15px] leading-[1.68] text-slate-800 dark:text-slate-200 whitespace-pre-line mb-3.5">
+              ${escapeHTML(item.content)}
+            </p>
+
+            ${item.imageUrl ? `
+              <div class="mb-4 rounded-2xl overflow-hidden border border-slate-200/70 dark:border-white/[0.08] bg-slate-900/20">
+                <img src="${escapeHTML(item.imageUrl)}" alt="${escapeHTML(item.displayName)}" referrerpolicy="no-referrer" class="w-full max-h-[320px] object-cover" />
+              </div>
+            ` : ''}
+
+            <div class="pt-3 border-t border-slate-200/60 dark:border-white/[0.06] flex items-center justify-between gap-2">
+              <div class="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  data-action="toggle-empathy"
+                  data-id="${item.id}"
+                  class="min-h-[44px] px-3.5 py-1.5 rounded-xl flex items-center gap-2 text-xs font-medium transition-colors ${
+                    item.empathized
+                      ? 'bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/30'
+                      : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/[0.05] hover:text-slate-900 dark:hover:text-white'
+                  }"
+                >
+                  <svg class="w-4 h-4 shrink-0" fill="${item.empathized ? 'currentColor' : 'none'}" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
+                  </svg>
+                  <span class="whitespace-nowrap">Chạm vibe</span>
+                  <span class="font-mono tabular-nums">${item.empathyCount}</span>
+                </button>
+
+                <button
+                  type="button"
+                  data-action="toggle-replies"
+                  data-id="${item.id}"
+                  class="min-h-[44px] px-3.5 py-1.5 rounded-xl flex items-center gap-2 text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/[0.05] hover:text-slate-900 dark:hover:text-white transition-colors"
+                >
+                  <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 20.25c4.97 0 9-3.694 9-8.25s-4.03-8.25-9-8.25S3 7.444 3 12c0 2.104.859 4.023 2.273 5.48.432.447.74 1.04.586 1.641a4.483 4.483 0 01-.923 1.785A5.969 5.969 0 006 21c1.282 0 2.47-.402 3.445-1.087.81.22 1.668.337 2.555.337z" />
+                  </svg>
+                  <span class="whitespace-nowrap">Phản hồi</span>
+                  <span class="font-mono tabular-nums">${item.replies.length}</span>
+                </button>
+              </div>
+
+              <button
+                type="button"
+                data-action="share-vibe"
+                data-id="${item.id}"
+                aria-label="Sao chép liên kết bài viết"
+                class="min-h-[44px] px-3 py-1.5 rounded-xl flex items-center gap-1.5 text-xs font-medium text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/[0.05] hover:text-slate-900 dark:hover:text-white transition-colors whitespace-nowrap shrink-0"
+              >
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935 2.186 2.25 2.25 0 00-3.935-2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z" />
+                </svg>
+                <span class="hidden sm:inline">Chia sẻ</span>
+              </button>
+            </div>
+
+            <div id="replies-panel-${item.id}" class="${isRepliesOpen ? '' : 'hidden '}mt-3 pt-3 border-t border-slate-200/60 dark:border-white/[0.06] space-y-3">
+              <div class="space-y-2.5">
+                ${item.replies.map((r) => {
+                  const replyTheme = getAvatarThemeFromIdentity(r.handle, r.displayName);
+                  return `
+                    <div class="p-3 rounded-2xl bg-slate-100/75 dark:bg-white/[0.03] text-xs flex items-start gap-2.5">
+                      <div
+                        class="w-6 h-6 rounded-lg border flex items-center justify-center font-display font-semibold text-[11px] ${replyTheme.textClass} shrink-0 mt-0.5"
+                        style="background: ${replyTheme.bgStyle}; border-color: ${replyTheme.borderStyle};"
+                      >
+                        ${escapeHTML(replyTheme.initial)}
+                      </div>
+                      <div class="min-w-0 flex-1">
+                        <div class="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 mb-0.5">
+                          <span class="font-semibold text-slate-900 dark:text-white">${escapeHTML(r.displayName)}</span>
+                          <span class="font-mono text-[11px]">@${escapeHTML(r.handle)}</span>
+                          <span aria-hidden="true">·</span>
+                          <span>${escapeHTML(r.time)}</span>
+                        </div>
+                        <p class="text-slate-700 dark:text-slate-300 leading-relaxed">${escapeHTML(r.text)}</p>
+                      </div>
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+
+              <form data-action="submit-reply" data-id="${item.id}" class="flex items-center gap-2">
+                <input
+                  type="text"
+                  name="replyText"
+                  required
+                  maxlength="240"
+                  placeholder="Viết phản hồi kết nối..."
+                  class="flex-1 min-h-[42px] px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/[0.08] text-xs text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:border-rose-500"
+                />
+                <button
+                  type="submit"
+                  class="min-h-[42px] px-3.5 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold transition-colors whitespace-nowrap shrink-0"
+                >
+                  Gửi
+                </button>
+              </form>
+            </div>
+          </article>
+        `;
+      }
+
+      function measureVisibleCards() {
+        const viewportEl = document.getElementById('virtualItemsViewport');
+        if (!viewportEl) return;
+        const articles = viewportEl.querySelectorAll('article[data-card-id]');
+        articles.forEach((el) => {
+          const id = el.getAttribute('data-card-id');
+          if (id && el.offsetHeight > 0) {
+            cardHeightCache.set(id, el.offsetHeight);
+          }
+        });
+      }
+
+      function updateVirtualFeedSlice(forceRender = false) {
+        const listEl = document.getElementById('vibeFeedList');
+        const viewportEl = document.getElementById('virtualItemsViewport');
+        const spacerTop = document.getElementById('virtualSpacerTop');
+        const spacerBottom = document.getElementById('virtualSpacerBottom');
+        const emptyEl = document.getElementById('emptyFeedState');
+        if (!listEl || !viewportEl || !spacerTop || !spacerBottom || !emptyEl) return;
+
+        const filtered = cachedFilteredVibes;
         if (filtered.length === 0) {
-          listEl.innerHTML = '';
+          viewportEl.innerHTML = '';
+          spacerTop.style.height = '0px';
+          spacerBottom.style.height = '0px';
           emptyEl.classList.remove('hidden');
+          lastRenderedRangeKey = 'empty';
           updateSidebarStats();
           return;
         }
 
         emptyEl.classList.add('hidden');
 
-        listEl.innerHTML = filtered.map((item, idx) => {
-          const isPlayingThisCard = isAmbientPlaying && activeCardAudioId === item.id;
-          const delayMs = Math.min(idx * 45, 180);
+        const totalCount = filtered.length;
+        const offsets = new Array(totalCount);
+        const heights = new Array(totalCount);
+        let runningOffset = 0;
 
-          return `
-            <article
-              class="vibe-card-enter glass-surface rounded-2xl p-5 bg-white/80 dark:bg-white/[0.035] border border-slate-200/80 dark:border-white/[0.08] hover:border-slate-300 dark:hover:border-white/[0.15] shadow-sm"
-              style="animation-delay: ${delayMs}ms"
-              data-card-id="${item.id}"
-            >
-              <!-- Card Header: Avatar + Clean Unboxed Metadata with Typographic Separators (Zero-Pill Rule) -->
-              <div class="flex items-start justify-between gap-3 mb-3.5">
-                <div class="flex items-center gap-3 min-w-0">
-                  <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-rose-500/15 via-indigo-500/15 to-amber-500/15 border border-slate-200/70 dark:border-white/10 flex items-center justify-center font-display font-semibold text-sm text-rose-600 dark:text-rose-300 shrink-0">
-                    ${escapeHTML(item.avatarChar || 'V')}
-                  </div>
-                  <div class="min-w-0">
-                    <h3 class="text-sm font-semibold text-slate-900 dark:text-white truncate">
-                      ${escapeHTML(item.alias)}
-                    </h3>
-                    <!-- Clean unboxed metadata with typographic dots -->
-                    <div class="flex flex-wrap items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                      <span class="font-medium text-rose-600 dark:text-rose-400">${escapeHTML(item.mood)}</span>
-                      <span aria-hidden="true">·</span>
-                      <span>${escapeHTML(item.location)}</span>
-                      <span aria-hidden="true">·</span>
-                      <span>${escapeHTML(item.timeAgo)}</span>
-                    </div>
-                  </div>
-                </div>
+        for (let i = 0; i < totalCount; i++) {
+          offsets[i] = runningOffset;
+          const h = estimateCardHeight(filtered[i]);
+          heights[i] = h;
+          runningOffset += h + (i < totalCount - 1 ? VIRTUAL_CARD_GAP : 0);
+        }
 
-                <!-- Bookmark / Save Button (>=44x44px hitbox) -->
-                <button
-                  type="button"
-                  data-action="toggle-save"
-                  data-id="${item.id}"
-                  aria-label="${item.saved ? 'Bỏ lưu tâm sự' : 'Lưu tâm sự'}"
-                  class="min-h-[44px] min-w-[44px] -mr-2 -mt-1 rounded-xl flex items-center justify-center ${item.saved ? 'text-amber-500 dark:text-amber-400' : 'text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'} transition-colors shrink-0"
-                >
-                  <svg class="w-5 h-5" fill="${item.saved ? 'currentColor' : 'none'}" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z" />
-                  </svg>
-                </button>
-              </div>
+        const totalHeight = runningOffset;
+        const listRect = listEl.getBoundingClientRect();
+        const feedPageTop = listRect.top + window.scrollY;
 
-              <!-- Confession Prose Body -->
-              <p class="text-[15px] leading-[1.68] text-slate-800 dark:text-slate-200 whitespace-pre-line mb-4">
-                ${escapeHTML(item.content)}
-              </p>
+        const visibleTop = Math.max(0, window.scrollY - feedPageTop - VIRTUAL_OVERSCAN_PX);
+        const visibleBottom = Math.max(
+          visibleTop + window.innerHeight + VIRTUAL_OVERSCAN_PX * 2,
+          window.scrollY + window.innerHeight - feedPageTop + VIRTUAL_OVERSCAN_PX
+        );
 
-              <!-- Optional Ambient Sound Attachment Bar -->
-              ${item.soundTrack ? `
-                <div class="mb-4">
-                  <button
-                    type="button"
-                    data-action="play-card-sound"
-                    data-id="${item.id}"
-                    data-track="${escapeHTML(item.soundTrack)}"
-                    class="w-full min-h-[44px] px-3.5 py-2 rounded-xl bg-slate-100/80 dark:bg-white/[0.04] hover:bg-slate-200/70 dark:hover:bg-white/[0.07] border border-slate-200/70 dark:border-white/[0.07] flex items-center justify-between gap-3 text-xs transition-colors"
-                  >
-                    <span class="flex items-center gap-2 font-medium ${isPlayingThisCard ? 'text-rose-600 dark:text-rose-400' : 'text-slate-700 dark:text-slate-300'} truncate">
-                      <svg class="w-4 h-4 shrink-0 ${isPlayingThisCard ? 'text-rose-500' : 'text-slate-400'}" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        ${isPlayingThisCard
-                          ? '<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25v13.5m-7.5-13.5v13.5" />'
-                          : '<path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z" />'}
-                      </svg>
-                      <span class="truncate">${escapeHTML(item.soundTrack)}</span>
-                    </span>
-                    <span class="text-[11px] font-mono tabular-nums text-slate-400 dark:text-slate-500 shrink-0">
-                      ${isPlayingThisCard ? 'Đang phát' : 'Nghe cùng'}
-                    </span>
-                  </button>
-                </div>
-              ` : ''}
+        let startIndex = 0;
+        while (startIndex < totalCount - 1 && offsets[startIndex] + heights[startIndex] < visibleTop) {
+          startIndex++;
+        }
 
-              <!-- Interactive Action Footer (Minimum 44px Touch Targets) -->
-              <div class="pt-3 border-t border-slate-200/60 dark:border-white/[0.06] flex items-center justify-between gap-2">
-                <div class="flex items-center gap-1.5">
-                  <!-- Empathy / Hug Button -->
-                  <button
-                    type="button"
-                    data-action="toggle-empathy"
-                    data-id="${item.id}"
-                    class="min-h-[44px] px-3.5 py-1.5 rounded-xl flex items-center gap-2 text-xs font-medium transition-colors ${
-                      item.empathized
-                        ? 'bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/30'
-                        : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/[0.05] hover:text-slate-900 dark:hover:text-white'
-                    }"
-                  >
-                    <svg class="w-4 h-4 shrink-0" fill="${item.empathized ? 'currentColor' : 'none'}" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
-                    </svg>
-                    <span class="whitespace-nowrap">Đồng cảm</span>
-                    <span class="font-mono tabular-nums">${item.empathyCount}</span>
-                  </button>
+        let endIndex = startIndex;
+        while (endIndex < totalCount - 1 && offsets[endIndex] < visibleBottom) {
+          endIndex++;
+        }
 
-                  <!-- Toggle Comforting Replies Drawer -->
-                  <button
-                    type="button"
-                    data-action="toggle-replies"
-                    data-id="${item.id}"
-                    class="min-h-[44px] px-3.5 py-1.5 rounded-xl flex items-center gap-2 text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/[0.05] hover:text-slate-900 dark:hover:text-white transition-colors"
-                  >
-                    <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M12 20.25c4.97 0 9-3.694 9-8.25s-4.03-8.25-9-8.25S3 7.444 3 12c0 2.104.859 4.023 2.273 5.48.432.447.74 1.04.586 1.641a4.483 4.483 0 01-.923 1.785A5.969 5.969 0 006 21c1.282 0 2.47-.402 3.445-1.087.81.22 1.668.337 2.555.337z" />
-                    </svg>
-                    <span class="whitespace-nowrap">Lời vỗ về</span>
-                    <span class="font-mono tabular-nums">${item.replies.length}</span>
-                  </button>
-                </div>
+        const rangeKey = `${startIndex}:${endIndex}:${totalCount}`;
+        if (!forceRender && rangeKey === lastRenderedRangeKey) {
+          return;
+        }
+        lastRenderedRangeKey = rangeKey;
 
-                <!-- Copy Quote / Share Button -->
-                <button
-                  type="button"
-                  data-action="share-vibe"
-                  data-id="${item.id}"
-                  aria-label="Sao chép trích dẫn tâm sự"
-                  class="min-h-[44px] px-3 py-1.5 rounded-xl flex items-center gap-1.5 text-xs font-medium text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/[0.05] hover:text-slate-900 dark:hover:text-white transition-colors whitespace-nowrap shrink-0"
-                >
-                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935 2.186 2.25 2.25 0 00-3.935-2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z" />
-                  </svg>
-                  <span class="hidden sm:inline">Chia sẻ</span>
-                </button>
-              </div>
+        const topSpace = offsets[startIndex];
+        const bottomSpace = Math.max(0, totalHeight - (offsets[endIndex] + heights[endIndex]));
 
-              <!-- Expandable Comforting Replies Section -->
-              <div id="replies-panel-${item.id}" class="hidden mt-3 pt-3 border-t border-slate-200/60 dark:border-white/[0.06] space-y-3">
-                <div class="space-y-2.5">
-                  ${item.replies.map((r) => `
-                    <div class="p-3 rounded-xl bg-slate-100/70 dark:bg-white/[0.03] text-xs">
-                      <div class="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 mb-1">
-                        <span class="font-semibold text-slate-800 dark:text-slate-200">${escapeHTML(r.author)}</span>
-                        <span aria-hidden="true">·</span>
-                        <span>${escapeHTML(r.time)}</span>
-                      </div>
-                      <p class="text-slate-700 dark:text-slate-300 leading-relaxed">${escapeHTML(r.text)}</p>
-                    </div>
-                  `).join('')}
-                </div>
+        spacerTop.style.height = `${topSpace}px`;
+        spacerBottom.style.height = `${bottomSpace}px`;
 
-                <!-- Quick Reply Form -->
-                <form data-action="submit-reply" data-id="${item.id}" class="flex items-center gap-2">
-                  <input
-                    type="text"
-                    name="replyText"
-                    required
-                    maxlength="240"
-                    placeholder="Gửi một lời vỗ về ấm áp..."
-                    class="flex-1 min-h-[42px] px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/[0.08] text-xs text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:border-rose-500"
-                  />
-                  <button
-                    type="submit"
-                    class="min-h-[42px] px-3.5 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold transition-colors whitespace-nowrap shrink-0"
-                  >
-                    Gửi
-                  </button>
-                </form>
-              </div>
-            </article>
-          `;
-        }).join('');
+        const visibleSlice = filtered.slice(startIndex, endIndex + 1);
+        viewportEl.innerHTML = visibleSlice.map((item) => buildVibeCardHTML(item)).join('');
 
+        measureVisibleCards();
         updateSidebarStats();
       }
 
-      // Filter UI updates
+      function renderFeed() {
+        computeFilteredVibes();
+        updateVirtualFeedSlice(true);
+      }
+
       function setFilter(filterValue) {
         currentFilter = filterValue;
 
-        // Sync mood filter buttons
         document.querySelectorAll('.mood-filter-btn').forEach((btn) => {
           const isMatch = btn.getAttribute('data-filter') === filterValue;
           btn.setAttribute('aria-selected', String(isMatch));
@@ -1173,7 +1984,6 @@
           }
         });
 
-        // Sync mobile bottom nav active state
         document.querySelectorAll('.mobile-nav-btn').forEach((btn) => {
           const target = btn.getAttribute('data-mobile-nav');
           if (target === filterValue) {
@@ -1188,7 +1998,6 @@
         renderFeed();
       }
 
-      // Composer Modal Controls
       function openComposer(prefillMood, prefillText) {
         const backdrop = document.getElementById('composerModalBackdrop');
         const panel = document.getElementById('composerModalPanel');
@@ -1223,6 +2032,37 @@
         }, 190);
       }
 
+      // Litmatch Profile Onboarding Modal Controls
+      function openProfileModal() {
+        const backdrop = document.getElementById('profileOnboardingBackdrop');
+        const panel = document.getElementById('profileOnboardingPanel');
+        if (!backdrop || !panel) return;
+
+        document.getElementById('profileDisplayNameInput').value = userProfile.displayName;
+        document.getElementById('profileHandleInput').value = userProfile.handle;
+        document.getElementById('profileVibeTagSelect').value = userProfile.vibeTag;
+        document.getElementById('profileCitySelect').value = userProfile.city;
+        document.getElementById('profileBioInput').value = userProfile.bio;
+
+        backdrop.classList.remove('hidden');
+        requestAnimationFrame(() => {
+          backdrop.classList.remove('opacity-0');
+          panel.classList.remove('translate-y-6', 'sm:scale-95');
+        });
+      }
+
+      function closeProfileModal() {
+        const backdrop = document.getElementById('profileOnboardingBackdrop');
+        const panel = document.getElementById('profileOnboardingPanel');
+        if (!backdrop || !panel) return;
+
+        backdrop.classList.add('opacity-0');
+        panel.classList.add('translate-y-6', 'sm:scale-95');
+        setTimeout(() => {
+          backdrop.classList.add('hidden');
+        }, 190);
+      }
+
       function selectComposeMood(mood) {
         selectedComposeMood = mood;
         document.querySelectorAll('.compose-mood-option').forEach((btn) => {
@@ -1235,24 +2075,6 @@
         });
       }
 
-      function randomizeAlias() {
-        const others = ALIAS_POOL.filter((a) => a !== currentAlias);
-        const randomPick = others[Math.floor(Math.random() * others.length)];
-        const randomDigits = Math.floor(100 + Math.random() * 899);
-        currentAlias = randomPick.replace(/#\d+/, `#${randomDigits}`);
-
-        const char = currentAlias.charAt(0).toUpperCase();
-        const sidebarName = document.getElementById('sidebarAliasName');
-        const sidebarAvatar = document.getElementById('sidebarAvatarBox');
-        const quickAvatar = document.getElementById('quickPromptAvatar');
-        const composerAlias = document.getElementById('composerAliasPreview');
-
-        if (sidebarName) sidebarName.textContent = currentAlias;
-        if (sidebarAvatar) sidebarAvatar.textContent = char;
-        if (quickAvatar) quickAvatar.textContent = char;
-        if (composerAlias) composerAlias.textContent = currentAlias;
-      }
-
       function syncThemeLabel() {
         const isDark = document.documentElement.classList.contains('dark');
         const label = document.getElementById('themeTextLabel');
@@ -1261,10 +2083,66 @@
         }
       }
 
-      // Initialize Event Listeners
       document.addEventListener('DOMContentLoaded', () => {
         loadState();
         renderFeed();
+
+        const onScrollOrResize = () => {
+          if (virtualRafId) return;
+          virtualRafId = requestAnimationFrame(() => {
+            virtualRafId = null;
+            updateVirtualFeedSlice(false);
+          });
+        };
+        window.addEventListener('scroll', onScrollOrResize, { passive: true });
+        window.addEventListener('resize', onScrollOrResize, { passive: true });
+
+        // Bulk Seed Button for Virtual Scrolling
+        const seedBulkBtn = document.getElementById('seedBulkVibesBtn');
+        if (seedBulkBtn) {
+          seedBulkBtn.addEventListener('click', () => {
+            const sampleAuthors = [
+              { displayName: 'Bảo Ngọc', handle: 'baongoc.film' },
+              { displayName: 'Hoàng Nam', handle: 'nam.arch' },
+              { displayName: 'Khánh Linh', handle: 'klinh.studio' },
+              { displayName: 'Tuấn Kiệt', handle: 'kiet.wanders' },
+              { displayName: 'Linh Đan', handle: 'linhdan.vibe' },
+              { displayName: 'Minh Khôi', handle: 'khoi.soulsync' }
+            ];
+            const sampleMoods = ['Đêm muộn', 'Chênh vênh', 'Chữa lành', 'Thầm thương'];
+            const sampleLocations = ['Sài Gòn', 'Hà Nội', 'Đà Lạt', 'Đà Nẵng'];
+            const sampleTexts = [
+              'Đôi khi chỉ cần một buổi chiều ngồi nghe mưa rơi ngoài hiên quán quen là thấy lòng nhẹ đi biết bao nhiêu.',
+              'Hôm nay dạo bộ quanh khu phố cổ, bắt gặp những tia nắng cuối ngày xuyên qua tán cây đẹp mê hồn.',
+              'Mình đang tập ghi lại một điều biết ơn mỗi tối trước khi ngủ. Nhịp sống chậm lại và dịu dàng hơn hẳn.',
+              'Gửi năng lượng bình yên đến bất kỳ ai đang lướt qua dòng trạng thái này nhé.'
+            ];
+            const now = Date.now();
+            const generated = [];
+            for (let i = 1; i <= 200; i++) {
+              const author = sampleAuthors[i % sampleAuthors.length];
+              generated.push({
+                id: `vn-bulk-${now}-${i}`,
+                displayName: author.displayName,
+                handle: author.handle,
+                mood: sampleMoods[i % sampleMoods.length],
+                location: sampleLocations[i % sampleLocations.length],
+                timeAgo: `${(i % 11) + 1} giờ trước`,
+                timestamp: now - i * 180000,
+                content: sampleTexts[i % sampleTexts.length] + ` (#${vibes.length + i})`,
+                imageUrl: '',
+                empathyCount: (i * 7) % 120 + 12,
+                empathized: false,
+                saved: false,
+                replies: []
+              });
+            }
+            vibes.push(...generated);
+            saveState();
+            renderFeed();
+            showToast(`Đã nạp thêm 200 bài viết (Tổng: ${vibes.length} · Virtual Scroll)`);
+          });
+        }
 
         // Delegated Clicks on Feed Cards
         const feedEl = document.getElementById('vibeFeedList');
@@ -1282,43 +2160,38 @@
               targetVibe.empathized = !targetVibe.empathized;
               targetVibe.empathyCount += targetVibe.empathized ? 1 : -1;
               saveState();
-              renderFeed();
+              updateVirtualFeedSlice(true);
               if (targetVibe.empathized) {
-                showToast('Đã gửi một cái ôm đồng cảm');
+                showToast(`Đã thả tim bài viết của @${targetVibe.handle}`);
               }
             } else if (action === 'toggle-save') {
               targetVibe.saved = !targetVibe.saved;
               saveState();
               renderFeed();
-              showToast(targetVibe.saved ? 'Đã lưu vào góc riêng của bạn' : 'Đã bỏ lưu tâm sự');
+              showToast(targetVibe.saved ? 'Đã lưu vào bộ sưu tập cá nhân' : 'Đã bỏ lưu bài viết');
             } else if (action === 'toggle-replies') {
-              const panel = document.getElementById(`replies-panel-${id}`);
-              if (panel) {
-                panel.classList.toggle('hidden');
-                if (!panel.classList.contains('hidden')) {
-                  const input = panel.querySelector('input[name="replyText"]');
-                  if (input) input.focus();
-                }
-              }
-            } else if (action === 'play-card-sound') {
-              const track = btn.getAttribute('data-track');
-              if (activeCardAudioId === id && isAmbientPlaying) {
-                stopAmbientAudio();
+              if (expandedReplyIds.has(id)) {
+                expandedReplyIds.delete(id);
               } else {
-                activeCardAudioId = id;
-                toggleAmbientSound(track);
-                renderFeed();
+                expandedReplyIds.add(id);
+              }
+              cardHeightCache.delete(id);
+              updateVirtualFeedSlice(true);
+              if (expandedReplyIds.has(id)) {
+                const panel = document.getElementById(`replies-panel-${id}`);
+                const input = panel ? panel.querySelector('input[name="replyText"]') : null;
+                if (input) input.focus();
               }
             } else if (action === 'share-vibe') {
-              const shareText = `"${targetVibe.content}" — ${targetVibe.alias} trên VibeNest`;
+              const shareText = `"${targetVibe.content}" — ${targetVibe.displayName} (@${targetVibe.handle}) trên VibeNest`;
               if (navigator.clipboard && navigator.clipboard.writeText) {
                 navigator.clipboard.writeText(shareText).then(() => {
-                  showToast('Đã sao chép trích dẫn tâm sự');
+                  showToast('Đã sao chép liên kết chia sẻ');
                 }).catch(() => {
-                  showToast('Đã chuẩn bị trích dẫn để chia sẻ');
+                  showToast('Đã chuẩn bị nội dung chia sẻ');
                 });
               } else {
-                showToast('Đã sao chép trích dẫn tâm sự');
+                showToast('Đã sao chép liên kết chia sẻ');
               }
             }
           });
@@ -1338,16 +2211,17 @@
             if (!targetVibe) return;
 
             targetVibe.replies.push({
-              author: currentAlias,
+              displayName: userProfile.displayName,
+              handle: userProfile.handle,
               time: 'Vừa xong',
               text
             });
 
+            expandedReplyIds.add(id);
+            cardHeightCache.delete(id);
             saveState();
-            renderFeed();
-            const reopened = document.getElementById(`replies-panel-${id}`);
-            if (reopened) reopened.classList.remove('hidden');
-            showToast('Đã gửi lời vỗ về ẩn danh');
+            updateVirtualFeedSlice(true);
+            showToast(`Đã gửi phản hồi dưới tên @${userProfile.handle}`);
           });
         }
 
@@ -1389,9 +2263,9 @@
             currentSort = btn.getAttribute('data-sort') || 'latest';
             document.querySelectorAll('.sort-btn').forEach((b) => {
               if (b.getAttribute('data-sort') === currentSort) {
-                b.className = 'sort-btn min-h-[36px] px-3 py-1 text-xs font-medium rounded-lg bg-slate-900 text-white dark:bg-white dark:text-slate-900 transition-colors whitespace-nowrap shrink-0';
+                b.className = 'sort-btn min-h-[36px] px-3 py-1 text-xs font-medium rounded-xl bg-slate-900 text-white dark:bg-white dark:text-slate-900 transition-colors whitespace-nowrap shrink-0';
               } else {
-                b.className = 'sort-btn min-h-[36px] px-3 py-1 text-xs font-medium rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors whitespace-nowrap shrink-0';
+                b.className = 'sort-btn min-h-[36px] px-3 py-1 text-xs font-medium rounded-xl text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors whitespace-nowrap shrink-0';
               }
             });
             renderFeed();
@@ -1421,6 +2295,80 @@
         ['topComposeBtn', 'inlineComposerTrigger', 'floatingComposeBtn', 'mobileComposeTrigger'].forEach((id) => {
           const el = document.getElementById(id);
           if (el) el.addEventListener('click', () => openComposer());
+        });
+
+        // Open Litmatch Profile Onboarding Modal Triggers
+        ['topProfileBtn', 'sidebarEditProfileBtn', 'sidebarOpenOnboardingBtn', 'mobileProfileTrigger', 'composerSwitchProfileBtn'].forEach((id) => {
+          const el = document.getElementById(id);
+          if (el) el.addEventListener('click', () => {
+            closeComposer();
+            openProfileModal();
+          });
+        });
+
+        document.getElementById('closeProfileModalBtn')?.addEventListener('click', closeProfileModal);
+        const profileBackdrop = document.getElementById('profileOnboardingBackdrop');
+        if (profileBackdrop) {
+          profileBackdrop.addEventListener('click', (e) => {
+            if (e.target === profileBackdrop) closeProfileModal();
+          });
+        }
+
+        // Quick 1-Tap Preset Profile Buttons inside Onboarding Modal
+        document.querySelectorAll('.preset-profile-btn').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const idx = Number(btn.getAttribute('data-preset-profile') || 0);
+            const preset = PRESET_PROFILES[idx] || PRESET_PROFILES[0];
+            document.getElementById('profileDisplayNameInput').value = preset.displayName;
+            document.getElementById('profileHandleInput').value = preset.handle;
+            document.getElementById('profileVibeTagSelect').value = preset.vibeTag;
+            document.getElementById('profileCitySelect').value = preset.city;
+            document.getElementById('profileBioInput').value = preset.bio;
+
+            applyAvatarThemeToElement(document.getElementById('onboardingAvatarPreview'), preset.handle, preset.displayName);
+            document.getElementById('onboardingNamePreview').textContent = preset.displayName;
+            document.getElementById('onboardingHandlePreview').textContent = `@${preset.handle}`;
+            document.getElementById('onboardingMetaPreview').textContent = `${preset.vibeTag} · ${preset.city}`;
+            document.getElementById('onboardingBioPreview').textContent = preset.bio;
+          });
+        });
+
+        // Live preview updates when typing in Onboarding Form
+        ['profileDisplayNameInput', 'profileHandleInput', 'profileVibeTagSelect', 'profileCitySelect', 'profileBioInput'].forEach((id) => {
+          document.getElementById(id)?.addEventListener('input', () => {
+            const nameVal = document.getElementById('profileDisplayNameInput').value.trim() || 'Tên của bạn';
+            const handleVal = document.getElementById('profileHandleInput').value.trim().toLowerCase().replace(/[^a-z0-9._]/g, '') || 'vibenest.user';
+            const tagVal = document.getElementById('profileVibeTagSelect').value;
+            const cityVal = document.getElementById('profileCitySelect').value;
+            const bioVal = document.getElementById('profileBioInput').value.trim() || 'Đang tìm kiếm những tần số đồng điệu tại VibeNest.';
+
+            applyAvatarThemeToElement(document.getElementById('onboardingAvatarPreview'), handleVal, nameVal);
+            document.getElementById('onboardingNamePreview').textContent = nameVal;
+            document.getElementById('onboardingHandlePreview').textContent = `@${handleVal}`;
+            document.getElementById('onboardingMetaPreview').textContent = `${tagVal} · ${cityVal}`;
+            document.getElementById('onboardingBioPreview').textContent = bioVal;
+          });
+        });
+
+        // Save Litmatch Profile Form
+        document.getElementById('profileOnboardingForm')?.addEventListener('submit', (e) => {
+          e.preventDefault();
+          const nameVal = document.getElementById('profileDisplayNameInput').value.trim();
+          const handleVal = document.getElementById('profileHandleInput').value.trim().toLowerCase().replace(/[^a-z0-9._]/g, '');
+          if (!nameVal || !handleVal) return;
+
+          userProfile = {
+            displayName: nameVal,
+            handle: handleVal,
+            vibeTag: document.getElementById('profileVibeTagSelect').value,
+            city: document.getElementById('profileCitySelect').value,
+            bio: document.getElementById('profileBioInput').value.trim() || 'Đang tìm kiếm những tần số đồng điệu tại VibeNest.'
+          };
+
+          saveProfileState();
+          renderStoriesStrip();
+          closeProfileModal();
+          showToast(`Chào mừng ${userProfile.displayName} (@${userProfile.handle})`);
         });
 
         // Quick Mood Triggers on Inline Prompt
@@ -1459,18 +2407,7 @@
           });
         }
 
-        // Randomize Alias Buttons
-        ['randomizeAliasBtn', 'shuffleIdentitySidebarBtn'].forEach((id) => {
-          const el = document.getElementById(id);
-          if (el) {
-            el.addEventListener('click', () => {
-              randomizeAlias();
-              showToast(`Đã đổi bút danh: ${currentAlias}`);
-            });
-          }
-        });
-
-        // Submit New Confession
+        // Submit New Post
         const composeForm = document.getElementById('composeVibeForm');
         if (composeForm) {
           composeForm.addEventListener('submit', (e) => {
@@ -1479,18 +2416,17 @@
             if (!content) return;
 
             const locationEl = document.getElementById('composerLocation');
-            const soundEl = document.getElementById('composerSoundSelect');
 
             const newVibe = {
               id: 'vn-' + Date.now(),
-              alias: currentAlias,
-              avatarChar: currentAlias.charAt(0).toUpperCase(),
+              displayName: userProfile.displayName,
+              handle: userProfile.handle,
               mood: selectedComposeMood,
-              location: locationEl ? locationEl.value : 'Sài Gòn',
+              location: locationEl ? locationEl.value : userProfile.city,
               timeAgo: 'Vừa xong',
               timestamp: Date.now(),
               content,
-              soundTrack: soundEl ? soundEl.value : '',
+              imageUrl: '',
               empathyCount: 1,
               empathized: true,
               saved: false,
@@ -1503,7 +2439,7 @@
             if (charCount) charCount.textContent = '0';
             closeComposer();
             setFilter('all');
-            showToast('Tâm sự của bạn đã được gửi vào VibeNest');
+            showToast(`Đã đăng bài viết mới dưới tên @${userProfile.handle}`);
           });
         }
 
@@ -1525,13 +2461,7 @@
           });
         }
 
-        // Ambient Audio Header Toggle
-        const ambientBtn = document.getElementById('ambientAudioBtn');
-        if (ambientBtn) {
-          ambientBtn.addEventListener('click', () => toggleAmbientSound());
-        }
-
-        // Theme Toggle (Light / Dark Glassmorphism)
+        // Theme Toggle
         const themeBtn = document.getElementById('themeToggleBtn');
         if (themeBtn) {
           themeBtn.addEventListener('click', () => {
@@ -1542,6 +2472,659 @@
             syncThemeLabel();
           });
         }
+
+        // ====================================================================
+        // VIBE STORIES / KHOẢNH KHẮC 24H (SNAPCHAT / IG / PINTEREST PORTRAIT CARDS)
+        // ====================================================================
+        const STORIES_KEY = 'vibenest_stories_v2';
+        const STORY_PRESET_CLASSES = {
+          'dusk-rose': 'bg-gradient-to-br from-[#3b122b] via-[#1c1330] to-[#0b0f19]',
+          'midnight-indigo': 'bg-gradient-to-br from-[#172347] via-[#10182b] to-[#080b12]',
+          'amber-rain': 'bg-gradient-to-br from-[#3d2414] via-[#1f1624] to-[#090c14]',
+          'emerald-mist': 'bg-gradient-to-br from-[#11332f] via-[#111d2d] to-[#080b12]'
+        };
+
+        const DEFAULT_STORIES = [
+          {
+            id: 'st-301',
+            displayName: 'Bảo Ngọc',
+            handle: 'baongoc.film',
+            mood: 'Đêm muộn',
+            location: 'Sài Gòn',
+            caption: 'Góc ban công 1h sáng sau cơn mưa rào, ánh đèn phố phản chiếu xuống mặt đường ướt lấp lánh.',
+            imageUrl: 'https://images.unsplash.com/photo-1514565131-fce0801e5785?auto=format&fit=crop&w=700&q=80',
+            canvasPreset: 'dusk-rose',
+            expiresAt: Date.now() + 22 * 3600 * 1000,
+            warmthCount: 64,
+            warmedByMe: false,
+            seen: false
+          },
+          {
+            id: 'st-302',
+            displayName: 'Hoàng Nam',
+            handle: 'nam.arch',
+            mood: 'Chữa lành',
+            location: 'Đà Lạt',
+            caption: 'Tự pha một bình cold brew cam sả và đọc nốt cuốn sách còn dang dở từ tháng trước.',
+            imageUrl: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=700&q=80',
+            canvasPreset: 'midnight-indigo',
+            expiresAt: Date.now() + 19 * 3600 * 1000,
+            warmthCount: 92,
+            warmedByMe: true,
+            seen: false
+          },
+          {
+            id: 'st-303',
+            displayName: 'Khánh Linh',
+            handle: 'klinh.studio',
+            mood: 'Thầm thương',
+            location: 'Hà Nội',
+            caption: 'Chuyến tàu điện trên cao chiều muộn, bắt gặp hoàng hôn nhuộm hồng cả bầu trời phía tây.',
+            imageUrl: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?auto=format&fit=crop&w=700&q=80',
+            canvasPreset: 'amber-rain',
+            expiresAt: Date.now() + 15 * 3600 * 1000,
+            warmthCount: 53,
+            warmedByMe: false,
+            seen: false
+          },
+          {
+            id: 'st-304',
+            displayName: 'Tuấn Kiệt',
+            handle: 'kiet.wanders',
+            mood: 'Chênh vênh',
+            location: 'Đà Nẵng',
+            caption: 'Đi bộ dọc bờ biển Mỹ Khê lúc thành phố vừa lên đèn, nghe tiếng sóng vỗ thấy lòng nhẹ tênh.',
+            canvasPreset: 'emerald-mist',
+            expiresAt: Date.now() + 10 * 3600 * 1000,
+            warmthCount: 41,
+            warmedByMe: false,
+            seen: true
+          }
+        ];
+
+        let stories = [];
+        let activeStoryIdx = null;
+        let storyProgress = 0;
+        let storyTimer = null;
+        let storyPaused = false;
+        let selectedStoryPreset = 'dusk-rose';
+        let uploadedStoryDataUrl = '';
+
+        function loadStories() {
+          try {
+            const raw = localStorage.getItem(STORIES_KEY);
+            const list = raw ? JSON.parse(raw) : DEFAULT_STORIES;
+            stories = list.filter((s) => s.expiresAt > Date.now());
+            if (stories.length === 0) stories = [...DEFAULT_STORIES];
+          } catch (_) {
+            stories = [...DEFAULT_STORIES];
+          }
+        }
+
+        function saveStories() {
+          try {
+            localStorage.setItem(STORIES_KEY, JSON.stringify(stories));
+          } catch (_) {}
+        }
+
+        function formatRemainingHours(expiresAt) {
+          const diff = Math.max(0, expiresAt - Date.now());
+          const hrs = Math.max(1, Math.ceil(diff / (3600 * 1000)));
+          return `${hrs}h`;
+        }
+
+        function renderStoriesStrip() {
+          const stripEl = document.getElementById('vibeStoriesStrip');
+          const countEl = document.getElementById('storiesActiveCount');
+          if (!stripEl) return;
+
+          if (countEl) countEl.textContent = `${stories.length} khoảnh khắc`;
+
+          const myTheme = getAvatarThemeFromIdentity(userProfile.handle, userProfile.displayName);
+
+          const addCardHTML = `
+            <button
+              type="button"
+              id="openStoryComposerBtn"
+              class="group relative w-[106px] h-[152px] rounded-2xl overflow-hidden shrink-0 border border-dashed border-rose-500/45 hover:border-rose-500 bg-gradient-to-b from-slate-100 to-slate-200/70 dark:from-white/[0.06] dark:to-white/[0.02] flex flex-col justify-between p-3 text-left transition-transform duration-200 active:scale-95 focus-visible:outline-none"
+            >
+              <div class="flex items-center justify-between">
+                <div
+                  class="w-8 h-8 rounded-xl border flex items-center justify-center font-display font-semibold text-xs ${myTheme.textClass}"
+                  style="background: ${myTheme.bgStyle}; border-color: ${myTheme.borderStyle};"
+                >
+                  ${escapeHTML(myTheme.initial)}
+                </div>
+                <span class="w-6 h-6 rounded-full bg-rose-600 text-white flex items-center justify-center text-xs font-bold shadow-md shadow-rose-600/30 group-hover:scale-105 transition-transform">
+                  +
+                </span>
+              </div>
+              <div>
+                <p class="text-xs font-semibold text-slate-900 dark:text-white leading-snug">
+                  Tạo khoảnh khắc
+                </p>
+                <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5 truncate">
+                  @${escapeHTML(userProfile.handle)}
+                </p>
+              </div>
+            </button>
+          `;
+
+          const itemsHTML = stories.map((st, idx) => {
+            const theme = getAvatarThemeFromIdentity(st.handle, st.displayName);
+            const presetCls = STORY_PRESET_CLASSES[st.canvasPreset] || STORY_PRESET_CLASSES['dusk-rose'];
+            const ringStyle = st.seen
+              ? 'ring-1 ring-slate-300/60 dark:ring-white/15 opacity-85'
+              : 'ring-2 ring-rose-500 dark:ring-rose-500/90';
+
+            return `
+              <button
+                type="button"
+                data-story-index="${idx}"
+                class="story-card-btn group relative w-[106px] h-[152px] rounded-2xl overflow-hidden shrink-0 flex flex-col justify-between p-2.5 text-left transition-transform duration-200 hover:-translate-y-0.5 active:scale-95 shadow-md ${presetCls} ${ringStyle} focus-visible:outline-none"
+              >
+                ${st.imageUrl ? `
+                  <div class="absolute inset-0 z-0">
+                    <img src="${escapeHTML(st.imageUrl)}" alt="${escapeHTML(st.displayName)}" referrerpolicy="no-referrer" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-black/50"></div>
+                  </div>
+                ` : ''}
+
+                <div class="relative z-10 flex items-center justify-between gap-1">
+                  <div class="p-[1.5px] rounded-xl ${st.seen ? 'bg-white/30' : 'bg-gradient-to-tr from-rose-500 via-amber-400 to-indigo-500'}">
+                    <div
+                      class="w-7 h-7 rounded-[10px] border flex items-center justify-center font-display font-semibold text-[11px] bg-slate-950/90 text-white"
+                      style="border-color: ${theme.borderStyle};"
+                    >
+                      ${escapeHTML(theme.initial)}
+                    </div>
+                  </div>
+                  <span class="font-mono text-[10px] text-white/80 tabular-nums drop-shadow">
+                    ${formatRemainingHours(st.expiresAt)}
+                  </span>
+                </div>
+
+                <div class="relative z-10">
+                  <p class="text-[11px] text-white/90 line-clamp-2 leading-snug mb-1 drop-shadow-sm">
+                    ${escapeHTML(st.caption)}
+                  </p>
+                  <p class="text-[11px] font-semibold text-white truncate drop-shadow">
+                    ${escapeHTML(st.displayName)}
+                  </p>
+                </div>
+              </button>
+            `;
+          }).join('');
+
+          stripEl.innerHTML = addCardHTML + itemsHTML;
+        }
+
+        function openStoryViewer(idx) {
+          if (idx < 0 || idx >= stories.length) return;
+          activeStoryIdx = idx;
+          stories[idx].seen = true;
+          saveStories();
+          renderStoriesStrip();
+          storyProgress = 0;
+          storyPaused = false;
+
+          const backdrop = document.getElementById('storyViewerBackdrop');
+          if (backdrop) backdrop.classList.remove('hidden');
+          updateStoryViewerContent();
+          startStoryTimer();
+        }
+
+        function closeStoryViewer() {
+          stopStoryTimer();
+          activeStoryIdx = null;
+          const backdrop = document.getElementById('storyViewerBackdrop');
+          if (backdrop) backdrop.classList.add('hidden');
+        }
+
+        function updateStoryViewerContent() {
+          if (activeStoryIdx === null || !stories[activeStoryIdx]) return;
+          const st = stories[activeStoryIdx];
+          const canvas = document.getElementById('storyViewerCanvas');
+          const imgWrap = document.getElementById('storyViewerImageWrap');
+          const imgEl = document.getElementById('storyViewerImage');
+
+          if (canvas) {
+            const presetCls = STORY_PRESET_CLASSES[st.canvasPreset] || STORY_PRESET_CLASSES['dusk-rose'];
+            canvas.className = `relative w-full h-full sm:h-[650px] sm:max-w-[400px] sm:rounded-3xl overflow-hidden flex flex-col justify-between border border-white/15 shadow-2xl ${presetCls}`;
+          }
+
+          if (st.imageUrl && imgWrap && imgEl) {
+            imgEl.src = st.imageUrl;
+            imgWrap.classList.remove('hidden');
+          } else if (imgWrap) {
+            imgWrap.classList.add('hidden');
+          }
+
+          applyAvatarThemeToElement(document.getElementById('storyViewerAvatar'), st.handle, st.displayName);
+          document.getElementById('storyViewerAuthor').textContent = st.displayName;
+          document.getElementById('storyViewerHandle').textContent = `@${st.handle}`;
+          document.getElementById('storyViewerMood').textContent = st.mood;
+          document.getElementById('storyViewerLocation').textContent = st.location;
+          document.getElementById('storyViewerRemaining').textContent = `Còn ${formatRemainingHours(st.expiresAt)}`;
+          document.getElementById('storyViewerCaption').textContent = `“${st.caption}”`;
+          document.getElementById('storyWarmthCount').textContent = String(st.warmthCount);
+
+          const warmthBtn = document.getElementById('storyWarmthBtn');
+          if (warmthBtn) {
+            warmthBtn.className = st.warmedByMe
+              ? 'min-h-[44px] px-3.5 py-2 rounded-xl border border-rose-500 bg-rose-600 text-white flex items-center gap-1.5 text-xs font-medium transition-all shrink-0'
+              : 'min-h-[44px] px-3.5 py-2 rounded-xl border border-white/15 bg-white/10 text-white hover:bg-white/20 flex items-center gap-1.5 text-xs font-medium transition-all shrink-0';
+          }
+
+          renderStoryProgressBars();
+        }
+
+        function renderStoryProgressBars() {
+          const container = document.getElementById('storyProgressBars');
+          if (!container || activeStoryIdx === null) return;
+          container.innerHTML = stories.map((st, idx) => {
+            const w = idx < activeStoryIdx ? 100 : idx === activeStoryIdx ? storyProgress : 0;
+            return `
+              <div class="flex-1 h-1 rounded-full bg-white/25 overflow-hidden">
+                <div class="h-full bg-white transition-all duration-75" style="width: ${w}%"></div>
+              </div>
+            `;
+          }).join('');
+        }
+
+        function startStoryTimer() {
+          stopStoryTimer();
+          storyTimer = setInterval(() => {
+            if (storyPaused || activeStoryIdx === null) return;
+            storyProgress += (50 / 5500) * 100;
+            if (storyProgress >= 100) {
+              if (activeStoryIdx < stories.length - 1) {
+                openStoryViewer(activeStoryIdx + 1);
+              } else {
+                closeStoryViewer();
+              }
+              return;
+            }
+            renderStoryProgressBars();
+          }, 50);
+        }
+
+        function stopStoryTimer() {
+          if (storyTimer) {
+            clearInterval(storyTimer);
+            storyTimer = null;
+          }
+        }
+
+        loadStories();
+        renderStoriesStrip();
+
+        const storiesStrip = document.getElementById('vibeStoriesStrip');
+        if (storiesStrip) {
+          storiesStrip.addEventListener('click', (e) => {
+            const openCreateBtn = e.target.closest('#openStoryComposerBtn');
+            if (openCreateBtn) {
+              document.getElementById('storyComposerBackdrop')?.classList.remove('hidden');
+              return;
+            }
+            const storyBtn = e.target.closest('.story-card-btn');
+            if (storyBtn) {
+              const idx = Number(storyBtn.getAttribute('data-story-index'));
+              openStoryViewer(idx);
+            }
+          });
+        }
+
+        document.getElementById('closeStoryViewerBtn')?.addEventListener('click', closeStoryViewer);
+        document.getElementById('prevStoryTapZone')?.addEventListener('click', () => {
+          if (activeStoryIdx !== null && activeStoryIdx > 0) {
+            openStoryViewer(activeStoryIdx - 1);
+          } else {
+            storyProgress = 0;
+            renderStoryProgressBars();
+          }
+        });
+        document.getElementById('nextStoryTapZone')?.addEventListener('click', () => {
+          if (activeStoryIdx !== null && activeStoryIdx < stories.length - 1) {
+            openStoryViewer(activeStoryIdx + 1);
+          } else {
+            closeStoryViewer();
+          }
+        });
+
+        const storyReplyInput = document.getElementById('storyReplyInput');
+        if (storyReplyInput) {
+          storyReplyInput.addEventListener('focus', () => { storyPaused = true; });
+          storyReplyInput.addEventListener('blur', () => { storyPaused = false; });
+        }
+
+        document.getElementById('storyReplyForm')?.addEventListener('submit', (e) => {
+          e.preventDefault();
+          if (!storyReplyInput || !storyReplyInput.value.trim()) return;
+          const targetStory = activeStoryIdx !== null ? stories[activeStoryIdx] : null;
+          storyReplyInput.value = '';
+          storyPaused = false;
+          showToast(targetStory ? `Đã gửi tin nhắn tới @${targetStory.handle}` : 'Đã gửi phản hồi');
+        });
+
+        document.getElementById('storyWarmthBtn')?.addEventListener('click', () => {
+          if (activeStoryIdx === null || !stories[activeStoryIdx]) return;
+          const st = stories[activeStoryIdx];
+          st.warmedByMe = !st.warmedByMe;
+          st.warmthCount += st.warmedByMe ? 1 : -1;
+          saveStories();
+          updateStoryViewerContent();
+        });
+
+        ['closeStoryComposerBtn', 'cancelStoryComposerBtn'].forEach((id) => {
+          document.getElementById(id)?.addEventListener('click', () => {
+            document.getElementById('storyComposerBackdrop')?.classList.add('hidden');
+          });
+        });
+
+        document.querySelectorAll('.story-preset-btn').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            selectedStoryPreset = btn.getAttribute('data-story-preset') || 'dusk-rose';
+            document.querySelectorAll('.story-preset-btn').forEach((b) => {
+              const active = b.getAttribute('data-story-preset') === selectedStoryPreset;
+              b.className = active
+                ? 'story-preset-btn w-8 h-8 rounded-full border-2 border-white ring-2 ring-rose-500 scale-110 transition-transform'
+                : 'story-preset-btn w-8 h-8 rounded-full border-2 border-transparent opacity-75 hover:opacity-100 transition-transform';
+            });
+            const previewBox = document.getElementById('storyComposePreviewBox');
+            if (previewBox) {
+              previewBox.className = `relative h-48 rounded-2xl overflow-hidden p-5 flex items-center justify-center border border-white/15 ${STORY_PRESET_CLASSES[selectedStoryPreset]}`;
+            }
+          });
+        });
+
+        const storyCaptionInput = document.getElementById('storyComposeCaption');
+        const storyPreviewText = document.getElementById('storyComposePreviewText');
+        if (storyCaptionInput && storyPreviewText) {
+          storyCaptionInput.addEventListener('input', () => {
+            storyPreviewText.textContent = storyCaptionInput.value.trim() || 'Viết vài dòng ngắn hoặc tải ảnh lên cho khoảnh khắc 24h...';
+          });
+        }
+
+        const storyFileInput = document.getElementById('storyImageFileInput');
+        document.getElementById('storyImagePickBtn')?.addEventListener('click', () => {
+          storyFileInput?.click();
+        });
+        storyFileInput?.addEventListener('change', (e) => {
+          const file = e.target.files && e.target.files[0];
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = () => {
+            if (typeof reader.result === 'string') {
+              uploadedStoryDataUrl = reader.result;
+              const wrap = document.getElementById('storyComposeImagePreviewWrap');
+              const img = document.getElementById('storyComposeImagePreview');
+              if (wrap && img) {
+                img.src = uploadedStoryDataUrl;
+                wrap.classList.remove('hidden');
+              }
+            }
+          };
+          reader.readAsDataURL(file);
+        });
+
+        document.getElementById('storyComposeForm')?.addEventListener('submit', (e) => {
+          e.preventDefault();
+          const caption = storyCaptionInput ? storyCaptionInput.value.trim() : '';
+          if (!caption && !uploadedStoryDataUrl) {
+            showToast('Hãy viết đôi dòng hoặc chọn ảnh cho khoảnh khắc 24h');
+            return;
+          }
+
+          const moodEl = document.getElementById('storyComposeMood');
+          const locEl = document.getElementById('storyComposeLocation');
+
+          const newStory = {
+            id: 'st-' + Date.now(),
+            displayName: userProfile.displayName,
+            handle: userProfile.handle,
+            mood: moodEl ? moodEl.value : 'Đêm muộn',
+            location: locEl ? locEl.value : userProfile.city,
+            caption: caption || 'Khoảnh khắc 24h tại VibeNest',
+            imageUrl: uploadedStoryDataUrl || undefined,
+            canvasPreset: selectedStoryPreset,
+            expiresAt: Date.now() + 24 * 3600 * 1000,
+            warmthCount: 1,
+            warmedByMe: true,
+            seen: false
+          };
+
+          stories.unshift(newStory);
+          saveStories();
+          renderStoriesStrip();
+
+          if (storyCaptionInput) storyCaptionInput.value = '';
+          uploadedStoryDataUrl = '';
+          document.getElementById('storyComposeImagePreviewWrap')?.classList.add('hidden');
+          document.getElementById('storyComposerBackdrop')?.classList.add('hidden');
+          showToast('Đã đăng Khoảnh khắc 24h lên đầu bảng tin');
+        });
+
+        // ====================================================================
+        // SOUL MATCH / VIBE RADAR LOGIC (180s Ephemeral Frequency Matching)
+        // ====================================================================
+        const RADAR_CANDIDATES = [
+          {
+            displayName: 'An Nhiên',
+            handle: 'annhien.35mm',
+            city: 'Sài Gòn',
+            vibeTag: 'Nhiếp Ảnh Phim & Cà Phê',
+            resonanceScore: 96,
+            distanceKm: 2.4,
+            bio: 'Hay rửa ảnh phim ở Quận 1 và thích ngồi ban công nghe tiếng mưa đêm.',
+            openingLine: 'Chào bạn, trùng hợp ghê! Mình cũng vừa bật Vibe Radar khi đang ngồi chỉnh lại cuộn phim mới tráng.',
+            replies: [
+              'Mình đồng cảm lắm luôn. Những lúc phố vắng thế này nói chuyện với một người hợp tần số thấy nhẹ lòng hẳn.',
+              'Ở Sài Gòn tầm giờ này gió ngoài cầu Ba Son mát cực kỳ. Hôm nay của bạn thế nào?',
+              'Rất vui vì tối nay bắt trúng tần số của bạn. Mình giữ kết nối trên bảng tin nhé!'
+            ]
+          },
+          {
+            displayName: 'Gia Bảo',
+            handle: 'baogia.indie',
+            city: 'Hà Nội',
+            vibeTag: 'Kẻ Mộng Mơ Đêm Muộn',
+            resonanceScore: 94,
+            distanceKm: 4.1,
+            bio: 'Đàn guitar thùng, trà bá tước nóng và những câu chuyện không tên lúc 1h sáng.',
+            openingLine: 'Xin chào! Tần số đêm muộn của tụi mình khớp tới 94% luôn này. Bạn cũng chưa ngủ được à?',
+            replies: [
+              'Mình vừa pha một cốc trà ấm. Đôi khi nói chuyện với một người chưa từng gặp lại dễ giãi bày hơn.',
+              'Góc nhìn của bạn thú vị thật đấy. Nghe bạn kể mà mình thấy yên bình lây.'
+            ]
+          },
+          {
+            displayName: 'Phương Thảo',
+            handle: 'thao.pinehill',
+            city: 'Đà Lạt',
+            vibeTag: 'Tần Số Chữa Lành',
+            resonanceScore: 98,
+            distanceKm: 1.8,
+            bio: 'Trồng sen đá, đọc tản văn và sưu tầm những khoảnh khắc dịu dàng mỗi ngày.',
+            openingLine: 'Chào bạn nhé! Trên Đà Lạt chỗ mình sương đang xuống dày lắm, gửi bạn một chút không khí se lạnh từ đây.',
+            replies: [
+              'Cảm ơn bạn nhiều nha. Một lời hỏi thăm ấm áp đúng lúc thật sự quý giá lắm.',
+              'Trò chuyện với bạn dễ chịu thật sự, tụi mình giữ liên lạc lâu dài nha!'
+            ]
+          }
+        ];
+
+        let radarCandidateIdx = 0;
+        let currentMatchedSoul = RADAR_CANDIDATES[0];
+        let radarCountdownTimer = null;
+        let radarRemainingSec = 180;
+        let radarReplyStep = 0;
+
+        function openVibeRadar() {
+          const backdrop = document.getElementById('vibeRadarBackdrop');
+          if (!backdrop) return;
+          backdrop.classList.remove('hidden');
+          document.getElementById('radarScannerStage')?.classList.remove('hidden');
+          document.getElementById('radarMatchedStage')?.classList.add('hidden');
+          document.getElementById('radarChatStage')?.classList.add('hidden');
+
+          applyAvatarThemeToElement(document.getElementById('radarCenterAvatar'), userProfile.handle, userProfile.displayName);
+          document.getElementById('radarCenterTitle').textContent = `${userProfile.displayName} (@${userProfile.handle})`;
+          document.getElementById('radarCenterSubtitle').textContent = '128 người đang bật Radar quanh bạn';
+        }
+
+        function closeVibeRadar() {
+          if (radarCountdownTimer) {
+            clearInterval(radarCountdownTimer);
+            radarCountdownTimer = null;
+          }
+          document.getElementById('vibeRadarBackdrop')?.classList.add('hidden');
+        }
+
+        function triggerRadarScan() {
+          document.getElementById('radarScannerStage')?.classList.remove('hidden');
+          document.getElementById('radarMatchedStage')?.classList.add('hidden');
+          document.getElementById('radarChatStage')?.classList.add('hidden');
+
+          const pulseRing = document.getElementById('radarPulseRing1');
+          const scanBtn = document.getElementById('startRadarScanBtn');
+          pulseRing?.classList.remove('hidden');
+          if (scanBtn) scanBtn.textContent = 'Đang kết nối sóng cảm xúc...';
+          document.getElementById('radarCenterTitle').textContent = 'Đang dò tìm tâm hồn đồng điệu...';
+
+          setTimeout(() => {
+            pulseRing?.classList.add('hidden');
+            if (scanBtn) scanBtn.textContent = 'Quét Radar · Tìm người cùng tần số';
+            currentMatchedSoul = RADAR_CANDIDATES[radarCandidateIdx % RADAR_CANDIDATES.length];
+            radarCandidateIdx++;
+
+            document.getElementById('radarScannerStage')?.classList.add('hidden');
+            document.getElementById('radarMatchedStage')?.classList.remove('hidden');
+
+            applyAvatarThemeToElement(document.getElementById('radarMatchAvatar'), currentMatchedSoul.handle, currentMatchedSoul.displayName);
+            document.getElementById('radarMatchName').textContent = currentMatchedSoul.displayName;
+            document.getElementById('radarMatchHandle').textContent = `@${currentMatchedSoul.handle}`;
+            document.getElementById('radarMatchMeta').textContent = `${currentMatchedSoul.vibeTag} · ${currentMatchedSoul.city}`;
+            document.getElementById('radarMatchResonance').textContent = `${currentMatchedSoul.resonanceScore}% đồng điệu · Cách ${currentMatchedSoul.distanceKm}km`;
+            document.getElementById('radarMatchBio').textContent = `“${currentMatchedSoul.bio}”`;
+
+            showToast(`Đã bắt trúng tần số của ${currentMatchedSoul.displayName} (${currentMatchedSoul.resonanceScore}%)`);
+          }, 1450);
+        }
+
+        function startRadarChatRoom() {
+          document.getElementById('radarMatchedStage')?.classList.add('hidden');
+          document.getElementById('radarChatStage')?.classList.remove('hidden');
+
+          applyAvatarThemeToElement(document.getElementById('radarChatPeerAvatar'), currentMatchedSoul.handle, currentMatchedSoul.displayName);
+          document.getElementById('radarChatPeerName').textContent = currentMatchedSoul.displayName;
+          document.getElementById('radarChatPeerScore').textContent = `${currentMatchedSoul.resonanceScore}%`;
+          document.getElementById('radarChatPeerMeta').textContent = `${currentMatchedSoul.vibeTag} · ${currentMatchedSoul.city}`;
+
+          radarRemainingSec = 180;
+          radarReplyStep = 0;
+          const countdownEl = document.getElementById('radarChatCountdown');
+          if (countdownEl) countdownEl.textContent = '03:00';
+
+          const listEl = document.getElementById('radarChatMessagesList');
+          if (listEl) {
+            listEl.innerHTML = `
+              <div class="text-center px-3 py-2 rounded-xl bg-slate-100/70 dark:bg-white/[0.03] text-[11px] text-slate-500 dark:text-slate-400">
+                Phiên trò chuyện 180s cùng @${escapeHTML(currentMatchedSoul.handle)} đã bắt đầu.
+              </div>
+              <div class="flex flex-col items-start">
+                <div class="max-w-[82%] px-3.5 py-2.5 rounded-2xl rounded-bl-sm bg-slate-100 dark:bg-white/[0.07] text-xs sm:text-sm text-slate-900 dark:text-slate-100 leading-relaxed">
+                  ${escapeHTML(currentMatchedSoul.openingLine)}
+                </div>
+              </div>
+            `;
+          }
+
+          if (radarCountdownTimer) clearInterval(radarCountdownTimer);
+          radarCountdownTimer = setInterval(() => {
+            if (radarRemainingSec <= 1) {
+              clearInterval(radarCountdownTimer);
+              if (countdownEl) countdownEl.textContent = '00:00';
+              return;
+            }
+            radarRemainingSec--;
+            const m = String(Math.floor(radarRemainingSec / 60)).padStart(2, '0');
+            const s = String(radarRemainingSec % 60).padStart(2, '0');
+            if (countdownEl) countdownEl.textContent = `${m}:${s}`;
+          }, 1000);
+        }
+
+        ['topRadarMatchBtn', 'sidebarRadarMatchBtn'].forEach((id) => {
+          document.getElementById(id)?.addEventListener('click', openVibeRadar);
+        });
+        document.getElementById('closeVibeRadarBtn')?.addEventListener('click', closeVibeRadar);
+        document.getElementById('startRadarScanBtn')?.addEventListener('click', triggerRadarScan);
+        document.getElementById('rescanRadarBtn')?.addEventListener('click', triggerRadarScan);
+        document.getElementById('radarChatSwitchBtn')?.addEventListener('click', triggerRadarScan);
+        document.getElementById('enterRadarChatBtn')?.addEventListener('click', startRadarChatRoom);
+
+        document.querySelectorAll('.radar-freq-btn').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const target = btn.getAttribute('data-radar-freq');
+            document.querySelectorAll('.radar-freq-btn').forEach((b) => {
+              const active = b.getAttribute('data-radar-freq') === target;
+              b.className = active
+                ? 'radar-freq-btn min-h-[38px] px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-rose-600 text-white shadow-sm shadow-rose-600/25 transition-all'
+                : 'radar-freq-btn min-h-[38px] px-3.5 py-1.5 rounded-xl text-xs font-medium bg-slate-100 dark:bg-white/[0.05] text-slate-700 dark:text-slate-300 hover:bg-slate-200/80 dark:hover:bg-white/10 transition-all';
+            });
+          });
+        });
+
+        document.getElementById('radarConnectSoulBtn')?.addEventListener('click', () => {
+          if (radarCountdownTimer) clearInterval(radarCountdownTimer);
+          const countdownEl = document.getElementById('radarChatCountdown');
+          if (countdownEl) countdownEl.textContent = '∞ Đã kết nối';
+          showToast(`Đã kết nối tri kỷ với @${currentMatchedSoul.handle}`);
+        });
+
+        document.getElementById('radarChatForm')?.addEventListener('submit', (e) => {
+          e.preventDefault();
+          const inputEl = document.getElementById('radarChatInput');
+          const listEl = document.getElementById('radarChatMessagesList');
+          const text = inputEl ? inputEl.value.trim() : '';
+          if (!text || !listEl) return;
+
+          inputEl.value = '';
+          const myBubble = document.createElement('div');
+          myBubble.className = 'flex flex-col items-end';
+          myBubble.innerHTML = `
+            <div class="max-w-[82%] px-3.5 py-2.5 rounded-2xl rounded-br-sm bg-rose-600 text-white text-xs sm:text-sm leading-relaxed">
+              ${escapeHTML(text)}
+            </div>
+          `;
+          listEl.appendChild(myBubble);
+          listEl.scrollTop = listEl.scrollHeight;
+
+          setTimeout(() => {
+            const replyText = currentMatchedSoul.replies[radarReplyStep % currentMatchedSoul.replies.length];
+            radarReplyStep++;
+            const peerBubble = document.createElement('div');
+            peerBubble.className = 'flex flex-col items-start';
+            peerBubble.innerHTML = `
+              <div class="max-w-[82%] px-3.5 py-2.5 rounded-2xl rounded-bl-sm bg-slate-100 dark:bg-white/[0.07] text-xs sm:text-sm text-slate-900 dark:text-slate-100 leading-relaxed">
+                ${escapeHTML(replyText)}
+              </div>
+            `;
+            listEl.appendChild(peerBubble);
+            listEl.scrollTop = listEl.scrollHeight;
+          }, 950);
+        });
+
+        // Escape key closes active modals
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape') {
+            closeComposer();
+            closeProfileModal();
+            closeStoryViewer();
+            closeVibeRadar();
+            document.getElementById('storyComposerBackdrop')?.classList.add('hidden');
+          }
+        });
       });
     })();
   </script>
