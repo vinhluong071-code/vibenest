@@ -43,15 +43,23 @@ export function AccountLinkingModal({
   const [activeTab, setActiveTab] = useState<AccountMode>("link");
   const [authMethod, setAuthMethod] = useState<AuthMethod>("otp");
   const [step, setStep] = useState<ModalStep>("input");
-  const [email, setEmail] = useState(linkedEmail ?? "");
+  const [emailDraft, setEmailDraft] = useState({
+    linkedEmail: linkedEmail ?? null,
+    isOpen,
+    value: linkedEmail ?? "",
+  });
+  const email = emailDraft.linkedEmail === (linkedEmail ?? null) && emailDraft.isOpen === isOpen
+    ? emailDraft.value
+    : linkedEmail ?? "";
+  const setEmail = (value: string) => setEmailDraft({
+    linkedEmail: linkedEmail ?? null,
+    isOpen,
+    value,
+  });
   const [password, setPassword] = useState("");
   const [otpCode, setOtpCode] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [status, setStatus] = useState("");
-
-  useEffect(() => {
-    if (isOpen) setEmail(linkedEmail ?? "");
-  }, [isOpen, linkedEmail]);
 
   if (!isOpen) return null;
 
