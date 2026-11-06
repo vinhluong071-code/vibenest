@@ -1,9 +1,9 @@
 name: VibeNest dependency and quality gate
 
 on:
-  pull_request:
+  push:
     branches:
-      - main
+      - feat/nextjs-app-router-port
   workflow_dispatch:
 
 permissions:
