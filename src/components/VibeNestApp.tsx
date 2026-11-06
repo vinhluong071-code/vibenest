@@ -495,7 +495,7 @@ export function VibeNestApp() {
         <div className="workspace-grid">
           <Sidebar alias={alias} postCount={ownPostCount} savedCount={savedCount} onChangeAlias={() => setAlias(makeAlias())} />
           <section className="feed-column" id="feed" aria-label="Luồng tâm sự">
-            <VibeStoriesBar currentUserName={alias} currentUserHandle={alias} enabled={Boolean(userId)} onNotify={setNotice} />
+            <VibeStoriesBar currentUserName={alias} currentUserHandle={alias} onNotify={setNotice} />
             <div className="composer-prompt glass-panel">
               <div className="avatar">{alias.slice(0, 1)}</div>
               <button className="prompt-trigger" onClick={() => setComposerOpen(true)}>Viết vài dòng trút bầu tâm sự ẩn danh…</button>
@@ -517,7 +517,6 @@ export function VibeNestApp() {
                     <VibeFeedCard
                       key={cardPost.id}
                       post={cardPost}
-                      busy={busyId === sourcePost.id}
                       onToggleEmpathy={(postId) => {
                         const target = posts.find((item) => item.id === postId);
                         if (target) void toggleInteraction(target, "empathy");
