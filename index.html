@@ -154,9 +154,24 @@
   <!-- TOP NAVIGATION BAR (Strict 3-Zone Contract, Compact <=56px Height for 15% Mobile Sticky Cap) -->
   <header class="sticky top-0 z-30 h-14 glass-nav bg-white/75 dark:bg-night-950/75 border-b border-slate-200/80 dark:border-white/[0.07]">
     <div class="max-w-6xl mx-auto h-full px-4 sm:px-6 flex items-center justify-between gap-8">
-      <!-- Zone 1: Single-line Brand Wordmark -->
-      <a href="#feed" id="brandHomeLink" class="font-display text-xl font-semibold tracking-tight text-slate-900 dark:text-white whitespace-nowrap shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 rounded">
-        VibeNest
+      <!-- Zone 1: Single-line Brand Wordmark with Custom Nest+Wave Geometric SVG Mark -->
+      <a href="#feed" id="brandHomeLink" class="group flex items-center gap-2.5 font-display text-xl font-semibold tracking-tight text-slate-900 dark:text-white whitespace-nowrap shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 rounded-lg">
+        <svg class="w-7 h-7 shrink-0 transition-transform duration-200 group-hover:scale-105" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <defs>
+            <linearGradient id="vibenestBrandGrad" x1="4" y1="4" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stop-color="#FB7185" />
+              <stop offset="52%" stop-color="#E11D48" />
+              <stop offset="100%" stop-color="#6366F1" />
+            </linearGradient>
+          </defs>
+          <!-- Outer Nest Vessel (Warm Protective Arc) -->
+          <path d="M5.5 19.5C5.5 26.956 11.096 31.5 18 31.5C24.904 31.5 30.5 26.956 30.5 19.5" stroke="url(#vibenestBrandGrad)" stroke-width="2.5" stroke-linecap="round" />
+          <!-- Inner Nest Cradle -->
+          <path d="M9.5 21.5C11.3 25.3 14.35 27.25 18 27.25C21.65 27.25 24.7 25.3 26.5 21.5" stroke="url(#vibenestBrandGrad)" stroke-width="2" stroke-linecap="round" stroke-opacity="0.65" />
+          <!-- Resonant Acoustic / Emotional Wave Rising from Nest -->
+          <path d="M8.5 15.25C11.2 15.25 11.8 9.5 14.5 9.5C17.2 9.5 16.8 18.5 19.5 18.5C22.2 18.5 22.5 11.5 25.2 11.5C26.8 11.5 27.3 14.25 28.5 14.25" stroke="currentColor" class="text-slate-900 dark:text-white" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+        <span>VibeNest</span>
       </a>
 
       <!-- Zone 2: 4 Concise Single-Line Navigation Links -->
@@ -193,8 +208,21 @@
         </h1>
       </div>
 
-      <!-- Utility Controls: Search, Ambient Sound, Theme Switch -->
-      <div class="flex items-center gap-2 self-start sm:self-auto">
+      <!-- Utility Controls: Account Sync/Recovery, Ambient Sound, Theme Switch -->
+      <div class="flex flex-wrap items-center gap-2 self-start sm:self-auto">
+        <!-- Account Linking & Recovery Trigger (Mobile & Desktop) -->
+        <button
+          type="button"
+          id="topAccountLinkBtn"
+          class="min-h-[44px] px-3.5 py-2 rounded-xl glass-surface bg-white/70 dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/[0.08] text-xs font-medium text-slate-700 dark:text-slate-300 hover:border-rose-500/40 flex items-center gap-2 transition-all whitespace-nowrap shrink-0"
+          title="Liên kết hoặc khôi phục danh tính ẩn danh khi đổi thiết bị"
+        >
+          <svg class="w-4 h-4 text-indigo-500 dark:text-indigo-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
+          </svg>
+          <span id="topAccountLinkLabel">Định danh: Ẩn danh tạm thời</span>
+        </button>
+
         <!-- Ambient Night Rain Sound Toggle -->
         <button
           type="button"
@@ -244,13 +272,27 @@
             </button>
           </div>
           <div class="flex items-center gap-3">
-            <div id="sidebarAvatarBox" class="w-11 h-11 rounded-2xl bg-gradient-to-br from-rose-500/20 to-indigo-500/20 border border-slate-200/60 dark:border-white/10 flex items-center justify-center font-display font-semibold text-base text-rose-600 dark:text-rose-300 shrink-0">
+            <div id="sidebarAvatarBox" class="w-11 h-11 rounded-2xl border flex items-center justify-center font-display font-semibold text-base shrink-0 transition-colors duration-200">
               M
             </div>
             <div class="min-w-0">
               <p id="sidebarAliasName" class="text-sm font-semibold text-slate-900 dark:text-white truncate">Mây Lang Thang #409</p>
-              <p class="text-xs text-slate-500 dark:text-slate-400">Không lưu IP · Tự xóa dấu vết</p>
+              <p id="sidebarAccountStatusText" class="text-xs text-slate-500 dark:text-slate-400 truncate">Chưa liên kết khôi phục · Mã màu cố định</p>
             </div>
+          </div>
+
+          <!-- Account Linking & Recovery CTA inside Identity Card -->
+          <div class="mt-4 pt-3.5 border-t border-slate-200/60 dark:border-white/[0.06]">
+            <button
+              type="button"
+              id="sidebarAccountLinkBtn"
+              class="w-full min-h-[40px] px-3.5 py-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 dark:bg-white/[0.07] dark:hover:bg-white/[0.12] text-white text-xs font-medium flex items-center justify-between gap-2 transition-colors"
+            >
+              <span id="sidebarAccountBtnText" class="truncate">Bảo vệ & Khôi phục bút danh</span>
+              <svg class="w-4 h-4 shrink-0 text-rose-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+              </svg>
+            </button>
           </div>
 
           <div class="mt-4 pt-4 border-t border-slate-200/60 dark:border-white/[0.06] grid grid-cols-2 gap-3 text-left">
@@ -310,7 +352,7 @@
         <!-- Quick Inline Prompt Card (Opens Quick Composer Sheet) -->
         <div class="glass-surface rounded-2xl p-4 sm:p-5 bg-white/80 dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/[0.09] shadow-sm">
           <div class="flex items-center gap-3">
-            <div id="quickPromptAvatar" class="w-10 h-10 rounded-xl bg-rose-500/15 border border-rose-500/20 flex items-center justify-center font-display font-semibold text-sm text-rose-600 dark:text-rose-300 shrink-0">
+            <div id="quickPromptAvatar" class="w-10 h-10 rounded-xl border flex items-center justify-center font-display font-semibold text-sm shrink-0 transition-colors duration-200">
               M
             </div>
             <button
@@ -452,7 +494,7 @@
 
       </section>
 
-      <!-- RIGHT COLUMN (Desktop 3 cols): Daily Gentle Reflection & Community Guidelines -->
+      <!-- RIGHT COLUMN (Desktop 3 cols): Daily Gentle Reflection & Brand Identity Spec -->
       <aside class="hidden lg:block lg:col-span-3 space-y-5 sticky top-20">
         <!-- Daily Reflection Card -->
         <div class="glass-surface rounded-2xl p-5 bg-white/75 dark:bg-white/[0.03] border border-slate-200/80 dark:border-white/[0.08]">
@@ -484,7 +526,7 @@
           <ul class="space-y-2.5 text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
             <li>01. Lắng nghe không phán xét. Một lời vỗ về đúng lúc có thể làm ấm cả một đêm dài.</li>
             <li>02. Tuyệt đối bảo mật danh tính cá nhân của bạn và người được nhắc đến.</li>
-            <li>03. Sử dụng ngôn từ dịu dàng, tôn trọng cảm xúc thật của nhau.</li>
+            <li>03. Bút danh ẩn danh được định màu cố định qua thuật toán băm (Hash) và có thể khôi phục qua Email OTP.</li>
           </ul>
           <div class="mt-4 pt-3 border-t border-slate-200/60 dark:border-white/[0.06] text-[11px] text-slate-400 dark:text-slate-500">
             VibeNest · omni.id.vn · Kết nối cảm xúc ẩn danh
@@ -551,13 +593,13 @@
 
       <button
         type="button"
-        data-mobile-nav="saved"
-        class="mobile-nav-btn min-h-[48px] flex flex-col items-center justify-center text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+        id="mobileAccountTrigger"
+        class="min-h-[48px] flex flex-col items-center justify-center text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
       >
         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z" />
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
         </svg>
-        <span class="text-[10px] font-medium tracking-tight mt-0.5 whitespace-nowrap">Đã lưu</span>
+        <span class="text-[10px] font-medium tracking-tight mt-0.5 whitespace-nowrap">Định danh</span>
       </button>
     </div>
   </nav>
@@ -580,7 +622,7 @@
       <div class="flex items-center justify-between gap-4 mb-4">
         <div>
           <h2 id="composerModalTitle" class="font-display text-lg font-semibold text-slate-900 dark:text-white">Gửi một lời tâm sự ẩn danh</h2>
-          <p class="text-xs text-slate-500 dark:text-slate-400">Danh tính được mã hóa ngẫu nhiên trên VibeNest</p>
+          <p class="text-xs text-slate-500 dark:text-slate-400">Màu đại diện được tạo duy nhất từ bút danh của bạn</p>
         </div>
         <button
           type="button"
@@ -597,10 +639,15 @@
       <form id="composeVibeForm" class="space-y-4">
         <!-- Alias & Location Row -->
         <div class="flex flex-col sm:flex-row gap-2.5">
-          <div class="flex-1 flex items-center justify-between px-3.5 py-2 rounded-xl bg-slate-100/90 dark:bg-white/[0.05] border border-slate-200/70 dark:border-white/[0.07]">
-            <div class="min-w-0">
-              <span class="text-[11px] text-slate-500 dark:text-slate-400 block">Bút danh ẩn danh</span>
-              <span id="composerAliasPreview" class="text-xs font-semibold text-slate-900 dark:text-white truncate block">Mây Lang Thang #409</span>
+          <div class="flex-1 flex items-center justify-between gap-2.5 px-3.5 py-2 rounded-xl bg-slate-100/90 dark:bg-white/[0.05] border border-slate-200/70 dark:border-white/[0.07]">
+            <div class="flex items-center gap-2.5 min-w-0">
+              <div id="composerAvatarPreview" class="w-8 h-8 rounded-lg border flex items-center justify-center font-display font-semibold text-xs shrink-0 transition-colors duration-200">
+                M
+              </div>
+              <div class="min-w-0">
+                <span class="text-[11px] text-slate-500 dark:text-slate-400 block">Bút danh ẩn danh</span>
+                <span id="composerAliasPreview" class="text-xs font-semibold text-slate-900 dark:text-white truncate block">Mây Lang Thang #409</span>
+              </div>
             </div>
             <button
               type="button"
@@ -696,6 +743,228 @@
     </div>
   </div>
 
+  <!-- ACCOUNT LINKING & RECOVERY MODAL (Compatible with primitive.dev Email OTP / Password) -->
+  <div
+    id="accountModalBackdrop"
+    class="fixed inset-0 z-50 hidden bg-black/65 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 opacity-0 transition-opacity duration-200"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="accountModalTitle"
+  >
+    <div
+      id="accountModalPanel"
+      class="w-full max-w-lg rounded-t-3xl sm:rounded-3xl glass-nav bg-white/95 dark:bg-night-900/95 border-t sm:border border-slate-200/80 dark:border-white/10 p-5 sm:p-6 shadow-2xl transform translate-y-6 sm:translate-y-0 sm:scale-95 transition-transform duration-200 max-h-[92vh] overflow-y-auto"
+    >
+      <!-- Mobile Drag Handle -->
+      <div class="w-10 h-1.5 bg-slate-300 dark:bg-white/20 rounded-full mx-auto mb-4 sm:hidden"></div>
+
+      <!-- Modal Header with Custom Brand Mark -->
+      <div class="flex items-start justify-between gap-4 mb-4">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-2xl bg-slate-100 dark:bg-white/[0.05] border border-slate-200/80 dark:border-white/10 flex items-center justify-center shrink-0">
+            <svg class="w-6 h-6" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <path d="M5.5 19.5C5.5 26.956 11.096 31.5 18 31.5C24.904 31.5 30.5 26.956 30.5 19.5" stroke="#F43F5E" stroke-width="2.5" stroke-linecap="round" />
+              <path d="M9.5 21.5C11.3 25.3 14.35 27.25 18 27.25C21.65 27.25 24.7 25.3 26.5 21.5" stroke="#6366F1" stroke-width="2" stroke-linecap="round" stroke-opacity="0.7" />
+              <path d="M8.5 15.25C11.2 15.25 11.8 9.5 14.5 9.5C17.2 9.5 16.8 18.5 19.5 18.5C22.2 18.5 22.5 11.5 25.2 11.5C26.8 11.5 27.3 14.25 28.5 14.25" stroke="currentColor" class="text-slate-900 dark:text-white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </div>
+          <div>
+            <h2 id="accountModalTitle" class="font-display text-lg font-semibold text-slate-900 dark:text-white">Định danh & Khôi phục tài khoản</h2>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Giữ nguyên ẩn danh công khai · Đồng bộ qua primitive.dev</p>
+          </div>
+        </div>
+        <button
+          type="button"
+          id="closeAccountModalBtn"
+          aria-label="Đóng cửa sổ"
+          class="min-h-[44px] min-w-[44px] rounded-xl flex items-center justify-center text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/[0.06] transition-colors"
+        >
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Current Anonymous Identity Preview Card (Demonstrates Deterministic Hash Color) -->
+      <div class="p-3.5 rounded-2xl bg-slate-100/80 dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/[0.08] mb-4 flex items-center justify-between gap-3">
+        <div class="flex items-center gap-3 min-w-0">
+          <div id="accountModalAvatar" class="w-11 h-11 rounded-2xl border flex items-center justify-center font-display font-semibold text-base shrink-0 transition-colors duration-200">
+            M
+          </div>
+          <div class="min-w-0">
+            <div class="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
+              <span id="accountModalStatusLabel">Phiên ẩn danh hiện tại</span>
+              <span aria-hidden="true">·</span>
+              <span id="accountModalHashBadge" class="font-mono text-[11px] tabular-nums">Hash #A4F</span>
+            </div>
+            <p id="accountModalAliasName" class="text-sm font-semibold text-slate-900 dark:text-white truncate mt-0.5">Mây Lang Thang #409</p>
+          </div>
+        </div>
+        <button
+          type="button"
+          id="accountModalShuffleBtn"
+          class="min-h-[38px] px-3 py-1.5 rounded-xl text-xs font-medium bg-white dark:bg-white/[0.06] border border-slate-200/80 dark:border-white/10 text-slate-700 dark:text-slate-200 hover:border-rose-500/40 transition-colors whitespace-nowrap shrink-0"
+        >
+          Đổi bút danh
+        </button>
+      </div>
+
+      <!-- Top-Level Mode Switch: "Liên kết bảo vệ" vs "Khôi phục từ thiết bị cũ" -->
+      <div class="grid grid-cols-2 gap-1.5 p-1 rounded-xl bg-slate-100 dark:bg-white/[0.05] border border-slate-200/70 dark:border-white/[0.06] mb-4" role="tablist">
+        <button
+          type="button"
+          role="tab"
+          aria-selected="true"
+          data-auth-tab="link"
+          class="auth-tab-btn min-h-[40px] px-3 py-1.5 rounded-lg text-xs font-semibold bg-white dark:bg-night-800 text-slate-900 dark:text-white shadow-sm transition-all whitespace-nowrap"
+        >
+          Liên kết bảo vệ bút danh
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected="false"
+          data-auth-tab="recover"
+          class="auth-tab-btn min-h-[40px] px-3 py-1.5 rounded-lg text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all whitespace-nowrap"
+        >
+          Khôi phục thiết bị cũ
+        </button>
+      </div>
+
+      <!-- Auth Method Selector: "Mã OTP qua Email (primitive.dev)" vs "Email & Mật khẩu" -->
+      <div class="flex items-center justify-between gap-2 mb-3 text-xs">
+        <span class="text-slate-500 dark:text-slate-400">Phương thức xác thực:</span>
+        <div class="flex items-center gap-2">
+          <button
+            type="button"
+            data-auth-method="otp"
+            class="auth-method-btn min-h-[34px] px-2.5 py-1 rounded-lg font-semibold text-rose-600 dark:text-rose-400 bg-rose-500/10 border border-rose-500/30 transition-colors whitespace-nowrap"
+          >
+            Mã xác thực Email (OTP)
+          </button>
+          <button
+            type="button"
+            data-auth-method="password"
+            class="auth-method-btn min-h-[34px] px-2.5 py-1 rounded-lg font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors whitespace-nowrap"
+          >
+            Mật khẩu
+          </button>
+        </div>
+      </div>
+
+      <!-- STEP 1: EMAIL + (OPTIONAL PASSWORD) FORM -->
+      <form id="accountAuthForm" class="space-y-4">
+        <div>
+          <label for="authEmailInput" class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+            Địa chỉ Email nhận khóa khôi phục
+          </label>
+          <input
+            type="email"
+            id="authEmailInput"
+            required
+            placeholder="ban@example.com"
+            class="w-full min-h-[44px] px-3.5 py-2 rounded-xl bg-slate-100/90 dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/[0.08] text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:border-rose-500 transition-colors"
+          />
+          <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
+            Email chỉ dùng để tạo mã băm khôi phục trên primitive.dev, tuyệt đối không hiển thị công khai.
+          </p>
+        </div>
+
+        <!-- Password Field (Hidden when method === 'otp') -->
+        <div id="authPasswordContainer" class="hidden space-y-1.5">
+          <label for="authPasswordInput" class="block text-xs font-medium text-slate-700 dark:text-slate-300">
+            Mật khẩu bảo vệ (tối thiểu 8 ký tự)
+          </label>
+          <input
+            type="password"
+            id="authPasswordInput"
+            minlength="8"
+            placeholder="••••••••"
+            class="w-full min-h-[44px] px-3.5 py-2 rounded-xl bg-slate-100/90 dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/[0.08] text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:border-rose-500 transition-colors"
+          />
+        </div>
+
+        <button
+          type="submit"
+          id="authSubmitPrimaryBtn"
+          class="w-full min-h-[46px] px-5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold bg-rose-600 hover:bg-rose-500 active:scale-[0.99] text-white shadow-md shadow-rose-600/20 transition-all whitespace-nowrap"
+        >
+          Gửi mã xác thực 6 số qua Email
+        </button>
+      </form>
+
+      <!-- STEP 2: 6-DIGIT OTP VERIFICATION VIEW (Compatible with primitive.dev Magic Code flow) -->
+      <form id="accountOtpVerifyForm" class="hidden space-y-4">
+        <div class="p-3.5 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-xs text-slate-700 dark:text-slate-200 leading-relaxed">
+          Mã xác thực 6 chữ số vừa được gửi tới <span id="otpTargetEmailText" class="font-semibold text-indigo-600 dark:text-indigo-300"></span>.
+          <span class="block mt-1 font-mono text-[11px] text-slate-500 dark:text-slate-400">Gợi ý thử nghiệm: Nhập mã bất kỳ đủ 6 số (ví dụ: 246810)</span>
+        </div>
+
+        <div>
+          <label for="otpCodeInput" class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+            Nhập mã xác thực 6 số (primitive.dev OTP)
+          </label>
+          <input
+            type="text"
+            id="otpCodeInput"
+            inputmode="numeric"
+            pattern="[0-9]{6}"
+            maxlength="6"
+            required
+            placeholder="2 4 6 8 1 0"
+            class="w-full min-h-[48px] px-4 py-2.5 rounded-xl bg-slate-100/90 dark:bg-white/[0.05] border border-slate-200/80 dark:border-white/[0.1] font-mono text-lg tracking-[0.35em] text-center text-slate-900 dark:text-white focus:outline-none focus:border-rose-500 tabular-nums"
+          />
+        </div>
+
+        <div class="flex items-center justify-between gap-2 pt-1">
+          <button
+            type="button"
+            id="backToEmailStepBtn"
+            class="min-h-[44px] px-3.5 py-2 rounded-xl text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/[0.06] transition-colors whitespace-nowrap"
+          >
+            ← Đổi địa chỉ Email
+          </button>
+          <button
+            type="submit"
+            class="min-h-[44px] px-5 py-2.5 rounded-xl text-xs font-semibold bg-rose-600 hover:bg-rose-500 active:scale-[0.98] text-white shadow-md shadow-rose-600/20 transition-all whitespace-nowrap"
+          >
+            Xác nhận & Đồng bộ ngay
+          </button>
+        </div>
+      </form>
+
+      <!-- STEP 3: LINKED ACCOUNT SUMMARY STATE -->
+      <div id="accountLinkedSummaryView" class="hidden space-y-4">
+        <div class="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/25 text-xs space-y-1.5">
+          <div class="flex items-center justify-between">
+            <span class="font-semibold text-emerald-700 dark:text-emerald-300">Tài khoản ẩn danh đã được bảo vệ</span>
+            <span class="font-mono text-[11px] text-emerald-600 dark:text-emerald-400 tabular-nums">primitive.dev · Active</span>
+          </div>
+          <p class="text-slate-600 dark:text-slate-300 leading-relaxed">
+            Bút danh <strong id="linkedSummaryAlias" class="text-slate-900 dark:text-white"></strong> và toàn bộ tâm sự đã lưu được gắn với khóa khôi phục <span id="linkedSummaryEmail" class="font-mono"></span>.
+          </p>
+        </div>
+
+        <div class="flex items-center justify-between gap-2 pt-1">
+          <button
+            type="button"
+            id="unlinkAccountBtn"
+            class="min-h-[42px] px-3.5 py-2 rounded-xl text-xs font-medium text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 transition-colors whitespace-nowrap"
+          >
+            Ngắt liên kết thiết bị này
+          </button>
+          <button
+            type="button"
+            id="doneAccountModalBtn"
+            class="min-h-[42px] px-5 py-2 rounded-xl text-xs font-semibold bg-slate-900 text-white dark:bg-white dark:text-slate-900 transition-colors whitespace-nowrap"
+          >
+            Hoàn tất
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- TOAST NOTIFICATION -->
   <div
     id="vibeToast"
@@ -706,11 +975,12 @@
     Đã gửi lời đồng cảm
   </div>
 
-  <!-- MODERN VANILLA JAVASCRIPT (Zero External Dependencies, Web Audio API Synth, Full Interactivity) -->
+  <!-- MODERN VANILLA JAVASCRIPT (Deterministic Alias Color Hashing, Account Linking & Recovery, Web Audio Synth) -->
   <script>
     (() => {
       const STORAGE_KEY = 'vibenest_feed_v1';
       const THEME_KEY = 'vibenest_theme_v1';
+      const ACCOUNT_KEY = 'vibenest_account_v1';
 
       const ALIAS_POOL = [
         'Mây Lang Thang #409',
@@ -719,8 +989,98 @@
         'Gió Mùa Thu #519',
         'Người Lạ Cuối Phố #731',
         'Ánh Đèn Vàng #108',
-        'Nắng Chiều Muộn #642'
+        'Nắng Chiều Muộn #642',
+        'Mưa Đầu Mùa #390',
+        'Đom Đóm Đêm #915'
       ];
+
+      /**
+       * Curated Glassmorphism Avatar Palettes (Deterministic via Alias Hashing)
+       * Ensures high legibility in both Light and Dark mode while giving each alias a unique signature aura.
+       */
+      const AVATAR_PALETTES = [
+        {
+          name: 'Rose Ember',
+          bgStyle: 'linear-gradient(135deg, rgba(244, 63, 94, 0.22), rgba(251, 113, 133, 0.08))',
+          borderStyle: 'rgba(244, 63, 94, 0.35)',
+          textClass: 'text-rose-600 dark:text-rose-300'
+        },
+        {
+          name: 'Indigo Twilight',
+          bgStyle: 'linear-gradient(135deg, rgba(99, 102, 241, 0.24), rgba(129, 140, 248, 0.08))',
+          borderStyle: 'rgba(99, 102, 241, 0.35)',
+          textClass: 'text-indigo-600 dark:text-indigo-300'
+        },
+        {
+          name: 'Amber Glow',
+          bgStyle: 'linear-gradient(135deg, rgba(245, 158, 11, 0.22), rgba(251, 191, 36, 0.08))',
+          borderStyle: 'rgba(245, 158, 11, 0.35)',
+          textClass: 'text-amber-700 dark:text-amber-300'
+        },
+        {
+          name: 'Emerald Moss',
+          bgStyle: 'linear-gradient(135deg, rgba(16, 185, 129, 0.22), rgba(52, 211, 153, 0.08))',
+          borderStyle: 'rgba(16, 185, 129, 0.35)',
+          textClass: 'text-emerald-700 dark:text-emerald-300'
+        },
+        {
+          name: 'Sky Mist',
+          bgStyle: 'linear-gradient(135deg, rgba(14, 165, 233, 0.22), rgba(56, 189, 248, 0.08))',
+          borderStyle: 'rgba(14, 165, 233, 0.35)',
+          textClass: 'text-sky-700 dark:text-sky-300'
+        },
+        {
+          name: 'Violet Dusk',
+          bgStyle: 'linear-gradient(135deg, rgba(139, 92, 246, 0.22), rgba(167, 139, 250, 0.08))',
+          borderStyle: 'rgba(139, 92, 246, 0.35)',
+          textClass: 'text-violet-700 dark:text-violet-300'
+        },
+        {
+          name: 'Teal Horizon',
+          bgStyle: 'linear-gradient(135deg, rgba(20, 184, 166, 0.22), rgba(45, 212, 191, 0.08))',
+          borderStyle: 'rgba(20, 184, 166, 0.35)',
+          textClass: 'text-teal-700 dark:text-teal-300'
+        },
+        {
+          name: 'Fuchsia Bloom',
+          bgStyle: 'linear-gradient(135deg, rgba(217, 70, 239, 0.22), rgba(232, 121, 249, 0.08))',
+          borderStyle: 'rgba(217, 70, 239, 0.35)',
+          textClass: 'text-fuchsia-700 dark:text-fuchsia-300'
+        }
+      ];
+
+      /**
+       * Deterministic DJB2-inspired string hash function:
+       * Guarantees that the exact same alias always produces the exact same color palette & hex signature.
+       */
+      function getAvatarThemeFromAlias(alias) {
+        const normalized = String(alias || 'Ẩn danh').trim().toLowerCase();
+        let hash = 5381;
+        for (let i = 0; i < normalized.length; i++) {
+          hash = ((hash << 5) + hash) ^ normalized.charCodeAt(i);
+        }
+        const unsignedHash = Math.abs(hash >>> 0);
+        const palette = AVATAR_PALETTES[unsignedHash % AVATAR_PALETTES.length];
+        const shortHex = unsignedHash.toString(16).toUpperCase().slice(0, 4).padStart(4, '0');
+        return {
+          ...palette,
+          hashHex: `#${shortHex}`,
+          initial: String(alias || 'V').trim().charAt(0).toUpperCase()
+        };
+      }
+
+      function applyAvatarThemeToElement(el, alias) {
+        if (!el) return;
+        const theme = getAvatarThemeFromAlias(alias);
+        el.style.background = theme.bgStyle;
+        el.style.borderColor = theme.borderStyle;
+        el.textContent = theme.initial;
+        // Remove previous text color classes and apply deterministic text class
+        AVATAR_PALETTES.forEach((p) => {
+          p.textClass.split(' ').forEach((cls) => el.classList.remove(cls));
+        });
+        theme.textClass.split(' ').forEach((cls) => el.classList.add(cls));
+      }
 
       const DAILY_PROMPTS = [
         '"Nếu có thể gửi một tin nhắn ẩn danh đến chính mình của 3 năm trước, bạn sẽ nói điều gì?"',
@@ -790,7 +1150,7 @@
           location: 'Đà Nẵng',
           timeAgo: '2 giờ trước',
           timestamp: Date.now() - 125 * 60 * 1000,
-          content: 'Có một người ngày nào cũng mua cùng một loại cà phê muối ở quán quen lúc 8h15 sáng. Mình chỉ dám đứng cách hai người trong hàng, nhìn người ta cười với nhân viên pha chế rồi cả ngày hôm đó tự nhiên thấy vui lây. Chẳng biết có nên bắt chuyện một lần không.',
+          content: 'Có một người ngày nào cũng mua cùng một loại cà phê muối ở quán quen lúc 8h15 sáng. Mình chỉ dám đứng cách hai người trong hàng, nhìn người ta cười với nhân viên pha chế rồi cả ngày hôm đó tự nhiên thấy vui lây. Chẳng biết có nên nên bắt chuyện một lần không.',
           soundTrack: 'Sóng biển đêm khuya · 432Hz',
           empathyCount: 116,
           empathized: false,
@@ -810,7 +1170,17 @@
       let selectedComposeMood = 'Đêm muộn';
       let promptIndex = 0;
 
-      // Web Audio API Synthesizer for Ambient Soundscape (Zero external MP3 fragility)
+      // Account Linking & Recovery State
+      let accountState = {
+        linked: false,
+        email: '',
+        alias: ALIAS_POOL[0],
+        method: 'otp'
+      };
+      let currentAuthTab = 'link'; // 'link' | 'recover'
+      let currentAuthMethod = 'otp'; // 'otp' | 'password'
+
+      // Web Audio API Synthesizer for Ambient Soundscape
       let audioCtx = null;
       let ambientNodes = [];
       let isAmbientPlaying = false;
@@ -846,7 +1216,6 @@
           masterGain.gain.exponentialRampToValueAtTime(0.08, audioCtx.currentTime + 1.2);
           masterGain.connect(audioCtx.destination);
 
-          // Warm Lo-Fi Pad Frequencies (Fmaj7 warm voicing)
           const freqs = [174.61, 220.0, 261.63, 329.63];
           freqs.forEach((f) => {
             const osc = audioCtx.createOscillator();
@@ -905,6 +1274,17 @@
         }
 
         try {
+          const savedAcc = localStorage.getItem(ACCOUNT_KEY);
+          if (savedAcc) {
+            const parsed = JSON.parse(savedAcc);
+            accountState = { ...accountState, ...parsed };
+            if (accountState.alias) {
+              currentAlias = accountState.alias;
+            }
+          }
+        } catch (_) {}
+
+        try {
           const savedTheme = localStorage.getItem(THEME_KEY);
           if (savedTheme === 'light') {
             document.documentElement.classList.remove('dark');
@@ -913,6 +1293,7 @@
           }
         } catch (_) {}
         syncThemeLabel();
+        syncIdentityUI();
       }
 
       function saveState() {
@@ -920,6 +1301,52 @@
           localStorage.setItem(STORAGE_KEY, JSON.stringify(vibes));
         } catch (_) {}
         updateSidebarStats();
+      }
+
+      function saveAccountState() {
+        try {
+          accountState.alias = currentAlias;
+          localStorage.setItem(ACCOUNT_KEY, JSON.stringify(accountState));
+        } catch (_) {}
+        syncIdentityUI();
+      }
+
+      function syncIdentityUI() {
+        const theme = getAvatarThemeFromAlias(currentAlias);
+
+        // Apply deterministic hashed avatar colors to all current user avatar slots
+        applyAvatarThemeToElement(document.getElementById('sidebarAvatarBox'), currentAlias);
+        applyAvatarThemeToElement(document.getElementById('quickPromptAvatar'), currentAlias);
+        applyAvatarThemeToElement(document.getElementById('composerAvatarPreview'), currentAlias);
+        applyAvatarThemeToElement(document.getElementById('accountModalAvatar'), currentAlias);
+
+        const sidebarName = document.getElementById('sidebarAliasName');
+        const composerAlias = document.getElementById('composerAliasPreview');
+        const modalAlias = document.getElementById('accountModalAliasName');
+        const modalHashBadge = document.getElementById('accountModalHashBadge');
+
+        if (sidebarName) sidebarName.textContent = currentAlias;
+        if (composerAlias) composerAlias.textContent = currentAlias;
+        if (modalAlias) modalAlias.textContent = currentAlias;
+        if (modalHashBadge) modalHashBadge.textContent = `${theme.name} · ${theme.hashHex}`;
+
+        // Account status labels
+        const topLabel = document.getElementById('topAccountLinkLabel');
+        const sidebarStatus = document.getElementById('sidebarAccountStatusText');
+        const sidebarBtnText = document.getElementById('sidebarAccountBtnText');
+        const modalStatusLabel = document.getElementById('accountModalStatusLabel');
+
+        if (accountState.linked && accountState.email) {
+          if (topLabel) topLabel.textContent = `Đã bảo vệ · ${accountState.email}`;
+          if (sidebarStatus) sidebarStatus.textContent = `Đã liên kết: ${accountState.email}`;
+          if (sidebarBtnText) sidebarBtnText.textContent = 'Quản lý khôi phục định danh';
+          if (modalStatusLabel) modalStatusLabel.textContent = 'Đã đồng bộ primitive.dev';
+        } else {
+          if (topLabel) topLabel.textContent = 'Định danh: Ẩn danh tạm thời';
+          if (sidebarStatus) sidebarStatus.textContent = `Màu băm cố định · ${theme.hashHex}`;
+          if (sidebarBtnText) sidebarBtnText.textContent = 'Bảo vệ & Khôi phục bút danh';
+          if (modalStatusLabel) modalStatusLabel.textContent = 'Phiên ẩn danh hiện tại';
+        }
       }
 
       function updateSidebarStats() {
@@ -935,14 +1362,12 @@
         if (empEl) empEl.textContent = String(empathyGiven);
       }
 
-      // Escape HTML to prevent XSS when users submit confessions or comments
       function escapeHTML(str) {
         const div = document.createElement('div');
         div.textContent = str;
         return div.innerHTML;
       }
 
-      // Toast helper
       let toastTimeout = null;
       function showToast(message) {
         const toast = document.getElementById('vibeToast');
@@ -954,10 +1379,10 @@
         toastTimeout = setTimeout(() => {
           toast.classList.remove('opacity-100', 'translate-y-0');
           toast.classList.add('opacity-0', 'translate-y-3');
-        }, 2200);
+        }, 2400);
       }
 
-      // Render Vibe Cards Feed
+      // Render Vibe Cards Feed with Deterministic Hashed Avatar Colors
       function renderFeed() {
         const listEl = document.getElementById('vibeFeedList');
         const emptyEl = document.getElementById('emptyFeedState');
@@ -995,6 +1420,7 @@
         listEl.innerHTML = filtered.map((item, idx) => {
           const isPlayingThisCard = isAmbientPlaying && activeCardAudioId === item.id;
           const delayMs = Math.min(idx * 45, 180);
+          const avatarTheme = getAvatarThemeFromAlias(item.alias);
 
           return `
             <article
@@ -1002,17 +1428,21 @@
               style="animation-delay: ${delayMs}ms"
               data-card-id="${item.id}"
             >
-              <!-- Card Header: Avatar + Clean Unboxed Metadata with Typographic Separators (Zero-Pill Rule) -->
+              <!-- Card Header: Deterministic Hashed Avatar + Clean Unboxed Metadata -->
               <div class="flex items-start justify-between gap-3 mb-3.5">
                 <div class="flex items-center gap-3 min-w-0">
-                  <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-rose-500/15 via-indigo-500/15 to-amber-500/15 border border-slate-200/70 dark:border-white/10 flex items-center justify-center font-display font-semibold text-sm text-rose-600 dark:text-rose-300 shrink-0">
-                    ${escapeHTML(item.avatarChar || 'V')}
+                  <div
+                    class="w-10 h-10 rounded-xl border flex items-center justify-center font-display font-semibold text-sm ${avatarTheme.textClass} shrink-0"
+                    style="background: ${avatarTheme.bgStyle}; border-color: ${avatarTheme.borderStyle};"
+                    title="Mã màu định danh từ bút danh: ${avatarTheme.hashHex}"
+                  >
+                    ${escapeHTML(avatarTheme.initial)}
                   </div>
                   <div class="min-w-0">
                     <h3 class="text-sm font-semibold text-slate-900 dark:text-white truncate">
                       ${escapeHTML(item.alias)}
                     </h3>
-                    <!-- Clean unboxed metadata with typographic dots -->
+                    <!-- Clean unboxed metadata with typographic dots (Zero-Pill Discipline) -->
                     <div class="flex flex-wrap items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                       <span class="font-medium text-rose-600 dark:text-rose-400">${escapeHTML(item.mood)}</span>
                       <span aria-hidden="true">·</span>
@@ -1121,16 +1551,27 @@
               <!-- Expandable Comforting Replies Section -->
               <div id="replies-panel-${item.id}" class="hidden mt-3 pt-3 border-t border-slate-200/60 dark:border-white/[0.06] space-y-3">
                 <div class="space-y-2.5">
-                  ${item.replies.map((r) => `
-                    <div class="p-3 rounded-xl bg-slate-100/70 dark:bg-white/[0.03] text-xs">
-                      <div class="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 mb-1">
-                        <span class="font-semibold text-slate-800 dark:text-slate-200">${escapeHTML(r.author)}</span>
-                        <span aria-hidden="true">·</span>
-                        <span>${escapeHTML(r.time)}</span>
+                  ${item.replies.map((r) => {
+                    const replyTheme = getAvatarThemeFromAlias(r.author);
+                    return `
+                      <div class="p-3 rounded-xl bg-slate-100/70 dark:bg-white/[0.03] text-xs flex items-start gap-2.5">
+                        <div
+                          class="w-6 h-6 rounded-lg border flex items-center justify-center font-display font-semibold text-[11px] ${replyTheme.textClass} shrink-0 mt-0.5"
+                          style="background: ${replyTheme.bgStyle}; border-color: ${replyTheme.borderStyle};"
+                        >
+                          ${escapeHTML(replyTheme.initial)}
+                        </div>
+                        <div class="min-w-0 flex-1">
+                          <div class="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 mb-0.5">
+                            <span class="font-semibold text-slate-800 dark:text-slate-200">${escapeHTML(r.author)}</span>
+                            <span aria-hidden="true">·</span>
+                            <span>${escapeHTML(r.time)}</span>
+                          </div>
+                          <p class="text-slate-700 dark:text-slate-300 leading-relaxed">${escapeHTML(r.text)}</p>
+                        </div>
                       </div>
-                      <p class="text-slate-700 dark:text-slate-300 leading-relaxed">${escapeHTML(r.text)}</p>
-                    </div>
-                  `).join('')}
+                    `;
+                  }).join('')}
                 </div>
 
                 <!-- Quick Reply Form -->
@@ -1162,7 +1603,6 @@
       function setFilter(filterValue) {
         currentFilter = filterValue;
 
-        // Sync mood filter buttons
         document.querySelectorAll('.mood-filter-btn').forEach((btn) => {
           const isMatch = btn.getAttribute('data-filter') === filterValue;
           btn.setAttribute('aria-selected', String(isMatch));
@@ -1173,7 +1613,6 @@
           }
         });
 
-        // Sync mobile bottom nav active state
         document.querySelectorAll('.mobile-nav-btn').forEach((btn) => {
           const target = btn.getAttribute('data-mobile-nav');
           if (target === filterValue) {
@@ -1223,6 +1662,76 @@
         }, 190);
       }
 
+      // Account Linking & Recovery Modal Controls
+      function openAccountModal() {
+        const backdrop = document.getElementById('accountModalBackdrop');
+        const panel = document.getElementById('accountModalPanel');
+        if (!backdrop || !panel) return;
+
+        syncAccountModalView();
+        backdrop.classList.remove('hidden');
+        requestAnimationFrame(() => {
+          backdrop.classList.remove('opacity-0');
+          panel.classList.remove('translate-y-6', 'sm:scale-95');
+        });
+      }
+
+      function closeAccountModal() {
+        const backdrop = document.getElementById('accountModalBackdrop');
+        const panel = document.getElementById('accountModalPanel');
+        if (!backdrop || !panel) return;
+
+        backdrop.classList.add('opacity-0');
+        panel.classList.add('translate-y-6', 'sm:scale-95');
+        setTimeout(() => {
+          backdrop.classList.add('hidden');
+        }, 190);
+      }
+
+      function syncAccountModalView() {
+        const step1Form = document.getElementById('accountAuthForm');
+        const step2Form = document.getElementById('accountOtpVerifyForm');
+        const step3Summary = document.getElementById('accountLinkedSummaryView');
+        const passwordBox = document.getElementById('authPasswordContainer');
+        const passwordInput = document.getElementById('authPasswordInput');
+        const submitBtn = document.getElementById('authSubmitPrimaryBtn');
+
+        if (!step1Form || !step2Form || !step3Summary) return;
+
+        step2Form.classList.add('hidden');
+
+        if (accountState.linked && accountState.email) {
+          step1Form.classList.add('hidden');
+          step3Summary.classList.remove('hidden');
+          const aliasEl = document.getElementById('linkedSummaryAlias');
+          const emailEl = document.getElementById('linkedSummaryEmail');
+          if (aliasEl) aliasEl.textContent = currentAlias;
+          if (emailEl) emailEl.textContent = accountState.email;
+          return;
+        }
+
+        step3Summary.classList.add('hidden');
+        step1Form.classList.remove('hidden');
+
+        if (currentAuthMethod === 'password') {
+          if (passwordBox) passwordBox.classList.remove('hidden');
+          if (passwordInput) passwordInput.required = true;
+          if (submitBtn) {
+            submitBtn.textContent = currentAuthTab === 'recover'
+              ? 'Khôi phục bút danh bằng Mật khẩu'
+              : 'Liên kết bảo vệ bằng Mật khẩu';
+          }
+        } else {
+          if (passwordBox) passwordBox.classList.add('hidden');
+          if (passwordInput) passwordInput.required = false;
+          if (submitBtn) {
+            submitBtn.textContent = currentAuthTab === 'recover'
+              ? 'Gửi mã OTP khôi phục tài khoản'
+              : 'Gửi mã xác thực 6 số qua Email';
+          }
+        }
+      }
+
       function selectComposeMood(mood) {
         selectedComposeMood = mood;
         document.querySelectorAll('.compose-mood-option').forEach((btn) => {
@@ -1240,17 +1749,7 @@
         const randomPick = others[Math.floor(Math.random() * others.length)];
         const randomDigits = Math.floor(100 + Math.random() * 899);
         currentAlias = randomPick.replace(/#\d+/, `#${randomDigits}`);
-
-        const char = currentAlias.charAt(0).toUpperCase();
-        const sidebarName = document.getElementById('sidebarAliasName');
-        const sidebarAvatar = document.getElementById('sidebarAvatarBox');
-        const quickAvatar = document.getElementById('quickPromptAvatar');
-        const composerAlias = document.getElementById('composerAliasPreview');
-
-        if (sidebarName) sidebarName.textContent = currentAlias;
-        if (sidebarAvatar) sidebarAvatar.textContent = char;
-        if (quickAvatar) quickAvatar.textContent = char;
-        if (composerAlias) composerAlias.textContent = currentAlias;
+        saveAccountState();
       }
 
       function syncThemeLabel() {
@@ -1423,6 +1922,141 @@
           if (el) el.addEventListener('click', () => openComposer());
         });
 
+        // Open Account Linking & Recovery Modal Triggers
+        ['topAccountLinkBtn', 'sidebarAccountLinkBtn', 'mobileAccountTrigger'].forEach((id) => {
+          const el = document.getElementById(id);
+          if (el) el.addEventListener('click', openAccountModal);
+        });
+
+        // Close Account Modal Triggers
+        ['closeAccountModalBtn', 'doneAccountModalBtn'].forEach((id) => {
+          const el = document.getElementById(id);
+          if (el) el.addEventListener('click', closeAccountModal);
+        });
+
+        const accountBackdrop = document.getElementById('accountModalBackdrop');
+        if (accountBackdrop) {
+          accountBackdrop.addEventListener('click', (e) => {
+            if (e.target === accountBackdrop) closeAccountModal();
+          });
+        }
+
+        // Account Modal Tabs (Link vs Recover)
+        document.querySelectorAll('.auth-tab-btn').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            currentAuthTab = btn.getAttribute('data-auth-tab') || 'link';
+            document.querySelectorAll('.auth-tab-btn').forEach((b) => {
+              const active = b.getAttribute('data-auth-tab') === currentAuthTab;
+              b.setAttribute('aria-selected', String(active));
+              b.className = active
+                ? 'auth-tab-btn min-h-[40px] px-3 py-1.5 rounded-lg text-xs font-semibold bg-white dark:bg-night-800 text-slate-900 dark:text-white shadow-sm transition-all whitespace-nowrap'
+                : 'auth-tab-btn min-h-[40px] px-3 py-1.5 rounded-lg text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all whitespace-nowrap';
+            });
+            accountState.linked = false;
+            syncAccountModalView();
+          });
+        });
+
+        // Account Auth Method Toggle (OTP vs Password)
+        document.querySelectorAll('.auth-method-btn').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            currentAuthMethod = btn.getAttribute('data-auth-method') || 'otp';
+            document.querySelectorAll('.auth-method-btn').forEach((b) => {
+              const active = b.getAttribute('data-auth-method') === currentAuthMethod;
+              b.className = active
+                ? 'auth-method-btn min-h-[34px] px-2.5 py-1 rounded-lg font-semibold text-rose-600 dark:text-rose-400 bg-rose-500/10 border border-rose-500/30 transition-colors whitespace-nowrap'
+                : 'auth-method-btn min-h-[34px] px-2.5 py-1 rounded-lg font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors whitespace-nowrap';
+            });
+            syncAccountModalView();
+          });
+        });
+
+        // Step 1 Submit (Send OTP or Link Password directly)
+        const accountAuthForm = document.getElementById('accountAuthForm');
+        if (accountAuthForm) {
+          accountAuthForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const emailInput = document.getElementById('authEmailInput');
+            const email = emailInput ? emailInput.value.trim() : '';
+            if (!email) return;
+
+            if (currentAuthMethod === 'otp') {
+              const step1 = document.getElementById('accountAuthForm');
+              const step2 = document.getElementById('accountOtpVerifyForm');
+              const targetText = document.getElementById('otpTargetEmailText');
+              const otpInput = document.getElementById('otpCodeInput');
+              if (targetText) targetText.textContent = email;
+              if (step1) step1.classList.add('hidden');
+              if (step2) step2.classList.remove('hidden');
+              if (otpInput) {
+                otpInput.value = '';
+                otpInput.focus();
+              }
+              showToast(`Đã gửi mã OTP 6 số tới ${email}`);
+            } else {
+              // Password link or recovery
+              accountState.linked = true;
+              accountState.email = email;
+              accountState.method = 'password';
+              if (currentAuthTab === 'recover') {
+                // Deterministically derive alias from recovered email if recovering
+                const recoveredHash = getAvatarThemeFromAlias(email);
+                currentAlias = `Tri Kỷ Đêm #${parseInt(recoveredHash.hashHex.slice(1), 16) % 900 + 100}`;
+              }
+              saveAccountState();
+              syncAccountModalView();
+              showToast(currentAuthTab === 'recover' ? 'Đã khôi phục bút danh thành công' : 'Đã liên kết bảo vệ tài khoản ẩn danh');
+            }
+          });
+        }
+
+        // Back from OTP step to Email step
+        const backToEmailBtn = document.getElementById('backToEmailStepBtn');
+        if (backToEmailBtn) {
+          backToEmailBtn.addEventListener('click', () => {
+            syncAccountModalView();
+          });
+        }
+
+        // Step 2 OTP Verification Submit
+        const otpForm = document.getElementById('accountOtpVerifyForm');
+        if (otpForm) {
+          otpForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const emailInput = document.getElementById('authEmailInput');
+            const otpInput = document.getElementById('otpCodeInput');
+            const email = emailInput ? emailInput.value.trim() : 'ban@omni.id.vn';
+            const code = otpInput ? otpInput.value.trim() : '';
+            if (code.length < 6) {
+              showToast('Vui lòng nhập đủ 6 chữ số OTP');
+              return;
+            }
+
+            accountState.linked = true;
+            accountState.email = email;
+            accountState.method = 'otp';
+            if (currentAuthTab === 'recover') {
+              const recoveredHash = getAvatarThemeFromAlias(email);
+              currentAlias = `Tri Kỷ Đêm #${parseInt(recoveredHash.hashHex.slice(1), 16) % 900 + 100}`;
+            }
+            saveAccountState();
+            syncAccountModalView();
+            showToast('Xác thực OTP thành công · Đã đồng bộ primitive.dev');
+          });
+        }
+
+        // Unlink Account Button
+        const unlinkBtn = document.getElementById('unlinkAccountBtn');
+        if (unlinkBtn) {
+          unlinkBtn.addEventListener('click', () => {
+            accountState.linked = false;
+            accountState.email = '';
+            saveAccountState();
+            syncAccountModalView();
+            showToast('Đã ngắt liên kết khôi phục trên thiết bị này');
+          });
+        }
+
         // Quick Mood Triggers on Inline Prompt
         document.querySelectorAll('.quick-mood-btn').forEach((btn) => {
           btn.addEventListener('click', () => {
@@ -1460,12 +2094,13 @@
         }
 
         // Randomize Alias Buttons
-        ['randomizeAliasBtn', 'shuffleIdentitySidebarBtn'].forEach((id) => {
+        ['randomizeAliasBtn', 'shuffleIdentitySidebarBtn', 'accountModalShuffleBtn'].forEach((id) => {
           const el = document.getElementById(id);
           if (el) {
             el.addEventListener('click', () => {
               randomizeAlias();
-              showToast(`Đã đổi bút danh: ${currentAlias}`);
+              const theme = getAvatarThemeFromAlias(currentAlias);
+              showToast(`Bút danh mới: ${currentAlias} (${theme.hashHex})`);
             });
           }
         });
