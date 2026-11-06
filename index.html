@@ -349,6 +349,24 @@
       <!-- CENTER COLUMN (Mobile Full Width / Desktop 6 cols): Interactive Home Feed -->
       <section class="lg:col-span-6 space-y-4" aria-label="Luồng tâm sự">
 
+        <!-- VIBE STORIES / KHOẢNH KHẮC 24H (Horizontal Circular Bubble Strip) -->
+        <div class="glass-surface rounded-2xl p-4 bg-white/80 dark:bg-white/[0.035] border border-slate-200/80 dark:border-white/[0.08] shadow-sm">
+          <div class="flex items-center justify-between gap-2 mb-3">
+            <div class="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+              <span class="font-semibold text-slate-900 dark:text-white">Khoảnh khắc 24h</span>
+              <span aria-hidden="true">·</span>
+              <span>Tự hủy sau 24 giờ</span>
+            </div>
+            <span id="storiesActiveCount" class="font-mono text-[11px] text-slate-400 dark:text-slate-500 tabular-nums">
+              4 đang mở
+            </span>
+          </div>
+
+          <div id="vibeStoriesStrip" class="flex items-center gap-3.5 overflow-x-auto no-scrollbar py-0.5" role="region" aria-label="Danh sách khoảnh khắc 24h">
+            <!-- Dynamically rendered: Add Story Bubble + Active 24h Story Bubbles -->
+          </div>
+        </div>
+
         <!-- Quick Inline Prompt Card (Opens Quick Composer Sheet) -->
         <div class="glass-surface rounded-2xl p-4 sm:p-5 bg-white/80 dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/[0.09] shadow-sm">
           <div class="flex items-center gap-3">
@@ -962,6 +980,197 @@
           </button>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- 24H STORY VIEWER MODAL (Full-Screen Mobile / Glass Card Desktop with Auto-Advance Progress) -->
+  <div
+    id="storyViewerBackdrop"
+    class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-md flex items-center justify-center p-0 sm:p-4"
+    role="dialog"
+    aria-modal="true"
+    aria-label="Trình xem Khoảnh khắc 24h"
+  >
+    <div
+      id="storyViewerCanvas"
+      class="relative w-full h-full sm:h-[640px] sm:max-w-[400px] sm:rounded-3xl overflow-hidden flex flex-col justify-between border border-white/15 shadow-2xl bg-gradient-to-br from-[#2a1224] via-[#171226] to-[#0b0f19]"
+    >
+      <!-- Optional Uploaded Story Image Backdrop -->
+      <div id="storyViewerImageWrap" class="hidden absolute inset-0 z-0">
+        <img id="storyViewerImage" src="" alt="Khoảnh khắc 24h" referrerpolicy="no-referrer" class="w-full h-full object-cover" />
+        <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/45 to-black/60"></div>
+      </div>
+
+      <!-- Top Progress Bars & Metadata Header -->
+      <div class="relative z-10 p-4 pt-5 space-y-3 bg-gradient-to-b from-black/65 to-transparent">
+        <div id="storyProgressBars" class="flex items-center gap-1.5"></div>
+
+        <div class="flex items-center justify-between gap-3">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div id="storyViewerAvatar" class="w-9 h-9 rounded-xl border flex items-center justify-center font-display font-semibold text-xs shrink-0">
+              C
+            </div>
+            <div class="min-w-0">
+              <p id="storyViewerAlias" class="text-xs font-semibold text-white truncate">Cú Đêm Sài Gòn #812</p>
+              <div class="flex items-center gap-1.5 text-[11px] text-white/75">
+                <span id="storyViewerMood">Đêm muộn</span>
+                <span aria-hidden="true">·</span>
+                <span id="storyViewerLocation">Sài Gòn</span>
+                <span aria-hidden="true">·</span>
+                <span id="storyViewerRemaining" class="font-mono tabular-nums">Tự hủy sau 22h</span>
+              </div>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            id="closeStoryViewerBtn"
+            aria-label="Đóng khoảnh khắc"
+            class="min-h-[44px] min-w-[44px] rounded-xl flex items-center justify-center text-white/80 hover:text-white hover:bg-white/10 transition-colors"
+          >
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Center Caption & Left/Right Tap Zones -->
+      <div class="relative z-10 flex-1 flex items-center justify-center px-7 py-6 select-none">
+        <button type="button" id="prevStoryTapZone" aria-label="Khoảnh khắc trước" class="absolute inset-y-0 left-0 w-1/3 z-10 focus:outline-none"></button>
+        <button type="button" id="nextStoryTapZone" aria-label="Khoảnh khắc tiếp theo" class="absolute inset-y-0 right-0 w-1/3 z-10 focus:outline-none"></button>
+        <p id="storyViewerCaption" class="font-display text-xl sm:text-2xl font-medium text-white text-center leading-relaxed drop-shadow-sm" style="text-wrap: balance;"></p>
+      </div>
+
+      <!-- Bottom Quick Reply & Warmth Reaction Bar -->
+      <div class="relative z-20 p-4 bg-gradient-to-t from-black/85 via-black/50 to-transparent">
+        <div class="flex items-center gap-2">
+          <form id="storyReplyForm" class="flex-1 flex items-center gap-2">
+            <input
+              type="text"
+              id="storyReplyInput"
+              maxlength="180"
+              placeholder="Gửi lời vỗ về cho khoảnh khắc này..."
+              class="flex-1 min-h-[44px] px-4 py-2 rounded-xl bg-white/10 border border-white/15 text-xs text-white placeholder:text-white/55 focus:outline-none focus:border-rose-400"
+            />
+            <button
+              type="submit"
+              class="min-h-[44px] px-3.5 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold whitespace-nowrap shrink-0"
+            >
+              Gửi
+            </button>
+          </form>
+
+          <button
+            type="button"
+            id="storyWarmthBtn"
+            class="min-h-[44px] px-3.5 py-2 rounded-xl border border-white/15 bg-white/10 text-white flex items-center gap-1.5 text-xs font-medium transition-all shrink-0"
+          >
+            <span>♥</span>
+            <span id="storyWarmthCount" class="font-mono tabular-nums">34</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CREATE 24H STORY MODAL / SHEET -->
+  <div
+    id="storyComposerBackdrop"
+    class="fixed inset-0 z-50 hidden bg-black/65 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="storyComposerModalTitle"
+  >
+    <div class="w-full max-w-md rounded-t-3xl sm:rounded-3xl glass-nav bg-white/95 dark:bg-night-900/95 border-t sm:border border-slate-200/80 dark:border-white/10 p-5 sm:p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
+      <div class="w-10 h-1.5 bg-slate-300 dark:bg-white/20 rounded-full mx-auto mb-4 sm:hidden"></div>
+
+      <div class="flex items-center justify-between gap-4 mb-4">
+        <div>
+          <h2 id="storyComposerModalTitle" class="font-display text-lg font-semibold text-slate-900 dark:text-white">Đăng Khoảnh khắc 24h</h2>
+          <p class="text-xs text-slate-500 dark:text-slate-400">Tự động xóa hoàn toàn sau 24 giờ · Ẩn danh 100%</p>
+        </div>
+        <button
+          type="button"
+          id="closeStoryComposerBtn"
+          aria-label="Đóng cửa sổ"
+          class="min-h-[44px] min-w-[44px] rounded-xl flex items-center justify-center text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+        >
+          ✕
+        </button>
+      </div>
+
+      <form id="storyComposeForm" class="space-y-4">
+        <!-- Live Preview Box -->
+        <div
+          id="storyComposePreviewBox"
+          class="relative h-44 rounded-2xl overflow-hidden p-5 flex items-center justify-center border border-white/15 bg-gradient-to-br from-[#2a1224] via-[#171226] to-[#0b0f19]"
+        >
+          <div id="storyComposeImagePreviewWrap" class="hidden absolute inset-0">
+            <img id="storyComposeImagePreview" src="" alt="Xem trước ảnh" class="w-full h-full object-cover" />
+            <div class="absolute inset-0 bg-black/50"></div>
+          </div>
+          <p id="storyComposePreviewText" class="relative z-10 font-display text-base text-white text-center leading-relaxed line-clamp-4">
+            Viết vài dòng ngắn hoặc chọn ảnh cho khoảnh khắc 24h...
+          </p>
+        </div>
+
+        <!-- Backdrop Presets & Photo Upload -->
+        <div class="flex items-center justify-between gap-2">
+          <div class="flex items-center gap-2" id="storyPresetButtons">
+            <button type="button" data-story-preset="dusk-rose" class="story-preset-btn w-8 h-8 rounded-full border-2 border-white ring-2 ring-rose-500 scale-110 transition-transform" style="background: linear-gradient(135deg, #e11d48 0%, #4f46e5 100%);" title="Chiều tà Sài Gòn"></button>
+            <button type="button" data-story-preset="midnight-indigo" class="story-preset-btn w-8 h-8 rounded-full border-2 border-transparent opacity-75 hover:opacity-100 transition-transform" style="background: linear-gradient(135deg, #6366f1 0%, #0ea5e9 100%);" title="Đêm sương Đà Lạt"></button>
+            <button type="button" data-story-preset="amber-rain" class="story-preset-btn w-8 h-8 rounded-full border-2 border-transparent opacity-75 hover:opacity-100 transition-transform" style="background: linear-gradient(135deg, #f59e0b 0%, #e11d48 100%);" title="Đèn vàng phố cũ"></button>
+            <button type="button" data-story-preset="emerald-mist" class="story-preset-btn w-8 h-8 rounded-full border-2 border-transparent opacity-75 hover:opacity-100 transition-transform" style="background: linear-gradient(135deg, #10b981 0%, #3b82f6 100%);" title="Mưa đầu mùa"></button>
+          </div>
+
+          <div>
+            <input type="file" id="storyImageFileInput" accept="image/*" class="hidden" />
+            <button
+              type="button"
+              id="storyImagePickBtn"
+              class="min-h-[38px] px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-white/[0.06] border border-slate-200 dark:border-white/10 text-xs font-medium text-slate-700 dark:text-slate-200 hover:border-rose-500/40 transition-colors whitespace-nowrap"
+            >
+              + Chọn ảnh nền
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2.5">
+          <select id="storyComposeMood" class="min-h-[42px] px-3 py-2 rounded-xl bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/10 text-xs font-medium text-slate-800 dark:text-slate-200">
+            <option value="Đêm muộn">Đêm muộn</option>
+            <option value="Chênh vênh">Chênh vênh</option>
+            <option value="Chữa lành">Chữa lành</option>
+            <option value="Thầm thương">Thầm thương</option>
+          </select>
+
+          <select id="storyComposeLocation" class="min-h-[42px] px-3 py-2 rounded-xl bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/10 text-xs font-medium text-slate-800 dark:text-slate-200">
+            <option value="Sài Gòn">Sài Gòn</option>
+            <option value="Hà Nội">Hà Nội</option>
+            <option value="Đà Lạt">Đà Lạt</option>
+            <option value="Đà Nẵng">Đà Nẵng</option>
+          </select>
+        </div>
+
+        <div>
+          <textarea
+            id="storyComposeCaption"
+            rows="3"
+            maxlength="180"
+            placeholder="Khoảnh khắc ngắn bạn muốn lưu lại trong 24 giờ tới..."
+            class="w-full p-3.5 rounded-2xl bg-slate-100/90 dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/[0.08] text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:border-rose-500 resize-none"
+          ></textarea>
+        </div>
+
+        <div class="flex items-center justify-end gap-2 pt-1">
+          <button type="button" id="cancelStoryComposerBtn" class="min-h-[44px] px-4 py-2 rounded-xl text-xs font-medium text-slate-600 dark:text-slate-400">
+            Hủy
+          </button>
+          <button type="submit" class="min-h-[44px] px-5 py-2.5 rounded-xl text-xs font-semibold bg-rose-600 hover:bg-rose-500 text-white shadow-md shadow-rose-600/20 transition-all whitespace-nowrap">
+            Đăng Khoảnh khắc 24h
+          </button>
+        </div>
+      </form>
     </div>
   </div>
 
@@ -2177,6 +2386,417 @@
             syncThemeLabel();
           });
         }
+
+        // ====================================================================
+        // VIBE STORIES / KHOẢNH KHẮC 24H LOGIC
+        // ====================================================================
+        const STORIES_KEY = 'vibenest_stories_v1';
+        const STORY_PRESET_CLASSES = {
+          'dusk-rose': 'bg-gradient-to-br from-[#2a1224] via-[#171226] to-[#0b0f19]',
+          'midnight-indigo': 'bg-gradient-to-br from-[#131b38] via-[#0e1526] to-[#080b12]',
+          'amber-rain': 'bg-gradient-to-br from-[#2d1d12] via-[#19141d] to-[#090c14]',
+          'emerald-mist': 'bg-gradient-to-br from-[#0f2926] via-[#101a28] to-[#080b12]'
+        };
+
+        const DEFAULT_STORIES = [
+          {
+            id: 'st-201',
+            alias: 'Cú Đêm Sài Gòn #812',
+            mood: 'Đêm muộn',
+            location: 'Sài Gòn',
+            caption: 'Góc ban công 1h sáng sau cơn mưa rào. Tự thưởng một lon nước ngọt lạnh và thấy lòng dịu lại.',
+            canvasPreset: 'dusk-rose',
+            expiresAt: Date.now() + 22 * 3600 * 1000,
+            warmthCount: 34,
+            warmedByMe: false,
+            seen: false
+          },
+          {
+            id: 'st-202',
+            alias: 'Nắng Chiều Muộn #642',
+            mood: 'Chữa lành',
+            location: 'Đà Lạt',
+            caption: 'Hôm nay mình đã dám từ chối một cuộc hẹn làm mình mệt mỏi. Một bước nhỏ học cách yêu bản thân.',
+            canvasPreset: 'midnight-indigo',
+            expiresAt: Date.now() + 19 * 3600 * 1000,
+            warmthCount: 61,
+            warmedByMe: true,
+            seen: false
+          },
+          {
+            id: 'st-203',
+            alias: 'Tách Trà Nóng #204',
+            mood: 'Chữa lành',
+            location: 'Hà Nội',
+            caption: 'Bác bảo vệ tòa nhà hôm nay nhớ tên mình và dắt giúp xe lúc trời đổ mưa. Những điều tử tế nhỏ bé.',
+            canvasPreset: 'amber-rain',
+            expiresAt: Date.now() + 15 * 3600 * 1000,
+            warmthCount: 49,
+            warmedByMe: false,
+            seen: false
+          },
+          {
+            id: 'st-204',
+            alias: 'Gió Mùa Thu #519',
+            mood: 'Thầm thương',
+            location: 'Đà Nẵng',
+            caption: 'Chuyến xe buýt cuối ngày hôm nay vắng tanh, chỉ có tiếng nhạc trong tai nghe và nỗi nhớ một người.',
+            canvasPreset: 'emerald-mist',
+            expiresAt: Date.now() + 10 * 3600 * 1000,
+            warmthCount: 28,
+            warmedByMe: false,
+            seen: true
+          }
+        ];
+
+        let stories = [];
+        let activeStoryIdx = null;
+        let storyProgress = 0;
+        let storyTimer = null;
+        let storyPaused = false;
+        let selectedStoryPreset = 'dusk-rose';
+        let uploadedStoryDataUrl = '';
+
+        function loadStories() {
+          try {
+            const raw = localStorage.getItem(STORIES_KEY);
+            const list = raw ? JSON.parse(raw) : DEFAULT_STORIES;
+            stories = list.filter((s) => s.expiresAt > Date.now());
+            if (stories.length === 0) stories = [...DEFAULT_STORIES];
+          } catch (_) {
+            stories = [...DEFAULT_STORIES];
+          }
+        }
+
+        function saveStories() {
+          try {
+            localStorage.setItem(STORIES_KEY, JSON.stringify(stories));
+          } catch (_) {}
+        }
+
+        function formatRemainingHours(expiresAt) {
+          const diff = Math.max(0, expiresAt - Date.now());
+          const hrs = Math.max(1, Math.ceil(diff / (3600 * 1000)));
+          return `${hrs}h`;
+        }
+
+        function renderStoriesStrip() {
+          const stripEl = document.getElementById('vibeStoriesStrip');
+          const countEl = document.getElementById('storiesActiveCount');
+          if (!stripEl) return;
+
+          if (countEl) countEl.textContent = `${stories.length} đang mở`;
+
+          const myTheme = getAvatarThemeFromAlias(currentAlias);
+
+          const addBubbleHTML = `
+            <button
+              type="button"
+              id="openStoryComposerBtn"
+              class="group flex flex-col items-center gap-1.5 shrink-0 min-w-[68px] focus-visible:outline-none"
+            >
+              <div class="relative p-[2.5px] rounded-full border border-dashed border-rose-500/60 group-hover:border-rose-500 transition-transform duration-200 group-active:scale-95">
+                <div
+                  class="w-14 h-14 rounded-full border flex items-center justify-center font-display font-semibold text-base ${myTheme.textClass}"
+                  style="background: ${myTheme.bgStyle}; border-color: ${myTheme.borderStyle};"
+                >
+                  ${escapeHTML(myTheme.initial)}
+                </div>
+                <span class="absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full bg-rose-600 text-white flex items-center justify-center text-xs font-bold shadow-sm ring-2 ring-white dark:ring-[#080b12]">
+                  +
+                </span>
+              </div>
+              <span class="text-[11px] font-medium text-slate-700 dark:text-slate-300 max-w-[72px] truncate">
+                Đăng 24h
+              </span>
+            </button>
+          `;
+
+          const itemsHTML = stories.map((st, idx) => {
+            const theme = getAvatarThemeFromAlias(st.alias);
+            const ringClass = st.seen
+              ? 'bg-slate-200 dark:bg-white/15'
+              : 'bg-gradient-to-tr from-rose-500 via-amber-400 to-indigo-500';
+            const shortName = st.alias.split('#')[0].trim();
+
+            return `
+              <button
+                type="button"
+                data-story-index="${idx}"
+                class="story-bubble-btn group flex flex-col items-center gap-1.5 shrink-0 min-w-[68px] focus-visible:outline-none"
+              >
+                <div class="relative p-[2.5px] rounded-full transition-transform duration-200 group-hover:scale-105 group-active:scale-95 ${ringClass}">
+                  <div class="p-[2px] rounded-full bg-white dark:bg-[#080b12]">
+                    ${st.imageUrl ? `
+                      <img src="${st.imageUrl}" alt="${escapeHTML(st.alias)}" referrerpolicy="no-referrer" class="w-[52px] h-[52px] rounded-full object-cover" />
+                    ` : `
+                      <div
+                        class="w-[52px] h-[52px] rounded-full border flex items-center justify-center font-display font-semibold text-sm ${theme.textClass}"
+                        style="background: ${theme.bgStyle}; border-color: ${theme.borderStyle};"
+                      >
+                        ${escapeHTML(theme.initial)}
+                      </div>
+                    `}
+                  </div>
+                  <span class="absolute -bottom-1 left-1/2 -translate-x-1/2 px-1.5 py-0.2 rounded bg-slate-900/90 dark:bg-night-900/95 text-[9px] font-mono text-slate-200 tabular-nums border border-white/10">
+                    ${formatRemainingHours(st.expiresAt)}
+                  </span>
+                </div>
+                <span class="text-[11px] max-w-[74px] truncate ${st.seen ? 'font-normal text-slate-500 dark:text-slate-400' : 'font-semibold text-slate-900 dark:text-white'}">
+                  ${escapeHTML(shortName)}
+                </span>
+              </button>
+            `;
+          }).join('');
+
+          stripEl.innerHTML = addBubbleHTML + itemsHTML;
+        }
+
+        function openStoryViewer(idx) {
+          if (idx < 0 || idx >= stories.length) return;
+          activeStoryIdx = idx;
+          stories[idx].seen = true;
+          saveStories();
+          renderStoriesStrip();
+          storyProgress = 0;
+          storyPaused = false;
+
+          const backdrop = document.getElementById('storyViewerBackdrop');
+          if (backdrop) backdrop.classList.remove('hidden');
+          updateStoryViewerContent();
+          startStoryTimer();
+        }
+
+        function closeStoryViewer() {
+          stopStoryTimer();
+          activeStoryIdx = null;
+          const backdrop = document.getElementById('storyViewerBackdrop');
+          if (backdrop) backdrop.classList.add('hidden');
+        }
+
+        function updateStoryViewerContent() {
+          if (activeStoryIdx === null || !stories[activeStoryIdx]) return;
+          const st = stories[activeStoryIdx];
+          const canvas = document.getElementById('storyViewerCanvas');
+          const imgWrap = document.getElementById('storyViewerImageWrap');
+          const imgEl = document.getElementById('storyViewerImage');
+
+          if (canvas) {
+            const presetCls = STORY_PRESET_CLASSES[st.canvasPreset] || STORY_PRESET_CLASSES['dusk-rose'];
+            canvas.className = `relative w-full h-full sm:h-[640px] sm:max-w-[400px] sm:rounded-3xl overflow-hidden flex flex-col justify-between border border-white/15 shadow-2xl ${presetCls}`;
+          }
+
+          if (st.imageUrl && imgWrap && imgEl) {
+            imgEl.src = st.imageUrl;
+            imgWrap.classList.remove('hidden');
+          } else if (imgWrap) {
+            imgWrap.classList.add('hidden');
+          }
+
+          applyAvatarThemeToElement(document.getElementById('storyViewerAvatar'), st.alias);
+          document.getElementById('storyViewerAlias').textContent = st.alias;
+          document.getElementById('storyViewerMood').textContent = st.mood;
+          document.getElementById('storyViewerLocation').textContent = st.location;
+          document.getElementById('storyViewerRemaining').textContent = `Tự hủy sau ${formatRemainingHours(st.expiresAt)}`;
+          document.getElementById('storyViewerCaption').textContent = `“${st.caption}”`;
+          document.getElementById('storyWarmthCount').textContent = String(st.warmthCount);
+
+          const warmthBtn = document.getElementById('storyWarmthBtn');
+          if (warmthBtn) {
+            warmthBtn.className = st.warmedByMe
+              ? 'min-h-[44px] px-3.5 py-2 rounded-xl border border-rose-500 bg-rose-600 text-white flex items-center gap-1.5 text-xs font-medium transition-all shrink-0'
+              : 'min-h-[44px] px-3.5 py-2 rounded-xl border border-white/15 bg-white/10 text-white hover:bg-white/20 flex items-center gap-1.5 text-xs font-medium transition-all shrink-0';
+          }
+
+          renderStoryProgressBars();
+        }
+
+        function renderStoryProgressBars() {
+          const container = document.getElementById('storyProgressBars');
+          if (!container || activeStoryIdx === null) return;
+          container.innerHTML = stories.map((st, idx) => {
+            const w = idx < activeStoryIdx ? 100 : idx === activeStoryIdx ? storyProgress : 0;
+            return `
+              <div class="flex-1 h-1 rounded-full bg-white/25 overflow-hidden">
+                <div class="h-full bg-white transition-all duration-75" style="width: ${w}%"></div>
+              </div>
+            `;
+          }).join('');
+        }
+
+        function startStoryTimer() {
+          stopStoryTimer();
+          storyTimer = setInterval(() => {
+            if (storyPaused || activeStoryIdx === null) return;
+            storyProgress += (50 / 5500) * 100;
+            if (storyProgress >= 100) {
+              if (activeStoryIdx < stories.length - 1) {
+                openStoryViewer(activeStoryIdx + 1);
+              } else {
+                closeStoryViewer();
+              }
+              return;
+            }
+            renderStoryProgressBars();
+          }, 50);
+        }
+
+        function stopStoryTimer() {
+          if (storyTimer) {
+            clearInterval(storyTimer);
+            storyTimer = null;
+          }
+        }
+
+        loadStories();
+        renderStoriesStrip();
+
+        // Delegated Clicks on Stories Strip
+        const storiesStrip = document.getElementById('vibeStoriesStrip');
+        if (storiesStrip) {
+          storiesStrip.addEventListener('click', (e) => {
+            const openCreateBtn = e.target.closest('#openStoryComposerBtn');
+            if (openCreateBtn) {
+              document.getElementById('storyComposerBackdrop')?.classList.remove('hidden');
+              return;
+            }
+            const storyBtn = e.target.closest('.story-bubble-btn');
+            if (storyBtn) {
+              const idx = Number(storyBtn.getAttribute('data-story-index'));
+              openStoryViewer(idx);
+            }
+          });
+        }
+
+        // Story Viewer Navigation & Controls
+        document.getElementById('closeStoryViewerBtn')?.addEventListener('click', closeStoryViewer);
+        document.getElementById('prevStoryTapZone')?.addEventListener('click', () => {
+          if (activeStoryIdx !== null && activeStoryIdx > 0) {
+            openStoryViewer(activeStoryIdx - 1);
+          } else {
+            storyProgress = 0;
+            renderStoryProgressBars();
+          }
+        });
+        document.getElementById('nextStoryTapZone')?.addEventListener('click', () => {
+          if (activeStoryIdx !== null && activeStoryIdx < stories.length - 1) {
+            openStoryViewer(activeStoryIdx + 1);
+          } else {
+            closeStoryViewer();
+          }
+        });
+
+        const storyReplyInput = document.getElementById('storyReplyInput');
+        if (storyReplyInput) {
+          storyReplyInput.addEventListener('focus', () => { storyPaused = true; });
+          storyReplyInput.addEventListener('blur', () => { storyPaused = false; });
+        }
+
+        document.getElementById('storyReplyForm')?.addEventListener('submit', (e) => {
+          e.preventDefault();
+          if (!storyReplyInput || !storyReplyInput.value.trim()) return;
+          storyReplyInput.value = '';
+          storyPaused = false;
+          showToast('Đã gửi lời vỗ về tới khoảnh khắc 24h');
+        });
+
+        document.getElementById('storyWarmthBtn')?.addEventListener('click', () => {
+          if (activeStoryIdx === null || !stories[activeStoryIdx]) return;
+          const st = stories[activeStoryIdx];
+          st.warmedByMe = !st.warmedByMe;
+          st.warmthCount += st.warmedByMe ? 1 : -1;
+          saveStories();
+          updateStoryViewerContent();
+        });
+
+        // Story Composer Controls
+        ['closeStoryComposerBtn', 'cancelStoryComposerBtn'].forEach((id) => {
+          document.getElementById(id)?.addEventListener('click', () => {
+            document.getElementById('storyComposerBackdrop')?.classList.add('hidden');
+          });
+        });
+
+        document.querySelectorAll('.story-preset-btn').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            selectedStoryPreset = btn.getAttribute('data-story-preset') || 'dusk-rose';
+            document.querySelectorAll('.story-preset-btn').forEach((b) => {
+              const active = b.getAttribute('data-story-preset') === selectedStoryPreset;
+              b.className = active
+                ? 'story-preset-btn w-8 h-8 rounded-full border-2 border-white ring-2 ring-rose-500 scale-110 transition-transform'
+                : 'story-preset-btn w-8 h-8 rounded-full border-2 border-transparent opacity-75 hover:opacity-100 transition-transform';
+            });
+            const previewBox = document.getElementById('storyComposePreviewBox');
+            if (previewBox) {
+              previewBox.className = `relative h-44 rounded-2xl overflow-hidden p-5 flex items-center justify-center border border-white/15 ${STORY_PRESET_CLASSES[selectedStoryPreset]}`;
+            }
+          });
+        });
+
+        const storyCaptionInput = document.getElementById('storyComposeCaption');
+        const storyPreviewText = document.getElementById('storyComposePreviewText');
+        if (storyCaptionInput && storyPreviewText) {
+          storyCaptionInput.addEventListener('input', () => {
+            storyPreviewText.textContent = storyCaptionInput.value.trim() || 'Viết vài dòng ngắn hoặc chọn ảnh cho khoảnh khắc 24h...';
+          });
+        }
+
+        const storyFileInput = document.getElementById('storyImageFileInput');
+        document.getElementById('storyImagePickBtn')?.addEventListener('click', () => {
+          storyFileInput?.click();
+        });
+        storyFileInput?.addEventListener('change', (e) => {
+          const file = e.target.files && e.target.files[0];
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = () => {
+            if (typeof reader.result === 'string') {
+              uploadedStoryDataUrl = reader.result;
+              const wrap = document.getElementById('storyComposeImagePreviewWrap');
+              const img = document.getElementById('storyComposeImagePreview');
+              if (wrap && img) {
+                img.src = uploadedStoryDataUrl;
+                wrap.classList.remove('hidden');
+              }
+            }
+          };
+          reader.readAsDataURL(file);
+        });
+
+        document.getElementById('storyComposeForm')?.addEventListener('submit', (e) => {
+          e.preventDefault();
+          const caption = storyCaptionInput ? storyCaptionInput.value.trim() : '';
+          if (!caption && !uploadedStoryDataUrl) {
+            showToast('Hãy viết đôi dòng hoặc chọn ảnh khoảnh khắc');
+            return;
+          }
+
+          const moodEl = document.getElementById('storyComposeMood');
+          const locEl = document.getElementById('storyComposeLocation');
+          const newStory = {
+            id: 'st-' + Date.now(),
+            alias: currentAlias,
+            mood: moodEl ? moodEl.value : 'Đêm muộn',
+            location: locEl ? locEl.value : 'Sài Gòn',
+            caption: caption || 'Khoảnh khắc không lời đêm nay.',
+            imageUrl: uploadedStoryDataUrl || undefined,
+            canvasPreset: selectedStoryPreset,
+            expiresAt: Date.now() + 24 * 3600 * 1000,
+            warmthCount: 1,
+            warmedByMe: true,
+            seen: false
+          };
+
+          stories.unshift(newStory);
+          saveStories();
+          renderStoriesStrip();
+
+          if (storyCaptionInput) storyCaptionInput.value = '';
+          if (storyPreviewText) storyPreviewText.textContent = 'Viết vài dòng ngắn hoặc chọn ảnh cho khoảnh khắc 24h...';
+          uploadedStoryDataUrl = '';
+          document.getElementById('storyComposeImagePreviewWrap')?.classList.add('hidden');
+          document.getElementById('storyComposerBackdrop')?.classList.add('hidden');
+          showToast('Đã đăng Khoảnh khắc 24h ẩn danh');
+        });
       });
     })();
   </script>
