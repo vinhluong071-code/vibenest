@@ -66,7 +66,9 @@ export function useVibeStories(enabled = true, limit = 60) {
   useEffect(() => {
     if (!enabled) return;
 
-    void refreshStories();
+    const refreshTimer = window.setTimeout(() => {
+      void refreshStories();
+    }, 0);
     const supabase = createClient();
     const channel = supabase
       .channel("vibenest-stories-feed")
@@ -76,6 +78,7 @@ export function useVibeStories(enabled = true, limit = 60) {
       .subscribe();
 
     return () => {
+      window.clearTimeout(refreshTimer);
       void supabase.removeChannel(channel);
     };
   }, [enabled, refreshStories]);
