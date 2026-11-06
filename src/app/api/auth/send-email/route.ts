@@ -1,5 +1,6 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
+import { sendEmail } from "@/lib/primitive/email";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -177,10 +178,6 @@ async function sendPrimitiveEmail(
   webhookId: string,
   index: number,
 ): Promise<void> {
-  const apiKey = process.env.PRIMITIVE_API_KEY;
-  const from = process.env.PRIMITIVE_FROM_EMAIL;
-  if (!apiKey || !from) throw new Error("Primitive email provider is not configured.");
-
   const email = payload.email_data ?? {};
   const actionType = delivery.actionType;
   const actionUrl = delivery.tokenHash && otpTypes[actionType]
@@ -191,43 +188,22 @@ async function sendPrimitiveEmail(
   const linkText = actionType === "magiclink" ? "Đăng nhập VibeNest" : "Xác minh tài khoản VibeNest";
   const tokenLine = delivery.token ? `Mã xác minh: ${delivery.token}` : "";
   const textBody = [
-    "Xin chào,",
-    "",
-    message,
+    "Xin chào,", "", message,
     actionUrl ? `${linkText}: ${actionUrl}` : "",
-    tokenLine,
-    "",
+    tokenLine, "",
     "Nếu bạn không thực hiện thao tác này, hãy bỏ qua email và không chia sẻ mã xác minh với bất kỳ ai.",
     "VibeNest",
   ].filter(Boolean).join("\n");
   const htmlBody = `<!doctype html><html lang="vi"><body style="margin:0;background:#0b0f19;color:#f8fafc;font-family:Arial,sans-serif;padding:32px"><main style="max-width:520px;margin:auto;background:#141b2b;border:1px solid #34405b;border-radius:20px;padding:28px"><p style="color:#a5b4fc;font-size:12px;letter-spacing:2px;font-weight:bold">VIBENEST</p><h1 style="font-size:22px"> ${escapeHtml(subject)} </h1><p style="line-height:1.6;color:#dbe3f2">${escapeHtml(message)}</p>${actionUrl ? `<p style="margin:28px 0"><a href="${escapeHtml(actionUrl)}" style="background:#818cf8;color:#111827;text-decoration:none;padding:13px 20px;border-radius:12px;font-weight:bold;display:inline-block">${escapeHtml(linkText)}</a></p>` : ""}${delivery.token ? `<p style="color:#cbd5e1">Mã xác minh: <strong style="font-size:22px;letter-spacing:4px;color:#fff">${escapeHtml(delivery.token)}</strong></p>` : ""}<p style="font-size:12px;line-height:1.6;color:#94a3b8">Nếu bạn không thực hiện thao tác này, hãy bỏ qua email và không chia sẻ mã xác minh với bất kỳ ai.</p></main></body></html>`;
 
-  const response = await fetch("https://api.primitive.dev/v1/send-mail", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-      Accept: "application/json",
-      "Idempotency-Key": `vibenest-auth-${webhookId}-${index}`,
-    },
-    body: JSON.stringify({
-      from,
-      to: delivery.to,
-      subject,
-      body_text: textBody,
-      body_html: htmlBody,
-    }),
-    cache: "no-store",
-    signal: AbortSignal.timeout(4500),
+  await sendEmail({
+    ...(process.env.PRIMITIVE_FROM_EMAIL ? { from: process.env.PRIMITIVE_FROM_EMAIL } : {}),
+    to: delivery.to,
+    subject,
+    body_text: textBody,
+    body_html: htmlBody,
+    idempotency_key: `vibenest-auth-${webhookId}-${index}`,
   });
-  const result = await response.json().catch(() => ({})) as {
-    success?: boolean;
-    error?: { message?: string };
-    message?: string;
-  };
-  if (!response.ok || result.success === false) {
-    throw new Error(result.error?.message ?? result.message ?? `Primitive returned ${response.status}`);
-  }
 }
 
 export async function POST(request: NextRequest) {
