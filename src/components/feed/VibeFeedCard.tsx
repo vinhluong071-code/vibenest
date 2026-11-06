@@ -34,8 +34,6 @@ export interface VibeFeedCardProps {
   onToggleSave: (postId: string) => void;
   onAddReply: (postId: string, text: string) => void;
   onShare: (post: VibePostItem) => void;
-  onChat?: (post: VibePostItem) => void;
-  busy?: boolean;
 }
 
 export const VibeFeedCard: React.FC<VibeFeedCardProps> = ({
@@ -44,8 +42,6 @@ export const VibeFeedCard: React.FC<VibeFeedCardProps> = ({
   onToggleSave,
   onAddReply,
   onShare,
-  onChat,
-  busy = false,
 }) => {
   const [isRepliesOpen, setIsRepliesOpen] = useState<boolean>(false);
   const [replyText, setReplyText] = useState<string>('');
@@ -62,6 +58,7 @@ export const VibeFeedCard: React.FC<VibeFeedCardProps> = ({
 
   return (
     <article className="rounded-3xl p-5 bg-white/85 dark:bg-white/[0.035] border border-slate-200/80 dark:border-white/[0.08] hover:border-slate-300 dark:hover:border-white/[0.14] backdrop-blur-xl shadow-sm transition-colors">
+      {/* Author Header (Personal Identity + Unboxed Metadata) */}
       <div className="flex items-start justify-between gap-3 mb-3.5">
         <div className="flex items-center gap-3 min-w-0">
           <div
@@ -96,7 +93,6 @@ export const VibeFeedCard: React.FC<VibeFeedCardProps> = ({
 
         <button
           type="button"
-          disabled={busy}
           onClick={() => onToggleSave(post.id)}
           aria-label={post.saved ? 'Bỏ lưu bài viết' : 'Lưu bài viết'}
           className={`min-h-[44px] min-w-[44px] -mr-2 -mt-1 rounded-xl flex items-center justify-center transition-colors shrink-0 ${
@@ -121,10 +117,12 @@ export const VibeFeedCard: React.FC<VibeFeedCardProps> = ({
         </button>
       </div>
 
+      {/* Post Body Text */}
       <p className="text-[15px] leading-[1.68] text-slate-800 dark:text-slate-200 whitespace-pre-line mb-3.5">
         {post.content}
       </p>
 
+      {/* Optional Visual Media Attachment (Pinterest / IG Aesthetic) */}
       {post.imageUrl && (
         <div className="mb-4 rounded-2xl overflow-hidden border border-slate-200/70 dark:border-white/[0.08] bg-slate-900/20">
           <img
@@ -136,11 +134,11 @@ export const VibeFeedCard: React.FC<VibeFeedCardProps> = ({
         </div>
       )}
 
+      {/* Ergonomic Action Bar (All Touch Targets >= 44px) */}
       <div className="pt-3 border-t border-slate-200/60 dark:border-white/[0.06] flex items-center justify-between gap-2">
         <div className="flex items-center gap-1.5">
           <button
             type="button"
-            disabled={busy}
             onClick={() => onToggleEmpathy(post.id)}
             className={`min-h-[44px] px-3.5 py-1.5 rounded-xl flex items-center gap-2 text-xs font-medium transition-colors ${
               post.empathized
@@ -188,16 +186,6 @@ export const VibeFeedCard: React.FC<VibeFeedCardProps> = ({
           </button>
         </div>
 
-        {onChat && (
-          <button
-            type="button"
-            onClick={() => onChat(post)}
-            className="min-h-[44px] px-3 py-1.5 rounded-xl flex items-center gap-1.5 text-xs font-medium text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/[0.05] hover:text-slate-900 dark:hover:text-white transition-colors shrink-0"
-          >
-            <span aria-hidden="true">↗</span>
-            <span className="hidden sm:inline">Trò chuyện</span>
-          </button>
-        )}
         <button
           type="button"
           onClick={() => onShare(post)}
@@ -220,6 +208,7 @@ export const VibeFeedCard: React.FC<VibeFeedCardProps> = ({
         </button>
       </div>
 
+      {/* Expandable Comments / Replies Drawer */}
       {isRepliesOpen && (
         <div className="mt-3 pt-3 border-t border-slate-200/60 dark:border-white/[0.06] space-y-3">
           <div className="space-y-2.5">

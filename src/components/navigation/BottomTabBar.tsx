@@ -25,6 +25,7 @@ export const BottomTabBar: React.FC<BottomTabBarProps> = ({
         aria-label="Điều hướng di động một tay"
         className="pointer-events-auto max-w-[380px] mx-auto h-[56px] px-2 rounded-2xl bg-white/90 dark:bg-[#0d121f]/90 border border-slate-200/80 dark:border-white/[0.09] shadow-xl shadow-black/20 backdrop-blur-2xl grid grid-cols-5 items-center"
       >
+        {/* Tab 1: Home Feed */}
         <button
           type="button"
           onClick={() => onSelectTab('all')}
@@ -51,6 +52,7 @@ export const BottomTabBar: React.FC<BottomTabBarProps> = ({
           <span className="text-[10px] font-semibold tracking-tight mt-0.5">Bảng tin</span>
         </button>
 
+        {/* Tab 2: Healing Frequency */}
         <button
           type="button"
           onClick={() => onSelectTab('Chữa lành')}
@@ -77,6 +79,7 @@ export const BottomTabBar: React.FC<BottomTabBarProps> = ({
           <span className="text-[10px] font-medium tracking-tight mt-0.5">Chữa lành</span>
         </button>
 
+        {/* Tab 3: Center Quick Create Action (Ergonomic One-Handed Thumb Target) */}
         <div className="flex items-center justify-center">
           <button
             type="button"
@@ -100,6 +103,7 @@ export const BottomTabBar: React.FC<BottomTabBarProps> = ({
           </button>
         </div>
 
+        {/* Tab 4: Saved Bookmarks */}
         <button
           type="button"
           onClick={() => onSelectTab('saved')}
@@ -126,6 +130,7 @@ export const BottomTabBar: React.FC<BottomTabBarProps> = ({
           <span className="text-[10px] font-medium tracking-tight mt-0.5">Đã lưu</span>
         </button>
 
+        {/* Tab 5: Personal Identity Profile */}
         <button
           type="button"
           onClick={onOpenProfile}
