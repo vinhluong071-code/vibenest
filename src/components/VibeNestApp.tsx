@@ -214,7 +214,7 @@ export function VibeNestApp() {
       let replyRows: VibeReply[] = [];
       if (userId && ids.length) {
         const { data, error: interactionError } = await supabase.from("vibe_post_interactions")
-          .select("post_id,action_type").in("post_id", ids);
+          .select("post_id,action_type").eq("user_id", userId).in("post_id", ids);
         if (interactionError) throw interactionError;
         interactionRows = (data ?? []) as { post_id: string; action_type: InteractionType }[];
       }
@@ -302,6 +302,37 @@ export function VibeNestApp() {
     };
   }, [hasSupabaseConfig, loadFeed]);
 
+  useEffect(() => {
+    if (!hasSupabaseConfig) return;
+    let alive = true;
+    let refreshTimer: ReturnType<typeof setTimeout> | null = null;
+    const supabase = createClient();
+    const scheduleRefresh = () => {
+      if (refreshTimer) clearTimeout(refreshTimer);
+      refreshTimer = setTimeout(() => {
+        if (!alive) return;
+        void loadFeed().catch((error: unknown) => {
+          console.error("[VibeNest] Realtime feed refresh failed:", error);
+          if (alive) setFeedError(getFriendlyError(error, "Không thể đồng bộ bảng tin realtime."));
+        });
+      }, 180);
+    };
+    const channel = supabase.channel("vibenest-public-feed")
+      .on("postgres_changes", { event: "*", schema: "public", table: "vibe_posts" }, scheduleRefresh)
+      .on("postgres_changes", { event: "*", schema: "public", table: "vibe_post_interactions" }, scheduleRefresh)
+      .on("postgres_changes", { event: "*", schema: "public", table: "vibe_replies" }, scheduleRefresh)
+      .subscribe((status) => {
+        if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
+          console.warn("[VibeNest] Feed realtime channel status:", status);
+        }
+      });
+    return () => {
+      alive = false;
+      if (refreshTimer) clearTimeout(refreshTimer);
+      void supabase.removeChannel(channel);
+    };
+  }, [hasSupabaseConfig, loadFeed]);
+
   const filteredPosts = useMemo(() => {
     const normalized = query.trim().toLocaleLowerCase("vi");
     return posts.filter((post) => {
@@ -327,6 +358,8 @@ export function VibeNestApp() {
       timestamp,
       content: post.content,
       empathyCount: post.empathy_count,
+      // Transparent activity score: real empathy + real replies, not personality compatibility.
+      auraScore: Math.min(100, post.empathy_count + post.replies.length * 2),
       empathized: post.empathized,
       saved: post.saved,
       replies: post.replies.map((reply) => ({
