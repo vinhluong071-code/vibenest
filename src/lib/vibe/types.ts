@@ -32,6 +32,7 @@ export type VibeStory = {
   location: string | null;
   caption: string | null;
   image_url: string | null;
+  image_path: string | null;
   canvas_preset: string;
   created_at: string;
   expires_at: string;
@@ -46,5 +47,6 @@ export type CreateVibeStoryInput = {
   location?: string | null;
   caption?: string | null;
   imageUrl?: string | null;
+  imagePath?: string | null;
   canvasPreset?: string;
 };
