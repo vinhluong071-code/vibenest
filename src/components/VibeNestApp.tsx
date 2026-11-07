@@ -14,7 +14,6 @@ import { BottomTabBar } from "@/components/navigation/BottomTabBar";
 import { LitmatchOnboardingModal, type UserProfile } from "@/components/auth/LitmatchOnboardingModal";
 import { AccountLinkingModal } from "@/components/auth/AccountLinkingModal";
 import { InboxCenter } from "@/components/InboxCenter";
-import { VibeRadarModal } from "@/components/match/VibeRadarModal";
 import { AuraDiscoveryRail } from "@/components/discovery/AuraDiscoveryRail";
 import { VoiceLoungeScreen } from "@/components/experience/VoiceLoungeScreen";
 import { VibeRadarScreen } from "@/components/experience/VibeRadarScreen";
@@ -108,7 +107,6 @@ export function VibeNestApp() {
   const [realtimeToast, setRealtimeToast] = useState("");
   const [accountOpen, setAccountOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
-  const [radarOpen, setRadarOpen] = useState(false);
   const [activeSurface, setActiveSurface] = useState<"home" | "voice" | "radar">("home");
   const touchOrigin = useRef<{ x: number; y: number } | null>(null);
   const [inboxTab, setInboxTab] = useState<"messages" | "notifications" | null>(null);
@@ -619,7 +617,7 @@ export function VibeNestApp() {
         </div>
         </>}
         {activeSurface === "voice" && <VoiceLoungeScreen />}
-        {activeSurface === "radar" && <VibeRadarScreen displayName={profile.displayName} vibeTag={profile.vibeTag} onStart={() => setRadarOpen(true)} />}
+        {activeSurface === "radar" && <VibeRadarScreen displayName={profile.displayName} vibeTag={profile.vibeTag} posts={feedCardPosts.slice(0, 12)} onOpenChat={(postId) => { const target = posts.find((item) => item.id === postId); if (target) setChatPost(target); }} />}
       </main>
 
       <BottomTabBar
@@ -630,12 +628,6 @@ export function VibeNestApp() {
         userInitial={alias.slice(0, 1).toUpperCase()}
       />
       {chatPost && <ChatDialog post={chatPost} alias={alias} onClose={() => setChatPost(null)} onEnsureIdentity={ensureChatIdentity} onMessagesRead={handleChatMessagesRead} />}
-      <VibeRadarModal
-        isOpen={radarOpen}
-        onClose={() => setRadarOpen(false)}
-        currentUser={{ displayName: profile.displayName, handle: profile.handle, city: profile.city, vibeTag: profile.vibeTag }}
-        onNotify={setNotice}
-      />
       {inboxTab && userId && <InboxCenter key={inboxTab} userId={userId} initialTab={inboxTab} onClose={() => setInboxTab(null)} onOpenConversation={(post) => { setInboxTab(null); setChatPost(post); }} onNotificationsRead={() => { void refreshBadges(); }} />}
       <LitmatchOnboardingModal
         isOpen={profileOpen}
