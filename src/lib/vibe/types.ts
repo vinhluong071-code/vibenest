@@ -15,6 +15,7 @@ export type VibePost = {
   mood: Mood;
   content: string;
   location: string | null;
+  image_path: string | null;
   created_at: string;
   empathy_count: number;
   replies: VibeReply[];
