@@ -5,9 +5,16 @@ import { NextResponse, type NextRequest } from "next/server";
 
 export async function GET(request: NextRequest) {
   const url = new URL(request.url);
-  const nextPath = url.searchParams.get("next");
-  const safeNext = nextPath && nextPath.startsWith("/") && !nextPath.startsWith("//") ? nextPath : "/";
-  const redirectUrl = new URL(safeNext, url.origin);
+  const nextPath = url.searchParams.get("next") ?? "/";
+  let redirectUrl = new URL("/", url.origin);
+  if (nextPath.startsWith("/") && !nextPath.startsWith("//") && !nextPath.includes("\\\\") && !/[\\u0000-\\u001f]/.test(nextPath)) {
+    try {
+      const candidate = new URL(nextPath, url.origin);
+      if (candidate.origin === url.origin) redirectUrl = candidate;
+    } catch {
+      // Invalid or malformed post-authentication paths always fall back to the app home.
+    }
+  }
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 
