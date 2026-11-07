@@ -26,11 +26,11 @@ function verifyPrimitiveSignature(rawBody: Buffer, signatureHeader: string | nul
 
 export async function POST(request: NextRequest) {
   const declaredLength = Number(request.headers.get("content-length") ?? "0");
-  if (declaredLength > 256_000) {
+  if (declaredLength > 1_000_000) {
     return NextResponse.json({ error: "webhook_payload_too_large" }, { status: 413 });
   }
   const rawBody = Buffer.from(await request.arrayBuffer());
-  if (rawBody.byteLength > 256_000) {
+  if (rawBody.byteLength > 1_000_000) {
     return NextResponse.json({ error: "webhook_payload_too_large" }, { status: 413 });
   }
   if (!verifyPrimitiveSignature(rawBody, request.headers.get("primitive-signature"))) {
@@ -45,10 +45,12 @@ export async function POST(request: NextRequest) {
   }
 
   const eventId = typeof event.id === "string" ? event.id : "";
-  const eventType = request.headers.get("x-webhook-event") ||
-    (typeof event.event === "string" ? event.event : "");
+  const headerEventType = request.headers.get("x-webhook-event");
+  const bodyEventType = typeof event.event === "string" ? event.event : "";
+  const eventType = headerEventType || bodyEventType;
   const emailId = typeof event.email?.id === "string" ? event.email.id : null;
-  if (!eventId || eventId.length > 200 || !eventType.startsWith("email.")) {
+  if (!eventId || eventId.length > 200 || !eventType.startsWith("email.") ||
+      (headerEventType && bodyEventType && headerEventType !== bodyEventType)) {
     return NextResponse.json({ error: "invalid_email_event" }, { status: 400 });
   }
 
