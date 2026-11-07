@@ -108,14 +108,22 @@ function escapeHtml(value: string): string {
 function buildActionUrl(redirectTo: string | undefined, siteUrl: string | undefined, tokenHash: string, actionType: string): string {
   const base = process.env.VIBENEST_APP_URL || siteUrl || process.env.NEXT_PUBLIC_SUPABASE_URL;
   if (!base) throw new Error("Missing VibeNest site URL for auth email.");
-  const target = redirectTo ? new URL(redirectTo, base) : new URL("/auth/callback", base);
-  if (target.protocol !== "https:" && target.protocol !== "http:") throw new Error("Invalid auth redirect URL.");
-  if (target.pathname !== "/auth/callback") {
-    const nextPath = `${target.pathname}${target.search}${target.hash}`;
-    target.pathname = "/auth/callback";
-    target.search = "";
-    target.hash = "";
-    target.searchParams.set("next", nextPath.startsWith("/") ? nextPath : "/");
+
+  const baseUrl = new URL(base);
+  if ((baseUrl.protocol !== "https:" && baseUrl.protocol !== "http:") || baseUrl.username || baseUrl.password) {
+    throw new Error("Invalid VibeNest application URL.");
+  }
+  const requested = redirectTo ? new URL(redirectTo, baseUrl) : new URL("/auth/callback", baseUrl);
+  // Never forward a Supabase verification token to an untrusted redirect origin.
+  if (requested.origin !== baseUrl.origin) throw new Error("Auth redirect origin is not trusted.");
+
+  const target = new URL("/auth/callback", baseUrl);
+  if (requested.pathname !== "/auth/callback") {
+    const nextPath = `${requested.pathname}${requested.search}${requested.hash}`;
+    if (!nextPath.startsWith("/") || nextPath.startsWith("//") || nextPath.includes("\\\\")) {
+      throw new Error("Invalid post-authentication path.");
+    }
+    target.searchParams.set("next", nextPath);
   }
   target.searchParams.set("token_hash", tokenHash);
   target.searchParams.set("type", actionType);
@@ -207,7 +215,14 @@ async function sendPrimitiveEmail(
 }
 
 export async function POST(request: NextRequest) {
+  const declaredLength = Number(request.headers.get("content-length") ?? "0");
+  if (declaredLength > 256_000) {
+    return NextResponse.json({ error: { http_code: 413, message: "Webhook payload is too large." } }, { status: 413 });
+  }
   const rawBody = await request.text();
+  if (Buffer.byteLength(rawBody, "utf8") > 256_000) {
+    return NextResponse.json({ error: { http_code: 413, message: "Webhook payload is too large." } }, { status: 413 });
+  }
   const webhookId = verifySupabaseSignature(request, rawBody);
   if (!webhookId) return NextResponse.json({ error: { http_code: 401, message: "Invalid webhook signature." } }, { status: 401 });
 
