@@ -25,6 +25,7 @@ type VibePostRow = {
   mood: string;
   content: string;
   location: string | null;
+  image_path: string | null;
   created_at: string;
   empathy_count: number | null;
 };
@@ -202,7 +203,7 @@ export function VibeNestApp() {
     try {
       const supabase = createClient();
       const { data: rows, error } = await supabase.from("vibe_posts")
-        .select("id,alias,mood,content,location,created_at,empathy_count")
+        .select("id,alias,mood,content,location,image_path,created_at,empathy_count")
         .order("created_at", { ascending: false }).limit(60);
       if (error) throw error;
 
@@ -355,6 +356,9 @@ export function VibeNestApp() {
       timeAgo,
       timestamp,
       content: post.content,
+      imageUrl: post.image_path
+        ? createClient().storage.from("vibenest-post-media").getPublicUrl(post.image_path).data.publicUrl
+        : undefined,
       empathyCount: post.empathy_count,
       // Transparent activity score: real empathy + real replies, not personality compatibility.
       auraScore: Math.min(100, post.empathy_count + post.replies.length * 2),
@@ -415,17 +419,42 @@ export function VibeNestApp() {
     [ensureIdentity],
   );
 
-  async function publish(content: string, mood: Mood, location: string) {
+  async function publish(content: string, mood: Mood, location: string, media: File | null = null) {
     setBusy(true);
+    let uploadedPath: string | null = null;
+    let postCreated = false;
     try {
       const ownerId = await ensureIdentity("đăng tâm sự");
       const supabase = createClient();
+      if (media) {
+        const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+        if (!allowedTypes.includes(media.type) || media.size > 10 * 1024 * 1024) {
+          throw new Error("Ảnh phải là JPG, PNG hoặc WebP và không vượt quá 10 MB.");
+        }
+        const extension = media.type === "image/jpeg" ? "jpg" : media.type === "image/png" ? "png" : "webp";
+        uploadedPath = `${ownerId}/${crypto.randomUUID()}.${extension}`;
+        const { error: uploadError } = await supabase.storage
+          .from("vibenest-post-media")
+          .upload(uploadedPath, media, {
+            cacheControl: "3600",
+            contentType: media.type,
+            upsert: false,
+          });
+        if (uploadError) throw uploadError;
+      }
+
       const { error } = await supabase.from("vibe_posts").insert({
-        user_id: ownerId, alias, mood, content, location: location || null,
+        user_id: ownerId,
+        alias,
+        mood,
+        content,
+        location: location || null,
+        image_path: uploadedPath,
       });
       if (error) throw error;
+      postCreated = true;
       setComposerOpen(false);
-      setNotice("Tâm sự của bạn đã được gửi vào VibeNest.");
+      setNotice(media ? "Tâm sự và ảnh của bạn đã được đăng lên VibeNest." : "Tâm sự của bạn đã được gửi vào VibeNest.");
       try {
         await loadFeed();
         setFeedError("");
@@ -434,6 +463,12 @@ export function VibeNestApp() {
         setFeedError("Bài đã được gửi, nhưng bảng tin chưa cập nhật. Hãy nhấn Làm mới bảng tâm sự.");
       }
     } catch (error) {
+      if (uploadedPath && !postCreated) {
+        const { error: cleanupError } = await createClient().storage
+          .from("vibenest-post-media")
+          .remove([uploadedPath]);
+        if (cleanupError) console.warn("[VibeNest] Không thể dọn ảnh tải lên chưa gắn với bài viết:", cleanupError);
+      }
       console.error("[VibeNest] Đăng tâm sự thất bại:", error);
       setNotice(getFriendlyError(error, "Chưa thể gửi tâm sự. Vui lòng thử lại."));
     } finally { setBusy(false); }
