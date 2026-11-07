@@ -52,8 +52,27 @@ esac
 log "Synchronizing generated/available native projects"
 npx cap sync
 
-log "Running Capacitor diagnostics"
-npx cap doctor
+log "Running host-appropriate Capacitor diagnostics"
+if [ "$OS_NAME" = "Darwin" ]; then
+  # macOS has Xcode, so require the complete Android + iOS diagnostic to pass.
+  npx cap doctor
+elif [ "$OS_NAME" = "Linux" ]; then
+  # Linux is the Android build host; Capacitor Doctor exits non-zero only because
+  # Xcode is unavailable. Require Android health and reject every other diagnostic error.
+  doctor_status=0
+  doctor_output="$(npx cap doctor 2>&1)" || doctor_status=$?
+  printf '%s\n' "$doctor_output"
+
+  printf '%s\n' "$doctor_output" | grep -Fq "Android looking great" \
+    || fail "Capacitor Android diagnostics did not report success."
+
+  unexpected_errors="$(printf '%s\n' "$doctor_output" | grep -F '[error]' | grep -Fv 'Xcode is not installed' || true)"
+  [ -z "$unexpected_errors" ] || fail "Unexpected Capacitor diagnostic error(s): $unexpected_errors"
+
+  if [ "$doctor_status" -ne 0 ]; then
+    log "Ignoring the expected missing-Xcode diagnostic on Linux; Android diagnostics passed."
+  fi
+fi
 
 [ -f android/settings.gradle ] || [ -f android/settings.gradle.kts ] || fail "Android Gradle settings file was not generated."
 [ -f android/app/build.gradle ] || [ -f android/app/build.gradle.kts ] || fail "Android app Gradle file was not generated."
