@@ -24,6 +24,7 @@ export interface VibePostItem {
   content: string;
   imageUrl?: string;
   empathyCount: number;
+  auraScore: number;
   empathized: boolean;
   saved: boolean;
   replies: VibeReplyItem[];
