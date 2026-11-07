@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
     .select("id,recipient_id,event_type,entity_id,attempts")
     .eq("status", "pending")
     .order("created_at", { ascending: true })
-    .limit(25);
+    .limit(4);
 
   if (queueError) return NextResponse.json({ error: "Queue read failed" }, { status: 500 });
 
