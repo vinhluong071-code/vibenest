@@ -1,9 +1,7 @@
 name: VibeNest Capacitor bootstrap (Linux-first)
 
+# Native packaging is intentionally paused during product-core work.
 on:
-  push:
-    branches:
-      - feat/hybrid-mobile-navigation-pwa-capacitor
   workflow_dispatch:
 
 permissions:
