@@ -566,7 +566,7 @@ export function VibeNestApp() {
           <Sidebar alias={alias} postCount={ownPostCount} savedCount={savedCount} onChangeAlias={() => setAlias(makeAlias())} />
           <section className="feed-column" id="feed" aria-label="Luồng tâm sự">
             <AuraDiscoveryRail posts={feedCardPosts.slice(0, 3)} onOpenChat={(postId) => { const target = posts.find((item) => item.id === postId); if (target) setChatPost(target); }} />
-            <VibeStoriesBar currentUserName={alias} currentUserHandle={alias} onNotify={setNotice} />
+            <VibeStoriesBar currentUserName={alias} currentUserHandle={profile.handle} onNotify={setNotice} />
             <div className="composer-prompt glass-panel">
               <div className="avatar">{alias.slice(0, 1)}</div>
               <button className="prompt-trigger" onClick={() => setComposerOpen(true)}>Viết vài dòng trút bầu tâm sự ẩn danh…</button>
