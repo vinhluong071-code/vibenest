@@ -1,10 +1,7 @@
 name: VibeNest Capacitor bootstrap (Linux-first)
 
-# Temporary cancellation run: immediately supersedes the active native job, then this trigger is removed.
+# Native packaging is paused during product-core work. Manual dispatch is retained for a later release window.
 on:
-  push:
-    branches:
-      - feat/hybrid-mobile-navigation-pwa-capacitor
   workflow_dispatch:
 
 permissions:
@@ -17,7 +14,6 @@ concurrency:
 
 jobs:
   bootstrap-android:
-    if: false
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
