@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, type FormEvent } from "react";
+import Image from "next/image";
 import { useVibeStories } from "@/hooks/useVibeStories";
 import type { VibeStory, VibeStoryReaction } from "@/lib/vibe/types";
 
@@ -28,7 +29,7 @@ function StoryTile({ story, onOpen }: { story: VibeStory; onOpen: () => void }) 
   return (
     <button type="button" onClick={onOpen}
       className="relative flex h-[152px] w-[106px] shrink-0 flex-col justify-between overflow-hidden rounded-2xl border border-white/15 bg-gradient-to-br from-indigo-950 via-slate-900 to-rose-950 p-3 text-left shadow-md transition-transform hover:-translate-y-0.5 active:scale-95">
-      {story.image_url && <img src={story.image_url} alt="" loading="lazy" className="absolute inset-0 h-full w-full object-cover" />}
+      {story.image_url && <Image src={story.image_url} alt="" fill sizes="106px" unoptimized className="absolute inset-0 h-full w-full object-cover" />}
       <span className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/25 to-black/45" />
       <span className="relative z-10 flex items-center justify-between gap-1 text-[10px] text-white/80">
         <span className="flex h-8 w-8 items-center justify-center rounded-xl border border-white/25 bg-black/40 text-xs font-semibold">{story.alias.slice(0, 1).toUpperCase()}</span>
@@ -149,7 +150,7 @@ export function VibeStoriesBar({ currentUserName, currentUserHandle, onNotify }:
       {activeStory && (
         <div className="fixed inset-0 z-[75] flex items-center justify-center bg-black/90 p-0 backdrop-blur-md sm:p-4" role="dialog" aria-modal="true" aria-label="Xem Khoảnh khắc 24h">
           <article className="relative flex h-full w-full max-w-md flex-col justify-between overflow-hidden bg-gradient-to-br from-indigo-950 via-slate-900 to-rose-950 p-5 text-white sm:h-[min(720px,92vh)] sm:rounded-3xl">
-            {activeStory.image_url && <img src={activeStory.image_url} alt="" className="absolute inset-0 h-full w-full object-cover" />}
+            {activeStory.image_url && <Image src={activeStory.image_url} alt="" fill sizes="(max-width: 640px) 100vw, 448px" unoptimized className="absolute inset-0 h-full w-full object-cover" />}
             <div className="absolute inset-0 bg-gradient-to-b from-black/65 via-black/20 to-black/80" />
             <header className="relative z-10 flex items-center justify-between gap-3">
               <div className="min-w-0"><strong className="block truncate text-sm">{activeStory.alias}</strong><span className="text-xs text-white/70">{activeStory.mood} · {createdLabel(activeStory.created_at)} · còn {remainingHours(activeStory.expires_at)}</span></div>
