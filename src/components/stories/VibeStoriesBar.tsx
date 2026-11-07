@@ -2,6 +2,7 @@
 
 import { useEffect, useState, type FormEvent } from "react";
 import Image from "next/image";
+import { createClient } from "@/lib/supabase/client";
 import { useVibeStories } from "@/hooks/useVibeStories";
 import type { VibeStory, VibeStoryReaction } from "@/lib/vibe/types";
 
@@ -49,6 +50,8 @@ export function VibeStoriesBar({ currentUserName, currentUserHandle, onNotify }:
   const [caption, setCaption] = useState("");
   const [mood, setMood] = useState<(typeof moods)[number]>("Đêm muộn");
   const [location, setLocation] = useState("");
+  const [media, setMedia] = useState<File | null>(null);
+  const [mediaError, setMediaError] = useState("");
   const [saving, setSaving] = useState(false);
   const [activeStoryId, setActiveStoryId] = useState<string | null>(null);
   const [reactionBusy, setReactionBusy] = useState(false);
@@ -72,18 +75,40 @@ export function VibeStoriesBar({ currentUserName, currentUserHandle, onNotify }:
     const text = caption.trim();
     if (!text || saving) return;
     setSaving(true);
+    let uploadedPath: string | null = null;
     try {
+      if (media) {
+        const supabase = createClient();
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
+        if (userError) throw userError;
+        if (!user) throw new Error("Bạn cần có phiên VibeNest để đăng ảnh.");
+        const extension = media.type === "image/jpeg" ? "jpg" : media.type === "image/png" ? "png" : "webp";
+        uploadedPath = `${user.id}/${crypto.randomUUID()}.${extension}`;
+        const { error: uploadError } = await supabase.storage
+          .from("vibenest-post-media")
+          .upload(uploadedPath, media, { cacheControl: "3600", contentType: media.type, upsert: false });
+        if (uploadError) throw uploadError;
+      }
       await createStory({
         alias: currentUserName.trim().slice(0, 48),
         mood,
         location: location.trim().slice(0, 120) || null,
         caption: text.slice(0, 500),
+        imagePath: uploadedPath,
       });
       setCaption("");
       setLocation("");
+      setMedia(null);
+      setMediaError("");
       setComposerOpen(false);
       onNotify?.("Khoảnh khắc 24h đã được lưu và đồng bộ với VibeNest.");
     } catch (cause) {
+      if (uploadedPath) {
+        const { error: cleanupError } = await createClient().storage
+          .from("vibenest-post-media")
+          .remove([uploadedPath]);
+        if (cleanupError) console.warn("[VibeNest] Không thể dọn ảnh Stories chưa được lưu:", cleanupError);
+      }
       onNotify?.(cause instanceof Error ? cause.message : "Chưa thể đăng Khoảnh khắc. Vui lòng thử lại.");
     } finally {
       setSaving(false);
@@ -135,6 +160,22 @@ export function VibeStoriesBar({ currentUserName, currentUserHandle, onNotify }:
               <select value={mood} onChange={(event) => setMood(event.target.value as (typeof moods)[number])} className="min-h-11 w-full rounded-xl border border-slate-200 bg-transparent px-3 text-sm dark:border-white/10">
                 {moods.map((item) => <option key={item} value={item}>{item}</option>)}
               </select>
+            </label>
+            <label className="block space-y-1 text-xs font-medium text-slate-700 dark:text-slate-300">Ảnh Stories (không bắt buộc)
+              <input type="file" accept="image/jpeg,image/png,image/webp" capture="environment" onChange={(event) => {
+                const file = event.target.files?.[0] ?? null;
+                if (!file) return;
+                if (!["image/jpeg", "image/png", "image/webp"].includes(file.type) || file.size > 10 * 1024 * 1024) {
+                  setMedia(null);
+                  setMediaError("Chỉ nhận ảnh JPG, PNG hoặc WebP tối đa 10 MB.");
+                  event.target.value = "";
+                  return;
+                }
+                setMedia(file);
+                setMediaError("");
+              }} className="w-full text-xs file:mr-3 file:rounded-lg file:border-0 file:bg-rose-500/10 file:px-3 file:py-2 file:text-rose-600" />
+              {media && <span className="block truncate text-[11px] text-slate-500">{media.name} · {(media.size / (1024 * 1024)).toFixed(1)} MB</span>}
+              {mediaError && <span className="block text-[11px] text-rose-600" role="alert">{mediaError}</span>}
             </label>
             <label className="block space-y-1 text-xs font-medium text-slate-700 dark:text-slate-300">Khoảnh khắc của bạn
               <textarea value={caption} onChange={(event) => setCaption(event.target.value)} required maxLength={500} rows={4} placeholder="Chia sẻ một điều nhỏ trong ngày…" className="w-full resize-none rounded-xl border border-slate-200 bg-transparent p-3 text-sm dark:border-white/10" />
