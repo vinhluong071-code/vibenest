@@ -1,3 +1,4 @@
+import { timingSafeEqual } from "node:crypto";
 import { createClient } from "@supabase/supabase-js";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -13,9 +14,12 @@ type QueueRow = {
 };
 
 export async function GET(request: NextRequest) {
-  const cronSecret = process.env.CRON_SECRET;
-  const authorization = request.headers.get("authorization");
-  if (!cronSecret || authorization !== `Bearer ${cronSecret}`) {
+  const cronSecret = process.env.CRON_SECRET ?? "";
+  const authorization = request.headers.get("authorization") ?? "";
+  const expected = Buffer.from(`Bearer ${cronSecret}`);
+  const supplied = Buffer.from(authorization);
+  const authorized = cronSecret.length > 0 && expected.length === supplied.length && timingSafeEqual(expected, supplied);
+  if (!authorized) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
