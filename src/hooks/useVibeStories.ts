@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import type { CreateVibeStoryInput, VibeStory, VibeStoryReaction } from "@/lib/vibe/types";
 
 const STORY_COLUMNS =
-  "id,alias,mood,location,caption,image_url,canvas_preset,created_at,expires_at,heart_count,warmth_count";
+  "id,alias,mood,location,caption,image_url,image_path,canvas_preset,created_at,expires_at,heart_count,warmth_count";
 
 function getErrorMessage(error: unknown): string {
   if (error instanceof Error) return error.message;
@@ -53,6 +53,9 @@ export function useVibeStories(enabled = true, limit = 60) {
 
       setStories(rows.map((story) => ({
         ...story,
+        image_url: story.image_path
+          ? supabase.storage.from("vibenest-post-media").getPublicUrl(story.image_path).data.publicUrl
+          : story.image_url,
         my_reaction: reactionByStory.get(story.id) ?? null,
       })));
       setError(null);
@@ -114,13 +117,21 @@ export function useVibeStories(enabled = true, limit = 60) {
         location: input.location?.trim() || null,
         caption: input.caption?.trim() || null,
         image_url: input.imageUrl?.trim() || null,
+        image_path: input.imagePath?.trim() || null,
         canvas_preset: input.canvasPreset?.trim() || "rose-dusk",
       })
       .select(STORY_COLUMNS)
       .single();
     if (insertError) throw insertError;
 
-    const story = { ...(data as Omit<VibeStory, "my_reaction">), my_reaction: null } satisfies VibeStory;
+    const row = data as Omit<VibeStory, "my_reaction">;
+    const story = {
+      ...row,
+      image_url: row.image_path
+        ? supabase.storage.from("vibenest-post-media").getPublicUrl(row.image_path).data.publicUrl
+        : row.image_url,
+      my_reaction: null,
+    } satisfies VibeStory;
     setStories((current) =>
       [story, ...current.filter((item) => item.id !== story.id)].filter(
         (item) => new Date(item.expires_at).getTime() > Date.now(),
