@@ -321,7 +321,7 @@ export function VibeNestApp() {
       .on("postgres_changes", { event: "*", schema: "public", table: "vibe_posts" }, scheduleRefresh)
       .on("postgres_changes", { event: "*", schema: "public", table: "vibe_post_interactions" }, scheduleRefresh)
       .on("postgres_changes", { event: "*", schema: "public", table: "vibe_replies" }, scheduleRefresh)
-      .subscribe((status) => {
+      .subscribe((status: string) => {
         if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
           console.warn("[VibeNest] Feed realtime channel status:", status);
         }
