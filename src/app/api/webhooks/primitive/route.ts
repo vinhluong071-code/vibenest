@@ -25,7 +25,14 @@ function verifyPrimitiveSignature(rawBody: Buffer, signatureHeader: string | nul
 }
 
 export async function POST(request: NextRequest) {
+  const declaredLength = Number(request.headers.get("content-length") ?? "0");
+  if (declaredLength > 256_000) {
+    return NextResponse.json({ error: "webhook_payload_too_large" }, { status: 413 });
+  }
   const rawBody = Buffer.from(await request.arrayBuffer());
+  if (rawBody.byteLength > 256_000) {
+    return NextResponse.json({ error: "webhook_payload_too_large" }, { status: 413 });
+  }
   if (!verifyPrimitiveSignature(rawBody, request.headers.get("primitive-signature"))) {
     return NextResponse.json({ error: "invalid_primitive_signature" }, { status: 401 });
   }
