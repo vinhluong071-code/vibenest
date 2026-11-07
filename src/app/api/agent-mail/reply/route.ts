@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
   const idempotencyKey = typeof body.idempotency_key === "string" ? body.idempotency_key.trim() : "";
   if (!emailId || (!bodyText && !bodyHtml) ||
       (bodyText && bodyText.length > 50000) || (bodyHtml && bodyHtml.length > 100000) ||
-      (idempotencyKey && idempotencyKey.length > 255)) {
+      !idempotencyKey || idempotencyKey.length > 255) {
     return NextResponse.json({ error: "invalid_reply_fields" }, { status: 400 });
   }
 
