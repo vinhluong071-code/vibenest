@@ -75,6 +75,9 @@ export function useVibeStories(enabled = true, limit = 60) {
       .on("postgres_changes", { event: "*", schema: "public", table: "vibe_stories" }, () => {
         void refreshStories();
       })
+      .on("postgres_changes", { event: "*", schema: "public", table: "story_warmths" }, () => {
+        void refreshStories();
+      })
       .subscribe();
 
     return () => {
