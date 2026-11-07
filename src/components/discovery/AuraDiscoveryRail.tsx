@@ -27,6 +27,7 @@ export function AuraDiscoveryRail({ posts, onOpenChat }: Props) {
               <span className="aura-orbit" aria-hidden="true">{post.displayName.slice(0, 1).toUpperCase()}</span>
               <span className="aura-index">AURA 0{index + 1}</span>
               <span className="aura-mood">{post.mood}</span>
+              <span className="aura-score" aria-label={`Điểm tương tác Aura ${post.auraScore} trên 100`}>Aura {post.auraScore}/100</span>
             </div>
             <strong className="aura-name">{post.displayName}</strong>
             <span className="aura-handle">@{post.handle} · {post.timeAgo}</span>
@@ -38,7 +39,7 @@ export function AuraDiscoveryRail({ posts, onOpenChat }: Props) {
           </article>
         ))}
       </div>
-      <p className="aura-disclaimer">Gợi ý được lấy từ bài đăng thật đang hiển thị; không suy đoán khoảng cách hoặc vị trí người dùng.</p>
+      <p className="aura-disclaimer">Điểm Aura là chỉ số hoạt động của bài đăng, tính từ lượt đồng cảm và hồi âm thật; không phải điểm tương thích cá nhân. Gợi ý lấy từ bài đăng đang hiển thị, không suy đoán khoảng cách hoặc vị trí.</p>
     </section>
   );
 }
