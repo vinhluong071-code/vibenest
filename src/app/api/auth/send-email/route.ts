@@ -211,7 +211,7 @@ async function sendPrimitiveEmail(
     body_text: textBody,
     body_html: htmlBody,
     idempotency_key: `vibenest-auth-${webhookId}-${index}`,
-  });
+  }, 4_000);
 }
 
 export async function POST(request: NextRequest) {
