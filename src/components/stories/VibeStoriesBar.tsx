@@ -56,11 +56,7 @@ export function VibeStoriesBar({ currentUserName, currentUserHandle, onNotify }:
   const activeStory = activeIndex === null ? null : stories[activeIndex] ?? null;
 
   useEffect(() => {
-    if (activeIndex === null) return;
-    if (!activeStory) {
-      setActiveIndex(null);
-      return;
-    }
+    if (activeIndex === null || !activeStory) return;
     const timer = window.setTimeout(() => {
       setActiveIndex((index) => index === null ? null : index + 1 < stories.length ? index + 1 : null);
     }, 5_500);
