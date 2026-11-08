@@ -213,7 +213,7 @@ export function VibeNestApp() {
       let replyRows: VibeReply[] = [];
       if (userId && ids.length) {
         const { data, error: interactionError } = await supabase.from("vibe_post_interactions")
-          .select("post_id,action_type").eq("user_id", userId).in("post_id", ids);
+          .select("post_id,action_type").in("post_id", ids);
         if (interactionError) throw interactionError;
         interactionRows = (data ?? []) as { post_id: string; action_type: InteractionType }[];
       }
