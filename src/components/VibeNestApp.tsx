@@ -246,7 +246,7 @@ export function VibeNestApp() {
 
   useEffect(()=>{
     if(!userId)return;let alive=true;const supabase=createClient();
-    void supabase.from("vibenest_profiles").select("birthday").eq("id",userId).maybeSingle().then(({data,error})=>{
+    void supabase.from("vibenest_profiles").select("birthday").eq("id",userId).maybeSingle().then((result: { data: { birthday: unknown } | null; error: unknown })=>{\n      const {data,error}=result;
       if(!alive)return;if(error){console.warn("[VibeNest] Không thể đọc ngày sinh hồ sơ:",error);return;}
       const value=data?.birthday;setBirthDate(typeof value==="string"?value:null);
     });
