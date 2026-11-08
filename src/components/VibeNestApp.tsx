@@ -711,7 +711,7 @@ export function VibeNestApp() {
         userInitial={alias.slice(0, 1).toUpperCase()}
       />
       {messengerOpen && userId && <VibeDirectMessenger userId={userId} alias={alias} onClose={() => setMessengerOpen(false)} onOpenConversation={(post) => { setMessengerOpen(false); setChatPost(post); }} />}
-      <VibeBoothStudio open={boothOpen} onClose={() => setBoothOpen(false)} onSoftGate={(action) => requestAuth(action)} />
+      <VibeBoothStudio open={boothOpen} onClose={() => setBoothOpen(false)} onSoftGate={() => requestAuth("liên kết tài khoản để lưu hồ sơ")} />
       <CameraFirstView open={cameraOpen} onClose={() => setCameraOpen(false)} onCaptured={(file) => { setCapturedPhoto(file); setCameraOpen(false); setComposerOpen(true); }} />
       {chatPost && <ChatDialog post={chatPost} alias={alias} onClose={() => setChatPost(null)} onEnsureIdentity={ensureChatIdentity} onMessagesRead={handleChatMessagesRead} />}
       {inboxTab && userId && <InboxCenter key={inboxTab} userId={userId} initialTab={inboxTab} onClose={() => setInboxTab(null)} onOpenConversation={(post) => { setInboxTab(null); setChatPost(post); }} onNotificationsRead={() => { void refreshBadges(); }} />}
