@@ -124,7 +124,26 @@ export function VibeNestApp() {
   const [inboxTab, setInboxTab] = useState<"messages" | "notifications" | null>(null);
   const [messengerOpen, setMessengerOpen] = useState(false);
   const [authUser, setAuthUser] = useState<Session["user"] | null>(null);
+  const [pinnedPostIds, setPinnedPostIds] = useState<string[]>([]);
 
+
+  useEffect(() => {
+    try {
+      const stored = window.localStorage.getItem("vibenest.pinned-posts.v1");
+      if (stored) {
+        const parsed: unknown = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.every((item) => typeof item === "string")) setPinnedPostIds(parsed);
+      }
+    } catch { /* Pins remain optional when storage is unavailable. */ }
+  }, []);
+
+  const togglePinnedPost = useCallback((postId: string) => {
+    setPinnedPostIds((current) => {
+      const next = current.includes(postId) ? current.filter((id) => id !== postId) : [postId, ...current];
+      try { window.localStorage.setItem("vibenest.pinned-posts.v1", JSON.stringify(next)); } catch { /* Keep this session's pin state. */ }
+      return next;
+    });
+  }, []);
 
   // Keep feedback lightweight: action notices dismiss themselves without
   // interrupting feed browsing or requiring an extra tap.
@@ -366,8 +385,12 @@ export function VibeNestApp() {
       const moodMatch = filter === "Tất cả" || (filter === "Đã lưu" ? post.saved : post.mood === filter);
       const queryMatch = !normalized || [post.content, post.alias, post.mood, post.location ?? ""].some((value) => value.toLocaleLowerCase("vi").includes(normalized));
       return moodMatch && queryMatch;
-    }).sort((a, b) => sort === "latest" ? new Date(b.created_at).getTime() - new Date(a.created_at).getTime() : b.empathy_count - a.empathy_count);
-  }, [posts, filter, query, sort]);
+    }).sort((a, b) => {
+      const pinDelta = Number(pinnedPostIds.includes(b.id)) - Number(pinnedPostIds.includes(a.id));
+      if (pinDelta) return pinDelta;
+      return sort === "latest" ? new Date(b.created_at).getTime() - new Date(a.created_at).getTime() : b.empathy_count - a.empathy_count;
+    });
+  }, [posts, filter, query, sort, pinnedPostIds]);
 
   const feedCardPosts = useMemo<VibePostItem[]>(() => filteredPosts.map((post) => {
     const toHandle = (value: string) => value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, ".").replace(/^\.|\.$/g, "") || "vibenest.user";
@@ -651,6 +674,8 @@ export function VibeNestApp() {
                     <VibeFeedCard
                       key={cardPost.id}
                       post={cardPost}
+                      pinned={pinnedPostIds.includes(cardPost.id)}
+                      onTogglePin={() => togglePinnedPost(cardPost.id)}
                       busy={busyId === sourcePost.id}
                       onToggleEmpathy={(postId) => {
                         const target = posts.find((item) => item.id === postId);
