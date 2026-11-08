@@ -30,3 +30,5 @@
 @media(min-width:760px){.vn-camera{max-width:520px;margin:auto;border-left:1px solid #ffffff10;border-right:1px solid #ffffff10}.vn-bottom-nav{left:calc(50% - 245px);right:calc(50% - 245px)}.vn-feature-panel{width:min(520px,calc(100vw - 40px))}}
 
 .vn-oauth-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}.vn-oauth-row .vn-oauth-primary{min-width:0;padding:12px 8px;font-size:11px;gap:6px}
+
+.vn-aura-generated-image{display:block;width:100%;max-width:300px;border-radius:14px;margin-top:10px}.vn-chat-bubble a{display:inline-block;margin-top:8px;color:#c4b5fd;font-size:11px;text-decoration:underline}
