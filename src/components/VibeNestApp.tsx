@@ -132,7 +132,7 @@ export function VibeNestApp() {
       const stored = window.localStorage.getItem("vibenest.pinned-posts.v1");
       if (stored) {
         const parsed: unknown = JSON.parse(stored);
-        if (Array.isArray(parsed) && parsed.every((item) => typeof item === "string")) setPinnedPostIds(parsed);
+        if (Array.isArray(parsed) && parsed.every((item) => typeof item === "string")) window.setTimeout(() => setPinnedPostIds(parsed), 0);
       }
     } catch { /* Pins remain optional when storage is unavailable. */ }
   }, []);
