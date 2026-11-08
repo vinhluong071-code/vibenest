@@ -23,6 +23,10 @@ import { AuraDiscoveryRail } from "@/components/discovery/AuraDiscoveryRail";
 import { VoiceLoungeScreen } from "@/components/experience/VoiceLoungeScreen";
 import { VibeRadarScreen } from "@/components/experience/VibeRadarScreen";
 import type { InteractionType, Mood, VibePost, VibeReply } from "@/lib/vibe/types";
+import { getAgeAccess } from "@/lib/age-gating";
+import { SoulDatingModal } from "@/components/dating/SoulDatingModal";
+import { MysticOracleModal } from "@/components/mystic/MysticOracleModal";
+import { CommunitySpacesModal } from "@/components/spaces/CommunitySpacesModal";
 
 type VibePostRow = {
   id: string;
@@ -125,6 +129,10 @@ export function VibeNestApp() {
   const [messengerOpen, setMessengerOpen] = useState(false);
   const [authUser, setAuthUser] = useState<Session["user"] | null>(null);
   const [pinnedPostIds, setPinnedPostIds] = useState<string[]>([]);
+  const [datingOpen,setDatingOpen]=useState(false);
+  const [mysticOpen,setMysticOpen]=useState(false);
+  const [spacesOpen,setSpacesOpen]=useState(false);
+  const [birthDate,setBirthDate]=useState<string|null>(null);
 
 
   useEffect(() => {
@@ -235,6 +243,15 @@ export function VibeNestApp() {
       void supabase.removeChannel(channel);
     };
   }, [userId, chatPost, refreshBadges]);
+
+  useEffect(()=>{
+    if(!userId)return;let alive=true;const supabase=createClient();
+    void supabase.from("vibenest_profiles").select("birthday").eq("id",userId).maybeSingle().then(({data,error})=>{
+      if(!alive)return;if(error){console.warn("[VibeNest] Không thể đọc ngày sinh hồ sơ:",error);return;}
+      const value=data?.birthday;setBirthDate(typeof value==="string"?value:null);
+    });
+    return()=>{alive=false;};
+  },[userId]);
 
   const hasCompletedProfile = localProfileComplete || Boolean(authUser?.user_metadata?.vibenest_profile);
   const requestAuth = useCallback((intent: string) => { setAuthIntent(intent); setIsAuthModalOpen(true); }, []);
@@ -689,13 +706,13 @@ export function VibeNestApp() {
           <aside className="right-sidebar">
             <section className="glass-panel reflection-card"><p className="eyebrow">CÂU HỎI GỢI MỞ HÔM NAY</p><h2>Nếu có thể nhắn một điều đến chính mình của ba năm trước, bạn sẽ nói gì?</h2><button onClick={() => { setComposerMood("Chữa lành"); setComposerOpen(true); }}>Viết câu trả lời <span>↗</span></button></section>
             <section className="glass-panel guidelines"><h2>Một góc nhỏ dịu dàng</h2><p>01 · Lắng nghe không phán xét.</p><p>02 · Tôn trọng ranh giới và riêng tư.</p><p>03 · Chọn ngôn từ tử tế, kể cả khi bất đồng.</p><small>VibeNest · Kết nối cảm xúc ẩn danh</small></section>
-            <section className="glass-panel join-card"><span>✳</span><h2>Một nơi để được là mình.</h2><p>Bạn có thể đọc trước. Khi muốn chia sẻ hoặc tương tác, hãy tạo một phiên ẩn danh.</p><button className="secondary-button" onClick={async () => { try { await ensureIdentity(); setNotice("Bạn đã vào VibeNest bằng danh tính ẩn danh."); } catch (error) { setNotice(error instanceof Error ? error.message : "Không thể tạo phiên."); } }}>Tiếp tục ẩn danh</button></section>
+            <section className="glass-panel join-card"><span>✳</span><h2>Một nơi để được là mình.</h2><p>Bạn có thể đọc trước. Khi muốn chia sẻ hoặc tương tác, hãy tạo một phiên ẩn danh.</p><button className="secondary-button" onClick={async () => { try { await ensureIdentity(); setNotice("Bạn đã vào VibeNest bằng danh tính ẩn danh."); } catch (error) { setNotice(error instanceof Error ? error.message : "Không thể tạo phiên."); } }}>Tiếp tục ẩn danh</button><div className="vn-feature-launchers"><button onClick={()=>setMysticOpen(true)}>✧ Mystic Oracle</button><button onClick={()=>setSpacesOpen(true)}>♧ Community Spaces</button><button onClick={()=>setDatingOpen(true)}>♡ Soul Dating · 18+</button></div></section>
           </aside>
         </div>
         </HomeFeedView>
         </>}
         {activeSurface === "voice" && <VoiceLoungeScreen />}
-        {activeSurface === "radar" && <VibeRadarScreen displayName={profile.displayName} vibeTag={profile.vibeTag} posts={feedCardPosts.slice(0, 12)} onOpenChat={(postId) => { const target = posts.find((item) => item.id === postId); if (target) setChatPost(target); }} />}
+        {activeSurface === "radar" && <VibeRadarScreen displayName={profile.displayName} vibeTag={profile.vibeTag} posts={feedCardPosts.slice(0, 12)} forceGhostMode={getAgeAccess(birthDate).requiresGhostMode} onOpenChat={(postId) => { const target = posts.find((item) => item.id === postId); if (target) setChatPost(target); }} />}
       </main>
       )}
 
@@ -726,6 +743,9 @@ export function VibeNestApp() {
       />}
       {messengerOpen && userId && <VibeDirectMessenger userId={userId} alias={alias} onClose={() => setMessengerOpen(false)} onOpenConversation={(post) => { setMessengerOpen(false); setChatPost(post); }} />}
       {cameraOpen && <CameraFirstView open={true} handle={profile.handle} onClose={() => setCameraOpen(false)} onCaptured={(file) => { setCapturedPhoto(file); setCameraOpen(false); setComposerOpen(true); }} /> }
+      {datingOpen&&<SoulDatingModal birthDate={birthDate} onClose={()=>setDatingOpen(false)}/>}
+      {mysticOpen&&<MysticOracleModal birthDate={birthDate} onClose={()=>setMysticOpen(false)}/>}
+      {spacesOpen&&<CommunitySpacesModal onClose={()=>setSpacesOpen(false)}/>}
       {chatPost && <ChatDialog post={chatPost} alias={alias} onClose={() => setChatPost(null)} onEnsureIdentity={ensureChatIdentity} onMessagesRead={handleChatMessagesRead} />}
       {inboxTab && userId && <InboxCenter key={inboxTab} userId={userId} initialTab={inboxTab} onClose={() => setInboxTab(null)} onOpenConversation={(post) => { setInboxTab(null); setChatPost(post); }} onNotificationsRead={() => { void refreshBadges(); }} />}
       <LitmatchThirdPartyAuthModal open={isAuthModalOpen} intent={authIntent} onClose={() => setIsAuthModalOpen(false)} onDemoContinue={() => { setIsAuthModalOpen(false); setProfileOpen(true); }} />

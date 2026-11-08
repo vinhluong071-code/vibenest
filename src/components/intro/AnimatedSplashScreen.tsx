@@ -6,12 +6,6 @@ export function AnimatedSplashScreen() {
   const [phase, setPhase] = useState<"hidden" | "visible" | "leaving">("hidden");
 
   useEffect(() => {
-    try {
-      if (window.sessionStorage.getItem("vibenest:splash:seen") === "1") return;
-      window.sessionStorage.setItem("vibenest:splash:seen", "1");
-    } catch {
-      // The intro still works when session storage is unavailable.
-    }
     const showTimer = window.setTimeout(() => setPhase("visible"), 0);
     const leaveTimer = window.setTimeout(() => setPhase("leaving"), 1200);
     const removeTimer = window.setTimeout(() => setPhase("hidden"), 1650);

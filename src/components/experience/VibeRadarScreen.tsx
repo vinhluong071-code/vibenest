@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AuraDiscoveryRail } from "@/components/discovery/AuraDiscoveryRail";
 import type { VibePostItem } from "@/components/feed/VibeFeedCard";
 
@@ -9,15 +9,18 @@ type Props = {
   vibeTag: string;
   posts: VibePostItem[];
   onOpenChat: (postId: string) => void;
+  forceGhostMode?: boolean;
 };
 
-export function VibeRadarScreen({ displayName, vibeTag, posts, onOpenChat }: Props) {
+export function VibeRadarScreen({ displayName, vibeTag, posts, onOpenChat, forceGhostMode = false }: Props) {
   const [ghostMode, setGhostMode] = useState(true);
   const [locationReady, setLocationReady] = useState(false);
   const [locationBusy, setLocationBusy] = useState(false);
   const [locationMessage, setLocationMessage] = useState("Ghost Mode đang bật. Vị trí thiết bị không được yêu cầu hoặc chia sẻ.");
+  useEffect(()=>{if(forceGhostMode){setGhostMode(true);setLocationReady(false);setLocationMessage("Ghost Mode bắt buộc theo nhóm tuổi. Vị trí chính xác không được yêu cầu hoặc chia sẻ.");}},[forceGhostMode]);
 
   async function toggleGhostMode() {
+    if (forceGhostMode) { setGhostMode(true); setLocationReady(false); setLocationMessage("Ghost Mode bắt buộc theo nhóm tuổi."); return; }
     if (!ghostMode) {
       setGhostMode(true);
       setLocationReady(false);
