@@ -1,3 +1,4 @@
+import { timingSafeEqual } from "node:crypto";
 import { createClient } from "@supabase/supabase-js";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -13,9 +14,12 @@ type QueueRow = {
 };
 
 export async function GET(request: NextRequest) {
-  const cronSecret = process.env.CRON_SECRET;
-  const authorization = request.headers.get("authorization");
-  if (!cronSecret || authorization !== `Bearer ${cronSecret}`) {
+  const cronSecret = process.env.CRON_SECRET ?? "";
+  const authorization = request.headers.get("authorization") ?? "";
+  const expected = Buffer.from(`Bearer ${cronSecret}`);
+  const supplied = Buffer.from(authorization);
+  const authorized = cronSecret.length > 0 && expected.length === supplied.length && timingSafeEqual(expected, supplied);
+  if (!authorized) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -35,19 +39,22 @@ export async function GET(request: NextRequest) {
     .select("id,recipient_id,event_type,entity_id,attempts")
     .eq("status", "pending")
     .order("created_at", { ascending: true })
-    .limit(25);
+    .limit(16);
 
   if (queueError) return NextResponse.json({ error: "Queue read failed" }, { status: 500 });
 
   let sent = 0;
   let skipped = 0;
   let failed = 0;
-  for (const item of (queue ?? []) as QueueRow[]) {
+  const queueItems = (queue ?? []) as QueueRow[];
+  // Four concurrent deliveries per wave keep the 60s serverless budget bounded.
+  for (let offset = 0; offset < queueItems.length; offset += 4) {
+    await Promise.all(queueItems.slice(offset, offset + 4).map(async (item) => {
     const { data: claimed, error: claimError } = await admin
       .from("vibenest_email_notification_queue")
       .update({ status: "processing", attempts: item.attempts + 1 })
       .eq("id", item.id).eq("status", "pending").select("id").maybeSingle();
-    if (claimError || !claimed) continue;
+    if (claimError || !claimed) return;
 
     try {
       const [{ data: userResult, error: userError }, { data: prefs, error: prefsError }] = await Promise.all([
@@ -63,7 +70,7 @@ export async function GET(request: NextRequest) {
       if (!user?.email || !user.email_confirmed_at || !optedIn) {
         await admin.from("vibenest_email_notification_queue").update({ status: "skipped" }).eq("id", item.id);
         skipped += 1;
-        continue;
+        return;
       }
 
       const isReply = item.event_type === "reply";
@@ -85,7 +92,7 @@ export async function GET(request: NextRequest) {
           body_text: body,
         }),
         cache: "no-store",
-        signal: AbortSignal.timeout(12000),
+        signal: AbortSignal.timeout(10000),
       });
       const result = await response.json().catch(() => ({})) as {
         success?: boolean;
@@ -105,6 +112,7 @@ export async function GET(request: NextRequest) {
         .update({ status: item.attempts + 1 >= 5 ? "failed" : "pending", last_error: message }).eq("id", item.id);
       failed += 1;
     }
+    }));
   }
 
   return NextResponse.json({ processed: sent + skipped + failed, sent, skipped, failed });

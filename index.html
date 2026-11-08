@@ -341,59 +341,22 @@
           </div>
         </div>
 
-        <!-- Quick Inline Composer with Integrated Web Speech API (Voice-to-Text) -->
+        <!-- Quick Inline Composer Trigger Card -->
         <div class="glass-surface rounded-3xl p-4 sm:p-5 bg-white/85 dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/[0.09] shadow-sm">
-          <div class="flex items-start gap-3">
-            <div id="quickPromptAvatar" class="w-10 h-10 rounded-2xl border flex items-center justify-center font-display font-semibold text-sm shrink-0 transition-colors duration-200 mt-0.5">
+          <div class="flex items-center gap-3">
+            <div id="quickPromptAvatar" class="w-10 h-10 rounded-2xl border flex items-center justify-center font-display font-semibold text-sm shrink-0 transition-colors duration-200">
               L
             </div>
-            <div class="flex-1 min-w-0 space-y-2.5">
-              <div class="relative flex items-center gap-2">
-                <input
-                  type="text"
-                  id="inlineDirectInput"
-                  maxlength="600"
-                  placeholder="Nói bằng giọng nói hoặc gõ nhanh tâm sự của bạn..."
-                  class="w-full min-h-[44px] pl-4 pr-24 py-2.5 rounded-2xl bg-slate-100/80 dark:bg-white/[0.04] hover:bg-slate-200/50 dark:hover:bg-white/[0.07] focus:bg-white dark:focus:bg-white/[0.06] border border-slate-200/60 dark:border-white/[0.08] focus:border-rose-500/60 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:outline-none transition-colors"
-                />
-                <div class="absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center gap-1">
-                  <button
-                    type="button"
-                    id="inlineVoiceDictateBtn"
-                    aria-label="Nhập tâm sự bằng giọng nói (Web Speech API)"
-                    title="Chạm để nói — Tự động chuyển giọng nói thành văn bản (Web Speech API)"
-                    class="min-h-[34px] px-2.5 py-1 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/25 text-rose-600 dark:text-rose-300 text-xs font-semibold flex items-center gap-1.5 transition-all"
-                  >
-                    <span id="inlineVoicePulseDot" class="w-2 h-2 rounded-full bg-rose-500 hidden animate-ping"></span>
-                    <svg class="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 01-3-3V4.5a3 3 0 116 0v8.25a3 3 0 01-3 3z" />
-                    </svg>
-                    <span id="inlineVoiceBtnLabel" class="hidden sm:inline">Giọng nói</span>
-                  </button>
-                  <button
-                    type="button"
-                    id="inlineQuickPublishBtn"
-                    class="min-h-[34px] px-3 py-1 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-200 text-white dark:text-slate-900 text-xs font-semibold transition-all"
-                  >
-                    Đăng
-                  </button>
-                </div>
-              </div>
-              <div id="inlineSpeechStatusBanner" class="hidden items-center justify-between gap-2 px-3 py-1.5 rounded-xl bg-rose-500/10 border border-rose-500/25 text-[11px] text-rose-600 dark:text-rose-300">
-                <div class="flex items-center gap-2 min-w-0">
-                  <span class="w-2 h-2 rounded-full bg-rose-500 animate-ping shrink-0"></span>
-                  <span id="inlineSpeechInterimText" class="truncate font-medium">Đang lắng nghe giọng nói tiếng Việt (vi-VN)...</span>
-                </div>
-                <button type="button" id="inlineStopSpeechBtn" class="font-semibold underline shrink-0">Dừng</button>
-              </div>
-            </div>
+            <button
+              type="button"
+              id="inlineComposerTrigger"
+              class="flex-1 min-h-[44px] text-left px-4 py-2.5 rounded-2xl bg-slate-100/80 dark:bg-white/[0.04] hover:bg-slate-200/60 dark:hover:bg-white/[0.07] border border-slate-200/60 dark:border-white/[0.06] text-sm text-slate-500 dark:text-slate-400 transition-colors"
+            >
+              Chia sẻ khoảnh khắc hoặc suy nghĩ của bạn hôm nay...
+            </button>
           </div>
           <div class="mt-3 pt-3 border-t border-slate-200/60 dark:border-white/[0.06] flex items-center justify-between gap-2 text-xs text-slate-500 dark:text-slate-400">
             <div class="flex items-center gap-2 overflow-x-auto no-scrollbar">
-              <button type="button" id="inlineComposerTrigger" class="min-h-[36px] px-2.5 py-1 rounded-xl bg-slate-100 dark:bg-white/[0.05] hover:bg-slate-200/60 dark:hover:bg-white/[0.09] text-slate-700 dark:text-slate-300 font-medium transition-colors whitespace-nowrap shrink-0">
-                Mở khung soạn đầy đủ
-              </button>
-              <span aria-hidden="true">·</span>
               <button type="button" data-quick-mood="Đêm muộn" class="quick-mood-btn min-h-[36px] px-2.5 py-1 rounded-xl hover:bg-slate-200/60 dark:hover:bg-white/[0.06] hover:text-slate-900 dark:hover:text-white transition-colors whitespace-nowrap shrink-0">
                 + Đêm muộn
               </button>
@@ -765,28 +728,15 @@
           </div>
         </div>
 
-        <!-- Textarea Content + Web Speech API Dictation Button -->
+        <!-- Textarea Content -->
         <div>
-          <div class="flex items-center justify-between mb-1.5">
-            <label for="composerTextarea" class="text-xs font-medium text-slate-700 dark:text-slate-300">Nội dung bài viết</label>
-            <button
-              type="button"
-              id="modalVoiceDictateBtn"
-              class="min-h-[32px] px-2.5 py-1 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/25 text-rose-600 dark:text-rose-300 text-xs font-semibold flex items-center gap-1.5 transition-all"
-            >
-              <span id="modalVoicePulseDot" class="w-2 h-2 rounded-full bg-rose-500 hidden animate-ping"></span>
-              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 01-3-3V4.5a3 3 0 116 0v8.25a3 3 0 01-3 3z" />
-              </svg>
-              <span id="modalVoiceBtnLabel">Đọc giọng nói (vi-VN)</span>
-            </button>
-          </div>
+          <label for="composerTextarea" class="sr-only">Nội dung bài viết</label>
           <textarea
             id="composerTextarea"
             rows="4"
             maxlength="600"
             required
-            placeholder="Chia sẻ câu chuyện, góc nhìn hoặc bấm nút Đọc giọng nói để chuyển lời nói thành văn bản..."
+            placeholder="Chia sẻ câu chuyện, góc nhìn hoặc khoảnh khắc đáng nhớ của bạn hôm nay..."
             class="w-full p-4 rounded-2xl bg-slate-100/90 dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/[0.08] text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 leading-relaxed focus:outline-none focus:border-rose-500 transition-colors resize-none"
           ></textarea>
           <div class="flex items-center justify-between text-xs text-slate-400 dark:text-slate-500 mt-1.5 px-1">
@@ -3163,170 +3113,6 @@
             listEl.appendChild(peerBubble);
             listEl.scrollTop = listEl.scrollHeight;
           }, 950);
-        });
-
-        // ====================================================================
-        // WEB SPEECH API INTEGRATION FOR INLINE COMPOSER & MODAL COMPOSER
-        // ====================================================================
-        const SpeechRecognitionConstructor = window.SpeechRecognition || window.webkitSpeechRecognition;
-        let speechRecognizer = null;
-        let isSpeechListening = false;
-        let activeSpeechTarget = 'inline'; // 'inline' | 'modal'
-
-        const inlineDirectInput = document.getElementById('inlineDirectInput');
-        const inlineVoiceDictateBtn = document.getElementById('inlineVoiceDictateBtn');
-        const inlineVoicePulseDot = document.getElementById('inlineVoicePulseDot');
-        const inlineVoiceBtnLabel = document.getElementById('inlineVoiceBtnLabel');
-        const inlineSpeechStatusBanner = document.getElementById('inlineSpeechStatusBanner');
-        const inlineSpeechInterimText = document.getElementById('inlineSpeechInterimText');
-        const inlineStopSpeechBtn = document.getElementById('inlineStopSpeechBtn');
-        const inlineQuickPublishBtn = document.getElementById('inlineQuickPublishBtn');
-
-        const modalVoiceDictateBtn = document.getElementById('modalVoiceDictateBtn');
-        const modalVoicePulseDot = document.getElementById('modalVoicePulseDot');
-        const modalVoiceBtnLabel = document.getElementById('modalVoiceBtnLabel');
-
-        function updateSpeechUIState(listening) {
-          isSpeechListening = listening;
-          if (listening) {
-            inlineVoicePulseDot?.classList.remove('hidden');
-            if (inlineVoiceBtnLabel) inlineVoiceBtnLabel.textContent = 'Đang nghe...';
-            inlineSpeechStatusBanner?.classList.remove('hidden');
-            inlineSpeechStatusBanner?.classList.add('flex');
-
-            modalVoicePulseDot?.classList.remove('hidden');
-            if (modalVoiceBtnLabel) modalVoiceBtnLabel.textContent = 'Đang nghe... (Chạm để dừng)';
-          } else {
-            inlineVoicePulseDot?.classList.add('hidden');
-            if (inlineVoiceBtnLabel) inlineVoiceBtnLabel.textContent = 'Giọng nói';
-            inlineSpeechStatusBanner?.classList.add('hidden');
-            inlineSpeechStatusBanner?.classList.remove('flex');
-
-            modalVoicePulseDot?.classList.add('hidden');
-            if (modalVoiceBtnLabel) modalVoiceBtnLabel.textContent = 'Đọc giọng nói (vi-VN)';
-          }
-        }
-
-        function toggleSpeechRecognition(targetMode) {
-          activeSpeechTarget = targetMode;
-          if (!SpeechRecognitionConstructor) {
-            showToast('Trình duyệt của bạn chưa hỗ trợ Web Speech API (Hãy thử trên Chrome / Safari / Edge)');
-            return;
-          }
-
-          if (isSpeechListening && speechRecognizer) {
-            speechRecognizer.stop();
-            updateSpeechUIState(false);
-            return;
-          }
-
-          try {
-            speechRecognizer = new SpeechRecognitionConstructor();
-            speechRecognizer.lang = 'vi-VN';
-            speechRecognizer.continuous = true;
-            speechRecognizer.interimResults = true;
-
-            speechRecognizer.onstart = () => {
-              updateSpeechUIState(true);
-              showToast('Đang lắng nghe giọng nói (Tiếng Việt)... Hãy bắt đầu nói');
-            };
-
-            speechRecognizer.onresult = (event) => {
-              let finalChunk = '';
-              let interimChunk = '';
-              for (let i = event.resultIndex; i < event.results.length; i++) {
-                const transcript = event.results[i][0].transcript;
-                if (event.results[i].isFinal) {
-                  finalChunk += transcript + ' ';
-                } else {
-                  interimChunk += transcript;
-                }
-              }
-
-              if (inlineSpeechInterimText) {
-                inlineSpeechInterimText.textContent = interimChunk
-                  ? `Đang nhận diện: "${interimChunk}"`
-                  : 'Đang lắng nghe giọng nói tiếng Việt (vi-VN)...';
-              }
-
-              if (finalChunk.trim()) {
-                if (activeSpeechTarget === 'modal' && composerTextarea) {
-                  const prefix = composerTextarea.value && !composerTextarea.value.endsWith(' ') ? ' ' : '';
-                  composerTextarea.value = (composerTextarea.value + prefix + finalChunk.trim()).slice(0, 600);
-                  if (charCountNum) charCountNum.textContent = String(composerTextarea.value.length);
-                } else if (inlineDirectInput) {
-                  const prefix = inlineDirectInput.value && !inlineDirectInput.value.endsWith(' ') ? ' ' : '';
-                  inlineDirectInput.value = (inlineDirectInput.value + prefix + finalChunk.trim()).slice(0, 600);
-                }
-              }
-            };
-
-            speechRecognizer.onerror = () => {
-              updateSpeechUIState(false);
-            };
-
-            speechRecognizer.onend = () => {
-              updateSpeechUIState(false);
-            };
-
-            speechRecognizer.start();
-          } catch (err) {
-            updateSpeechUIState(false);
-            showToast('Không thể khởi động nhận diện giọng nói. Vui lòng kiểm tra quyền Micro.');
-          }
-        }
-
-        inlineVoiceDictateBtn?.addEventListener('click', () => toggleSpeechRecognition('inline'));
-        inlineStopSpeechBtn?.addEventListener('click', () => {
-          if (speechRecognizer && isSpeechListening) {
-            speechRecognizer.stop();
-            updateSpeechUIState(false);
-          }
-        });
-        modalVoiceDictateBtn?.addEventListener('click', () => toggleSpeechRecognition('modal'));
-
-        function publishInlineVibePost() {
-          if (!inlineDirectInput) return;
-          const content = inlineDirectInput.value.trim();
-          if (!content) {
-            openComposer();
-            return;
-          }
-
-          if (speechRecognizer && isSpeechListening) {
-            speechRecognizer.stop();
-            updateSpeechUIState(false);
-          }
-
-          const newItem = {
-            id: 'vibe-' + Date.now(),
-            displayName: userProfile.displayName,
-            handle: userProfile.handle,
-            vibeTag: userProfile.vibeTag,
-            location: userProfile.city,
-            timeAgo: 'Vừa xong',
-            timestamp: Date.now(),
-            mood: 'Đêm muộn',
-            content,
-            empathyCount: 1,
-            huggedByMe: true,
-            savedByMe: false,
-            comments: []
-          };
-
-          vibes.unshift(newItem);
-          saveVibes();
-          inlineDirectInput.value = '';
-          renderFeed();
-          showToast('Đã đăng bài viết mới lên bảng tin VibeNest');
-        }
-
-        inlineQuickPublishBtn?.addEventListener('click', publishInlineVibePost);
-        inlineDirectInput?.addEventListener('keydown', (e) => {
-          if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            publishInlineVibePost();
-          }
         });
 
         // Escape key closes active modals

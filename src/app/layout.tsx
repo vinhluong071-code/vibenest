@@ -2,10 +2,12 @@ import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import "./globals.css";
 import { SupabaseSessionBridge } from "@/components/supabase-session-bridge";
+import { PwaRegister } from "@/components/PwaRegister";
 
 export const metadata: Metadata = {
   title: "VibeNest",
   applicationName: "VibeNest",
+  manifest: "/manifest.webmanifest",
   description: "Không gian tâm sự và kết nối cảm xúc ẩn danh.",
   icons: {
     icon: [{ url: "/icon.svg", type: "image/svg+xml" }],
@@ -32,6 +34,7 @@ export default function RootLayout({
   return (
     <html lang="vi" className="dark">
       <body>
+        <PwaRegister />
         <SupabaseSessionBridge />
         {children}
       </body>
