@@ -26,6 +26,14 @@ function getStorySticker(caption: string | null, label: string): string | null {
   return line ? line.slice(label.length).trim() : null;
 }
 
+function parseStoryPoll(caption: string | null): { question: string; options: [string, string] } | null {
+  const raw = getStorySticker(caption, "[BÌNH CHỌN]");
+  if (!raw) return null;
+  const match = raw.match(/^(.*?) · A: (.*?) · B: (.*)$/);
+  if (!match) return null;
+  return { question: match[1], options: [match[2], match[3]] };
+}
+
 function getStoryBody(caption: string | null): string {
   if (!caption) return "";
   return caption.split(/\n\n\[(?:HỎI ẨN DANH|BÌNH CHỌN|ĐANG NGHE)\]/)[0];
@@ -55,7 +63,7 @@ export function VibeStoriesBar({ currentUserName, currentUserHandle, onNotify }:
     process.env.NEXT_PUBLIC_SUPABASE_URL &&
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
   );
-  const { stories, loading, error, createStory, toggleWarmth, refreshStories, submitAnonymousQuestion, loadAnonymousQuestions } = useVibeStories(hasSupabaseConfig, 60);
+  const { stories, loading, error, createStory, toggleWarmth, refreshStories, submitAnonymousQuestion, loadAnonymousQuestions, submitStoryPollVote, loadStoryPollResults } = useVibeStories(hasSupabaseConfig, 60);
   const [composerOpen, setComposerOpen] = useState(false);
   const [caption, setCaption] = useState("");
   const [mood, setMood] = useState<(typeof moods)[number]>("Đêm muộn");
@@ -76,9 +84,24 @@ export function VibeStoriesBar({ currentUserName, currentUserHandle, onNotify }:
   const [storyQuestions, setStoryQuestions] = useState<VibeStoryQuestion[]>([]);
   const [questionBusy, setQuestionBusy] = useState(false);
   const [questionNotice, setQuestionNotice] = useState("");
+  const [pollResults, setPollResults] = useState<[number, number]>([0, 0]);
+  const [pollVoted, setPollVoted] = useState(false);
+  const [pollVoteBusy, setPollVoteBusy] = useState(false);
+  const [pollNotice, setPollNotice] = useState("");
 
   const activeIndex = activeStoryId === null ? -1 : stories.findIndex((story) => story.id === activeStoryId);
   const activeStory = activeIndex < 0 ? null : stories[activeIndex] ?? null;
+
+  useEffect(() => {
+    if (!activeStoryId) { setPollResults([0, 0]); setPollVoted(false); return; }
+    let alive = true;
+    void loadStoryPollResults(activeStoryId).then((counts) => {
+      if (alive) setPollResults(counts);
+    }).catch(() => {
+      if (alive) setPollResults([0, 0]);
+    });
+    return () => { alive = false; };
+  }, [activeStoryId, loadStoryPollResults]);
 
   useEffect(() => {
     if (!activeStoryId) { setStoryQuestions([]); return; }
@@ -157,6 +180,19 @@ export function VibeStoriesBar({ currentUserName, currentUserHandle, onNotify }:
     } finally {
       setSaving(false);
     }
+  }
+
+  async function voteOnStoryPoll(optionIndex: number) {
+    if (!activeStory || pollVoteBusy || pollVoted) return;
+    setPollVoteBusy(true); setPollNotice("");
+    try {
+      await submitStoryPollVote(activeStory.id, optionIndex);
+      const counts = await loadStoryPollResults(activeStory.id);
+      setPollResults(counts); setPollVoted(true);
+      setPollNotice("Bình chọn của bạn đã được ghi nhận.");
+    } catch (cause) {
+      setPollNotice(cause instanceof Error ? cause.message : "Chưa thể gửi bình chọn.");
+    } finally { setPollVoteBusy(false); }
   }
 
   async function sendAnonymousQuestion() {
@@ -263,7 +299,7 @@ export function VibeStoriesBar({ currentUserName, currentUserHandle, onNotify }:
             </header>
             <div className="relative z-10 flex flex-1 flex-col items-center justify-center gap-4 px-5 py-8"><p className="whitespace-pre-wrap text-center text-xl font-medium leading-relaxed drop-shadow-lg">{getStoryBody(activeStory.caption) || activeStory.mood}</p>
               {getStorySticker(activeStory.caption, "[HỎI ẨN DANH]") && <span className="rounded-full border border-fuchsia-200/30 bg-fuchsia-500/20 px-4 py-2 text-xs">💌 {getStorySticker(activeStory.caption, "[HỎI ẨN DANH]")}</span>}
-              {getStorySticker(activeStory.caption, "[BÌNH CHỌN]") && <div className="w-full max-w-sm rounded-2xl border border-white/20 bg-black/35 p-3"><strong className="text-sm">📊 {getStorySticker(activeStory.caption, "[BÌNH CHỌN]")}</strong><p className="mt-2 text-[10px] text-white/65">Nhãn dán bình chọn</p></div>}
+              {getStorySticker(activeStory.caption, "[BÌNH CHỌN]") && {parseStoryPoll(activeStory.caption) && <div className="w-full max-w-sm rounded-2xl border border-white/20 bg-black/35 p-3"><strong className="text-sm">📊 {parseStoryPoll(activeStory.caption)?.question}</strong>{parseStoryPoll(activeStory.caption)?.options.map((option,index)=>{const total=pollResults[0]+pollResults[1];const percent=total?Math.round((pollResults[index]/total)*100):0;return <button key={option} type="button" disabled={pollVoteBusy||pollVoted} onClick={()=>void voteOnStoryPoll(index)} className="mt-2 flex min-h-10 w-full items-center justify-between rounded-xl border border-white/15 bg-white/10 px-3 text-left text-xs disabled:opacity-75"><span>{option}</span><span>{total?(`${pollResults[index]} · ${percent}%`):"Bình chọn"}</span></button>;})}{pollNotice&&<p className="mt-2 text-[10px] text-white/75" role="status">{pollNotice}</p>}</div>}}
               {getStorySticker(activeStory.caption, "[ĐANG NGHE]") && <span className="rounded-full border border-white/20 bg-black/35 px-4 py-2 text-xs">♫ {getStorySticker(activeStory.caption, "[ĐANG NGHE]")}</span>}
               {activeStory.caption?.includes("[HỎI ẨN DANH]") && <form onSubmit={(event) => { event.preventDefault(); void sendAnonymousQuestion(); }} className="w-full max-w-sm space-y-2 rounded-2xl border border-white/20 bg-black/35 p-3 backdrop-blur"><strong className="block text-sm">💌 {getStorySticker(activeStory.caption, "[HỎI ẨN DANH]") || "Gửi câu hỏi ẩn danh"}</strong><textarea value={questionDraft} onChange={(event) => setQuestionDraft(event.target.value)} maxLength={500} rows={2} placeholder="Viết câu hỏi của bạn…" className="w-full rounded-xl border border-white/15 bg-white/10 p-3 text-sm text-white placeholder:text-white/55" /><button type="submit" disabled={!questionDraft.trim() || questionBusy} className="min-h-10 rounded-xl bg-fuchsia-600 px-4 text-xs font-semibold disabled:opacity-50">{questionBusy ? "Đang gửi…" : "Gửi ẩn danh"}</button>{questionNotice && <p className="text-xs text-white/80" role="status">{questionNotice}</p>}</form>}
               {storyQuestions.length>0 && <div className="w-full max-w-sm rounded-2xl border border-white/15 bg-black/35 p-3"><strong className="text-sm">Hộp thư câu hỏi · {storyQuestions.length}</strong>{storyQuestions.map((item)=><p key={item.id} className="mt-2 rounded-xl bg-white/10 p-2 text-sm">{item.question}</p>)}</div>}
