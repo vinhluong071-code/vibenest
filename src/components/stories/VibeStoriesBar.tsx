@@ -29,7 +29,7 @@ function createdLabel(createdAt: string): string {
 function StoryTile({ story, onOpen }: { story: VibeStory; onOpen: () => void }) {
   return (
     <button type="button" onClick={onOpen}
-      className="relative flex h-[152px] w-[106px] shrink-0 flex-col justify-between overflow-hidden rounded-2xl border border-white/15 bg-gradient-to-br from-indigo-950 via-slate-900 to-rose-950 p-3 text-left shadow-md transition-transform hover:-translate-y-0.5 active:scale-95">
+      className="vn-story-circle">
       {story.image_url && <Image src={story.image_url} alt="" fill sizes="106px" unoptimized className="absolute inset-0 h-full w-full object-cover" />}
       <span className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/25 to-black/45" />
       <span className="relative z-10 flex items-center justify-between gap-1 text-[10px] text-white/80">
@@ -144,7 +144,7 @@ export function VibeStoriesBar({ currentUserName, currentUserHandle, onNotify }:
 
       <div className="flex items-center gap-3 overflow-x-auto py-0.5 [scrollbar-width:none]">
         <button type="button" onClick={() => setComposerOpen(true)}
-          className="flex h-[152px] w-[106px] shrink-0 flex-col justify-between rounded-2xl border border-dashed border-rose-500/45 bg-gradient-to-b from-slate-100 to-slate-200/70 p-3 text-left transition-transform active:scale-95 dark:from-white/[0.06] dark:to-white/[0.02]">
+          className="vn-story-create">
           <span className="flex h-8 w-8 items-center justify-center rounded-xl border border-rose-500/30 bg-rose-500/10 text-sm font-semibold text-rose-600">{currentUserName.slice(0, 1).toUpperCase()}</span>
           <span><strong className="block text-xs text-slate-900 dark:text-white">Tạo khoảnh khắc</strong><small className="text-[10px] text-slate-500 dark:text-slate-400">Lưu giữ 24 giờ</small></span>
         </button>
