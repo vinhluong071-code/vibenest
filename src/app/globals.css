@@ -196,7 +196,7 @@
   .aura-rail-heading h2{font-size:21px}
   .aura-card-track{grid-auto-columns:minmax(230px,78%)}
   .hybrid-bottom-wrap{position:fixed;z-index:40;left:0;right:0;bottom:0;display:block;padding:8px 12px calc(8px + env(safe-area-inset-bottom));background:linear-gradient(180deg,transparent,rgba(8,11,18,.88) 22%)}
-  .hybrid-bottom-nav{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));align-items:center;gap:2px;max-width:520px;height:62px;margin:0 auto;padding:4px 5px;border:1px solid #ffffff17;border-radius:20px;background:rgba(14,18,30,.94);box-shadow:0 14px 45px #0008;backdrop-filter:blur(24px)}
+  .hybrid-bottom-nav{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));align-items:center;gap:2px;max-width:520px;height:62px;margin:0 auto;padding:4px 5px;border:1px solid #ffffff17;border-radius:20px;background:rgba(14,18,30,.94);box-shadow:0 14px 45px #0008;backdrop-filter:blur(24px)}
   .hybrid-bottom-nav button{display:flex;min-width:0;min-height:48px;flex-direction:column;align-items:center;justify-content:center;gap:2px;border:0;border-radius:13px;background:transparent;color:#8992a4;font-size:8px;font-weight:700}
   .hybrid-bottom-nav button.is-active{color:#ff9bad;background:#f05a7812}
   .hybrid-nav-icon{font-size:19px;line-height:1.1}
@@ -834,3 +834,27 @@ body { overscroll-behavior: none; }
   fill: #f43f5e;
   stroke: none;
 }
+
+
+/* Super-app Home: compact Facebook-style composer, dual feed tabs and media rail. */
+.vn-home-feed-shell{width:100%;min-width:0}
+.vn-home-feed-top{display:flex;align-items:center;gap:10px;padding:10px 14px}
+.vn-home-feed-avatar{display:grid;place-items:center;flex:0 0 38px;width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#f43f5e,#9333ea);color:#fff;font-weight:800}
+.vn-home-thought-prompt{flex:1;min-width:0;min-height:42px;padding:0 15px;border:1px solid var(--line,rgba(148,163,184,.24));border-radius:24px;background:rgba(148,163,184,.08);color:inherit;text-align:left}
+.vn-home-feed-icon{display:grid;place-items:center;flex:0 0 38px;width:38px;height:38px;border:0;border-radius:50%;background:rgba(148,163,184,.12);color:inherit}
+.vn-home-feed-icon svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.vn-home-feed-tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:0 14px 12px}
+.vn-home-feed-tabs button{min-height:40px;border:0;border-radius:14px;background:rgba(148,163,184,.09);color:inherit;font-weight:650}
+.vn-home-feed-tabs button.selected{background:linear-gradient(110deg,rgba(244,63,94,.16),rgba(147,51,234,.18));box-shadow:inset 0 -2px #a855f7}
+.vn-home-reels{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;padding:0 12px 24px}
+.vn-home-reel-card{position:relative;isolation:isolate;min-height:310px;aspect-ratio:9/14;overflow:hidden;border-radius:20px;background:#171421}
+.vn-home-reel-card>img{z-index:-2;object-fit:cover}
+.vn-home-reel-shade{position:absolute;inset:25% 0 0;background:linear-gradient(transparent,rgba(0,0,0,.78));z-index:-1}
+.vn-home-reel-play{position:absolute;top:12px;right:12px;color:white;text-shadow:0 1px 8px #000}
+.vn-home-reel-copy{position:absolute;right:12px;bottom:12px;left:12px;color:white}
+.vn-home-reel-copy p{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;margin:5px 0;font-size:13px;line-height:1.4}
+.vn-home-reel-copy small{opacity:.8}
+.dm-suggestions-intro{padding:14px 16px 8px}
+.dm-suggestions-intro p{margin:5px 0 0;color:var(--muted,#8b93a5);font-size:12px;line-height:1.5}
+.hybrid-bottom-nav.hybrid-bottom-five{grid-template-columns:repeat(5,minmax(0,1fr));height:60px;min-height:60px}
+.hybrid-bottom-nav.hybrid-bottom-five>button{min-height:48px}
