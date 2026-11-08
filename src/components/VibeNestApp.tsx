@@ -19,7 +19,6 @@ import { LitmatchOnboardingModal, type UserProfile } from "@/components/auth/Lit
 import { AccountLinkingModal } from "@/components/auth/AccountLinkingModal";
 import { InboxCenter } from "@/components/InboxCenter";
 import { VibeDirectMessenger } from "@/components/chat/VibeDirectMessenger";
-import { VibeBoothStudio } from "@/components/booth/VibeBoothStudio";
 import { AuraDiscoveryRail } from "@/components/discovery/AuraDiscoveryRail";
 import { VoiceLoungeScreen } from "@/components/experience/VoiceLoungeScreen";
 import { VibeRadarScreen } from "@/components/experience/VibeRadarScreen";
@@ -124,7 +123,6 @@ export function VibeNestApp() {
   const touchOrigin = useRef<{ x: number; y: number } | null>(null);
   const [inboxTab, setInboxTab] = useState<"messages" | "notifications" | null>(null);
   const [messengerOpen, setMessengerOpen] = useState(false);
-  const [boothOpen, setBoothOpen] = useState(false);
   const [authUser, setAuthUser] = useState<Session["user"] | null>(null);
 
 
@@ -688,33 +686,31 @@ export function VibeNestApp() {
         {activeSurface === "radar" && <VibeRadarScreen displayName={profile.displayName} vibeTag={profile.vibeTag} posts={feedCardPosts.slice(0, 12)} onOpenChat={(postId) => { const target = posts.find((item) => item.id === postId); if (target) setChatPost(target); }} />}
       </main>
 
-      <BottomTabBar
-        activeTab={messengerOpen ? "messages" : boothOpen ? "booth" : snapProfileOpen || profileOpen || isAuthModalOpen ? "profile" : activeSurface === "radar" ? "radar" : "camera"}
+      {!cameraOpen && <BottomTabBar
+        activeTab={messengerOpen ? "messages" : snapProfileOpen || profileOpen || isAuthModalOpen ? "profile" : activeSurface === "radar" ? "radar" : "camera"}
         unreadCount={chatUnreadCount}
         onOpenMessages={async () => {
-          setActiveSurface("home"); setBoothOpen(false); setSnapProfileOpen(false);
+          setActiveSurface("home"); setSnapProfileOpen(false);
           try { await ensureIdentity("mở hộp thư"); setMessengerOpen(true); setInboxTab(null); }
           catch (error) { requestAuth("mở tin nhắn"); setNotice(error instanceof Error ? error.message : "Không thể mở hộp thư."); }
         }}
-        onOpenBooth={() => { setMessengerOpen(false); setSnapProfileOpen(false); setBoothOpen(true); }}
         onSelectTab={(tab) => {
-          if (tab === "radar") { setMessengerOpen(false); setBoothOpen(false); setSnapProfileOpen(false); setActiveSurface("radar"); return; }
+          if (tab === "radar") { setMessengerOpen(false); setSnapProfileOpen(false); setCameraOpen(false); setActiveSurface("radar"); return; }
           if (tab === "profile") {
-            setMessengerOpen(false); setBoothOpen(false); setActiveSurface("home");
+            setMessengerOpen(false); setCameraOpen(false); setActiveSurface("home");
             if (!hasCompletedProfile) requestAuth("tạo hồ sơ cá nhân");
             else if (!hasSupabaseConfig) setProfileOpen(true);
             else setSnapProfileOpen(true);
             return;
           }
-          if (tab === "camera") { setMessengerOpen(false); setBoothOpen(false); setSnapProfileOpen(false); setCameraOpen(true); return; }
+          if (tab === "camera") { setMessengerOpen(false); setSnapProfileOpen(false); setActiveSurface("home"); setCameraOpen(true); return; }
           setActiveSurface("home");
         }}
-        onOpenComposer={() => { setMessengerOpen(false); setCameraOpen(true); }}
+        onOpenComposer={() => { setMessengerOpen(false); setActiveSurface("home"); setCameraOpen(true); }}
         onOpenProfile={() => { if (!hasCompletedProfile) requestAuth("tạo hồ sơ cá nhân"); else if (!hasSupabaseConfig) setProfileOpen(true); else setSnapProfileOpen(true); }}
         userInitial={alias.slice(0, 1).toUpperCase()}
-      />
+      />}
       {messengerOpen && userId && <VibeDirectMessenger userId={userId} alias={alias} onClose={() => setMessengerOpen(false)} onOpenConversation={(post) => { setMessengerOpen(false); setChatPost(post); }} />}
-      <VibeBoothStudio open={boothOpen} onClose={() => setBoothOpen(false)} onSoftGate={(action) => requestAuth(action)} />
       <CameraFirstView open={cameraOpen} onClose={() => setCameraOpen(false)} onCaptured={(file) => { setCapturedPhoto(file); setCameraOpen(false); setComposerOpen(true); }} />
       {chatPost && <ChatDialog post={chatPost} alias={alias} onClose={() => setChatPost(null)} onEnsureIdentity={ensureChatIdentity} onMessagesRead={handleChatMessagesRead} />}
       {inboxTab && userId && <InboxCenter key={inboxTab} userId={userId} initialTab={inboxTab} onClose={() => setInboxTab(null)} onOpenConversation={(post) => { setInboxTab(null); setChatPost(post); }} onNotificationsRead={() => { void refreshBadges(); }} />}
