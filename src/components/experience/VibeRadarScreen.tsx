@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { AuraDiscoveryRail } from "@/components/discovery/AuraDiscoveryRail";
 import type { VibePostItem } from "@/components/feed/VibeFeedCard";
 
@@ -17,19 +17,11 @@ export function VibeRadarScreen({ displayName, vibeTag, posts, onOpenChat }: Pro
   const [locationBusy, setLocationBusy] = useState(false);
   const [locationMessage, setLocationMessage] = useState("Ghost Mode đang bật. Vị trí thiết bị không được yêu cầu hoặc chia sẻ.");
 
-  useEffect(() => {
-    try {
-      const saved = window.localStorage.getItem("vibenest.ghost-mode.v1");
-      if (saved === "false") setGhostMode(false);
-    } catch { /* Privacy preference remains protected by the default-on state. */ }
-  }, []);
-
   async function toggleGhostMode() {
     if (!ghostMode) {
       setGhostMode(true);
       setLocationReady(false);
       setLocationMessage("Ghost Mode đang bật. Vị trí thiết bị không được yêu cầu hoặc chia sẻ.");
-      try { window.localStorage.setItem("vibenest.ghost-mode.v1", "true"); } catch { /* Storage may be unavailable. */ }
       return;
     }
     if (!navigator.geolocation) {
@@ -42,7 +34,6 @@ export function VibeRadarScreen({ displayName, vibeTag, posts, onOpenChat }: Pro
         setGhostMode(false);
         setLocationReady(true);
         setLocationMessage("Đã cho phép vị trí trên thiết bị này. Tọa độ chỉ được dùng cục bộ; chưa phát trực tiếp cho bạn bè.");
-        try { window.localStorage.setItem("vibenest.ghost-mode.v1", "false"); } catch { /* Storage may be unavailable. */ }
         setLocationBusy(false);
       },
       () => {
