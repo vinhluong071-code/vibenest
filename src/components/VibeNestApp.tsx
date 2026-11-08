@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import Image from "next/image";
 import type { AuthChangeEvent, Session } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
 import { signInAnonymously } from "@/lib/supabase/anonymous-auth";
@@ -620,29 +619,9 @@ export function VibeNestApp() {
       <AnimatedSplashScreen />
       <div className="ambient ambient-one" /><div className="ambient ambient-two" /><div className="ambient ambient-three" />
       {realtimeToast && <div className="realtime-toast" role="status" aria-live="polite"><span>{realtimeToast}</span><button onClick={() => setRealtimeToast("")} aria-label="Đóng thông báo">×</button></div>}
-      <header className="topbar">
-        <a className="brand-lockup" href="#home" aria-label="VibeNest — Trang chủ"><Image src="/icon.svg" alt="" width={34} height={34} priority /><span>VibeNest</span></a>
-        <nav className="desktop-nav hybrid-desktop-nav" aria-label="Điều hướng chính">
-          <button className={activeSurface === "home" ? "active" : ""} onClick={() => setActiveSurface("home")}>Home Feed</button>
-          <button className={activeSurface === "voice" ? "active" : ""} onClick={() => setActiveSurface("voice")}>Voice Lounge</button>
-          <button className={activeSurface === "radar" ? "active" : ""} onClick={() => setActiveSurface("radar")}>Vibe Radar</button>
-          <button onClick={() => { setActiveSurface("home"); setFilter("Chữa lành"); }}>Chữa lành</button>
-        </nav>
-        <div className="topbar-actions">
-          <span className="session-indicator">{authUser?.email ? "Đã liên kết Email" : userId ? "Đang ẩn danh" : "Đang xem ẩn danh"}</span>
-          <button className="realtime-badge" onClick={() => setActiveSurface("radar")} aria-label="Mở Vibe Radar"><span>✦ Vibe Radar</span></button>
-          <button className="realtime-badge" onClick={() => setInboxTab("messages")} aria-label={`Hộp thư, ${chatUnreadCount} tin nhắn chưa đọc`}>
-            <span>Hộp thư</span>{chatUnreadCount > 0 && <b>{chatUnreadCount > 99 ? "99+" : chatUnreadCount}</b>}
-          </button>
-          <button className="realtime-badge" onClick={() => setInboxTab("notifications")} aria-label={`Thông báo, ${notificationCount} chưa đọc`}>
-            <span>Thông báo</span>{notificationCount > 0 && <b>{notificationCount > 99 ? "99+" : notificationCount}</b>}
-          </button>
-          <button className="account-button" onClick={() => setAccountOpen(true)}>{authUser?.email ? "Tài khoản" : "Liên kết Email"}</button>
-          <button className="primary-button top-compose" onClick={() => setComposerOpen(true)}>＋ Gửi tâm sự</button>
-        </div>
-      </header>
 
-      <main className={`workspace hybrid-workspace surface-${activeSurface}`} id="home"
+      {!cameraOpen && !messengerOpen && !snapProfileOpen && !profileOpen && !isAuthModalOpen && (
+      <main className={`workspace hybrid-workspace surface-${activeSurface} app-screen app-screen-scroll`} id="home"
         onTouchStart={(event) => { const target = event.target; if (target instanceof Element && target.closest("button,a,input,textarea,select,[data-no-swipe],.aura-card-track,.mood-tabs,.sort-switch")) { touchOrigin.current = null; return; } const touch = event.touches[0]; if (touch) touchOrigin.current = { x: touch.clientX, y: touch.clientY }; }}
         onTouchEnd={(event) => { const start = touchOrigin.current; touchOrigin.current = null; const touch = event.changedTouches[0]; if (!start || !touch) return; const dx = touch.clientX - start.x; const dy = touch.clientY - start.y; if (Math.abs(dx) < 70 || Math.abs(dx) < Math.abs(dy) * 1.25) return; setActiveSurface((current) => { const order = ["home", "voice", "radar"] as const; const index = order.indexOf(current); return order[Math.max(0, Math.min(order.length - 1, index + (dx < 0 ? 1 : -1)))]; }); }}>
         {activeSurface === "home" && <>
@@ -707,6 +686,7 @@ export function VibeNestApp() {
         {activeSurface === "voice" && <VoiceLoungeScreen />}
         {activeSurface === "radar" && <VibeRadarScreen displayName={profile.displayName} vibeTag={profile.vibeTag} posts={feedCardPosts.slice(0, 12)} onOpenChat={(postId) => { const target = posts.find((item) => item.id === postId); if (target) setChatPost(target); }} />}
       </main>
+      )}
 
       {!cameraOpen && <BottomTabBar
         activeTab={messengerOpen ? "messages" : snapProfileOpen || profileOpen || isAuthModalOpen ? "profile" : cameraOpen ? "camera" : activeSurface === "radar" ? "radar" : "home"}
@@ -734,7 +714,7 @@ export function VibeNestApp() {
         userInitial={alias.slice(0, 1).toUpperCase()}
       />}
       {messengerOpen && userId && <VibeDirectMessenger userId={userId} alias={alias} onClose={() => setMessengerOpen(false)} onOpenConversation={(post) => { setMessengerOpen(false); setChatPost(post); }} />}
-      <CameraFirstView open={cameraOpen} handle={profile.handle} onClose={() => setCameraOpen(false)} onCaptured={(file) => { setCapturedPhoto(file); setCameraOpen(false); setComposerOpen(true); }} />
+      {cameraOpen && <CameraFirstView open={true} handle={profile.handle} onClose={() => setCameraOpen(false)} onCaptured={(file) => { setCapturedPhoto(file); setCameraOpen(false); setComposerOpen(true); }} /> }
       {chatPost && <ChatDialog post={chatPost} alias={alias} onClose={() => setChatPost(null)} onEnsureIdentity={ensureChatIdentity} onMessagesRead={handleChatMessagesRead} />}
       {inboxTab && userId && <InboxCenter key={inboxTab} userId={userId} initialTab={inboxTab} onClose={() => setInboxTab(null)} onOpenConversation={(post) => { setInboxTab(null); setChatPost(post); }} onNotificationsRead={() => { void refreshBadges(); }} />}
       <LitmatchThirdPartyAuthModal open={isAuthModalOpen} intent={authIntent} onClose={() => setIsAuthModalOpen(false)} onDemoContinue={() => { setIsAuthModalOpen(false); setProfileOpen(true); }} />
