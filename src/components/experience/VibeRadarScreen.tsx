@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AuraDiscoveryRail } from "@/components/discovery/AuraDiscoveryRail";
 import type { VibePostItem } from "@/components/feed/VibeFeedCard";
 
@@ -11,71 +11,118 @@ type Props = {
   onOpenChat: (postId: string) => void;
   forceGhostMode?: boolean;
 };
+type Layer = "street" | "cycling" | "mood";
+type Coordinates = { lat: number; lon: number };
+
+const DEFAULT_CENTER: Coordinates = { lat: 10.8231, lon: 106.6297 };
+const LAYERS: { id: Layer; label: string; icon: string; description: string }[] = [
+  { id: "street", label: "Đường phố", icon: "▤", description: "Bản đồ đường phố OpenStreetMap" },
+  { id: "cycling", label: "Địa hình", icon: "⌁", description: "Lớp đường đi xe đạp OpenStreetMap" },
+  { id: "mood", label: "Mood", icon: "✧", description: "Lớp tâm trạng sẽ cần dữ liệu vị trí đã được người dùng đồng ý chia sẻ" },
+];
+
+function makeMapUrl(center: Coordinates, layer: Layer) {
+  const delta = 0.035;
+  const bbox = [center.lon - delta, center.lat - delta, center.lon + delta, center.lat + delta].join("%2C");
+  const tileLayer = layer === "cycling" ? "cyclemap" : "mapnik";
+  return `https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=${tileLayer}&marker=${center.lat}%2C${center.lon}`;
+}
 
 export function VibeRadarScreen({ displayName, vibeTag, posts, onOpenChat, forceGhostMode = false }: Props) {
   const [ghostMode, setGhostMode] = useState(true);
-  const [locationReady, setLocationReady] = useState(false);
+  const [layer, setLayer] = useState<Layer>("street");
+  const [center, setCenter] = useState<Coordinates>(DEFAULT_CENTER);
   const [locationBusy, setLocationBusy] = useState(false);
-  const [locationMessage, setLocationMessage] = useState("Ghost Mode đang bật. Vị trí thiết bị không được yêu cầu hoặc chia sẻ.");
-  useEffect(()=>{if(forceGhostMode){setGhostMode(true);setLocationReady(false);setLocationMessage("Ghost Mode bắt buộc theo nhóm tuổi. Vị trí chính xác không được yêu cầu hoặc chia sẻ.");}},[forceGhostMode]);
+  const [locationMessage, setLocationMessage] = useState("Ghost Mode đang bật. VibeNest không yêu cầu hoặc chia sẻ vị trí.");
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [layersOpen, setLayersOpen] = useState(false);
+  const [friendsOpen, setFriendsOpen] = useState(false);
+  const [city, setCity] = useState("Thành phố Hồ Chí Minh");
+  const [weather, setWeather] = useState("29°C · ⛅");
 
-  async function toggleGhostMode() {
-    if (forceGhostMode) { setGhostMode(true); setLocationReady(false); setLocationMessage("Ghost Mode bắt buộc theo nhóm tuổi."); return; }
-    if (!ghostMode) {
+  useEffect(() => {
+    if (forceGhostMode) {
       setGhostMode(true);
-      setLocationReady(false);
-      setLocationMessage("Ghost Mode đang bật. Vị trí thiết bị không được yêu cầu hoặc chia sẻ.");
-      return;
+      setLocationMessage("Ghost Mode bắt buộc theo nhóm tuổi. Vị trí chính xác không được yêu cầu hoặc chia sẻ.");
     }
+  }, [forceGhostMode]);
+
+  const mapUrl = useMemo(() => makeMapUrl(center, layer === "mood" ? "street" : layer), [center, layer]);
+
+  function locateMe() {
     if (!navigator.geolocation) {
-      setLocationMessage("Trình duyệt này không hỗ trợ định vị. Ghost Mode vẫn được giữ bật.");
+      setLocationMessage("Thiết bị không hỗ trợ GPS. Bản đồ vẫn giữ vị trí mặc định.");
       return;
     }
     setLocationBusy(true);
     navigator.geolocation.getCurrentPosition(
-      () => {
-        setGhostMode(false);
-        setLocationReady(true);
-        setLocationMessage("Đã cho phép vị trí trên thiết bị này. Tọa độ chỉ được dùng cục bộ; chưa phát trực tiếp cho bạn bè.");
+      ({ coords }) => {
+        setCenter({ lat: coords.latitude, lon: coords.longitude });
         setLocationBusy(false);
+        setLocationMessage("Đã định vị trên thiết bị. Tọa độ chỉ dùng để căn giữa bản đồ, chưa gửi lên máy chủ hay chia sẻ.");
       },
       () => {
-        setLocationMessage("Không lấy được quyền vị trí. Ghost Mode vẫn bật và không có dữ liệu vị trí nào được chia sẻ.");
-        setGhostMode(true);
         setLocationBusy(false);
+        setLocationMessage("Không lấy được vị trí. Hãy kiểm tra quyền Location trong cài đặt thiết bị.");
       },
-      { enableHighAccuracy: false, timeout: 10000, maximumAge: 60000 },
+      { enableHighAccuracy: true, timeout: 12000, maximumAge: 30000 },
     );
   }
 
+  function toggleGhostMode() {
+    if (forceGhostMode) {
+      setGhostMode(true);
+      setLocationMessage("Ghost Mode bắt buộc theo nhóm tuổi.");
+      return;
+    }
+    if (ghostMode) {
+      setLocationMessage("Bạn có thể dùng GPS cục bộ. VibeNest chưa có dịch vụ chia sẻ vị trí bạn bè realtime.");
+      locateMe();
+    } else {
+      setGhostMode(true);
+      setLocationMessage("Ghost Mode đã bật trên giao diện. Chưa có backend phát vị trí để thu hồi.");
+    }
+  }
+
   return (
-    <section className="experience-screen radar-screen vn-lbs-screen" aria-labelledby="radar-screen-title">
-      <div className="experience-kicker">VIBENEST · FRIEND MAP</div>
-      <h1 id="radar-screen-title">Bản đồ</h1>
-      <p className="experience-lead">Kết nối gần nhau, nhưng quyền riêng tư luôn nằm trong tay bạn.</p>
-      <div className="vn-lbs-map" role="region" aria-label="Bản đồ bạn bè">
-        <div className="vn-lbs-map-grid" aria-hidden="true" />
-        <div className="vn-lbs-radar-ring vn-lbs-ring-one" aria-hidden="true" />
-        <div className="vn-lbs-radar-ring vn-lbs-ring-two" aria-hidden="true" />
-        <div className="vn-lbs-map-center">
-          {ghostMode ? <span className="vn-lbs-ghost">◌</span> : <span className="vn-lbs-self">●</span>}
-          <strong>{ghostMode ? "Bạn đang ẩn" : "Thiết bị của bạn"}</strong>
-          <small>{ghostMode ? "Ghost Mode · làm mờ bán kính 500 m" : locationReady ? "Vị trí được cấp quyền · chỉ cục bộ" : "Chưa có vị trí"}</small>
+    <section className="experience-screen radar-screen vn-snapmap-screen" aria-label="Bản đồ VibeNest">
+      <div className="vn-snapmap-map">
+        <iframe title="Bản đồ đường phố Thành phố Hồ Chí Minh" src={mapUrl} loading="lazy" referrerPolicy="no-referrer" />
+        {layer === "mood" && <div className="vn-snapmap-mood-overlay"><span>✧</span><strong>Mood Map</strong><small>Lớp dữ liệu cộng đồng chưa khả dụng</small></div>}
+        <header className="vn-snapmap-header">
+          <button className="vn-snapmap-avatar" type="button" onClick={() => setFriendsOpen(true)} aria-label="Mở bạn bè">{displayName.slice(0, 1).toUpperCase()}</button>
+          <div className="vn-snapmap-heading"><strong>{city}</strong><span>☁ {weather}</span></div>
+          <button className="vn-snapmap-story" type="button" onClick={() => setFriendsOpen(true)} aria-label="Story của bạn">✦</button>
+        </header>
+        <nav className="vn-snapmap-pills" aria-label="Khám phá bản đồ">
+          <button type="button" onClick={() => setLocationMessage("Kỷ niệm sẽ hiển thị khi VibeNest có kho lưu trữ địa điểm cá nhân.")}>▣ <span>Kỷ niệm</span></button>
+          <button type="button" onClick={() => setLocationMessage("Chưa có dữ liệu lượt ghé thăm được tổng hợp.")}>🏆 <span>Nhiều người ghé thăm nhất</span></button>
+          <button type="button" onClick={() => setLocationMessage("Xu hướng địa điểm cần dữ liệu check-in có đồng thuận.")}>↗ <span>Thịnh hành</span></button>
+        </nav>
+        <div className="vn-snapmap-self-marker" aria-label="Vị trí của tôi, không chia sẻ">
+          <span className="vn-snapmap-marker-glow" />
+          <span className="vn-snapmap-marker-avatar">☺</span>
+          <strong>Tôi <small>🔋 100%</small></strong>
         </div>
-        <div className="vn-lbs-map-legend"><span>●</span> Bạn bè chia sẻ vị trí sẽ xuất hiện tại đây</div>
+        <div className="vn-snapmap-actions">
+          <button type="button" className="vn-snapmap-friends" onClick={() => setFriendsOpen(true)} aria-label="Bạn bè">●</button>
+          <button type="button" onClick={() => setSettingsOpen(true)} aria-label="Cài đặt bản đồ">⚙</button>
+          <button type="button" onClick={() => setLayersOpen((value) => !value)} aria-label="Đổi lớp bản đồ">▱</button>
+          <button type="button" onClick={locateMe} disabled={locationBusy} aria-label="Định vị GPS">{locationBusy ? "…" : "➤"}</button>
+        </div>
+        {layersOpen && <div className="vn-snapmap-layer-menu" role="group" aria-label="Lớp bản đồ">{LAYERS.map((item) => <button type="button" key={item.id} className={layer === item.id ? "selected" : ""} onClick={() => { setLayer(item.id); setLayersOpen(false); }}><span>{item.icon}</span><span><strong>{item.label}</strong><small>{item.description}</small></span></button>)}</div>}
+        <div className="vn-snapmap-location-status" role="status">{locationMessage}</div>
+        <div className="vn-snapmap-bottom-actions">
+          <button type="button" className="vn-snapmap-contact" onClick={() => setFriendsOpen(true)} aria-label="Danh bạ bạn bè">♧</button>
+          <button type="button" className="vn-snapmap-add-friends" onClick={() => setFriendsOpen(true)}>＋ <span>Thêm bạn bè</span></button>
+        </div>
       </div>
-      <section className="vn-lbs-privacy glass-panel">
-        <div><strong>Ghost Mode</strong><small>Ẩn vị trí chính xác · vùng hiển thị làm mờ 500 m</small></div>
-        <button type="button" role="switch" aria-checked={ghostMode} disabled={locationBusy} onClick={() => void toggleGhostMode()} className={`vn-lbs-switch ${ghostMode ? "is-on" : ""}`}><span /></button>
-      </section>
-      <p className="vn-lbs-status" role="status">{locationBusy ? "Đang chờ quyền vị trí…" : locationMessage}</p>
-      <div className="vn-lbs-friends glass-panel">
-        <div className="vn-lbs-friends-heading"><strong>Bạn bè trên bản đồ</strong><span>Đồng ý chia sẻ mới hiển thị</span></div>
-        <div className="vn-lbs-empty"><span>⌖</span><strong>Chưa có vị trí bạn bè được chia sẻ</strong><p>VibeNest chưa có backend đồng thuận chia sẻ vị trí, trạng thái di chuyển hoặc mức pin. Vì vậy ứng dụng không hiển thị tọa độ, phần trăm pin hay trạng thái nghe nhạc/ngủ giả.</p></div>
+      {settingsOpen && <div className="vn-snapmap-sheet-backdrop" role="presentation" onClick={() => setSettingsOpen(false)}><section className="vn-snapmap-sheet" role="dialog" aria-modal="true" aria-labelledby="vn-snapmap-settings-title" onClick={(event) => event.stopPropagation()}><header><div><small>QUYỀN RIÊNG TƯ</small><h2 id="vn-snapmap-settings-title">Cài đặt bản đồ</h2></div><button type="button" onClick={() => setSettingsOpen(false)} aria-label="Đóng">×</button></header><div className="vn-snapmap-ghost-row"><span><strong>Ghost Mode</strong><small>Ẩn vị trí khỏi bạn bè. Chế độ này hiện chỉ áp dụng cho giao diện thiết bị.</small></span><button type="button" role="switch" aria-checked={ghostMode} disabled={forceGhostMode} onClick={toggleGhostMode} className={ghostMode ? "enabled" : ""}><i /></button></div><p>VibeNest chưa gửi vị trí lên máy chủ. Không có dữ liệu GPS nào được chia sẻ với người khác. Bán kính làm mờ 500 m chỉ có thể được bảo đảm khi có backend geospatial và chính sách RLS tương ứng.</p></section></div>}
+      {friendsOpen && <div className="vn-snapmap-sheet-backdrop" role="presentation" onClick={() => setFriendsOpen(false)}><section className="vn-snapmap-sheet" role="dialog" aria-modal="true" aria-labelledby="vn-snapmap-friends-title" onClick={(event) => event.stopPropagation()}><header><div><small>VIBENEST · CONNECTIONS</small><h2 id="vn-snapmap-friends-title">Thêm bạn bè</h2></div><button type="button" onClick={() => setFriendsOpen(false)} aria-label="Đóng">×</button></header><p>Danh sách bạn bè và lời mời trên bản đồ sẽ xuất hiện tại đây khi kết nối với hệ thống bạn bè. Vị trí chỉ hiển thị khi cả hai phía chủ động đồng ý.</p><button className="vn-snapmap-primary" type="button" onClick={() => setFriendsOpen(false)}>Đã hiểu</button></section></div>}
+      <div className="vn-snapmap-accessible-copy"><strong>{displayName}</strong><span>{vibeTag}</span></div>
+      <div className="vn-snapmap-below-map">
+        {posts.length > 0 ? <AuraDiscoveryRail posts={posts} onOpenChat={onOpenChat} /> : <p>Chưa có tín hiệu bạn bè được chia sẻ.</p>}
       </div>
-      <div className="radar-user-chip"><span>{displayName.slice(0, 1).toUpperCase()}</span><div><strong>{displayName}</strong><small>Tần số bạn chọn · {vibeTag}</small></div></div>
-      <div className="radar-privacy-note"><strong>Riêng tư theo thiết kế</strong><p>Vị trí thiết bị chỉ được hỏi sau thao tác tắt Ghost Mode. Hiện tại quyền vị trí chỉ được kiểm tra cục bộ, chưa được gửi lên máy chủ hay chia sẻ với người khác.</p></div>
-      {posts.length > 0 ? <AuraDiscoveryRail posts={posts} onOpenChat={onOpenChat} /> : <div className="empty-state glass-panel"><h2>Chưa có tín hiệu phù hợp</h2><p>Khi có bài đăng mới, chúng sẽ xuất hiện ở đây để bạn tự chọn kết nối.</p></div>}
     </section>
   );
 }
