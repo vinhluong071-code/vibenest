@@ -1,10 +1,10 @@
 apply plugin: 'com.android.application'
 
 android {
-    namespace = "vn.vibenest.app"
+    namespace = "vn.id.omni.app"
     compileSdk = rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "vn.vibenest.app"
+        applicationId "vn.id.omni.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
