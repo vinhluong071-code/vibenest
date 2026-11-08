@@ -5,6 +5,7 @@ import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 import { useVibeStories } from "@/hooks/useVibeStories";
 import type { VibeStory, VibeStoryReaction } from "@/lib/vibe/types";
+import type { VibeStoryQuestion } from "@/hooks/useVibeStories";
 
 type Props = {
   currentUserName: string;
@@ -43,7 +44,7 @@ export function VibeStoriesBar({ currentUserName, currentUserHandle, onNotify }:
     process.env.NEXT_PUBLIC_SUPABASE_URL &&
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
   );
-  const { stories, loading, error, createStory, toggleWarmth, refreshStories } = useVibeStories(hasSupabaseConfig, 60);
+  const { stories, loading, error, createStory, toggleWarmth, refreshStories, submitAnonymousQuestion, loadAnonymousQuestions } = useVibeStories(hasSupabaseConfig, 60);
   const [composerOpen, setComposerOpen] = useState(false);
   const [caption, setCaption] = useState("");
   const [mood, setMood] = useState<(typeof moods)[number]>("Đêm muộn");
@@ -53,9 +54,32 @@ export function VibeStoriesBar({ currentUserName, currentUserHandle, onNotify }:
   const [saving, setSaving] = useState(false);
   const [activeStoryId, setActiveStoryId] = useState<string | null>(null);
   const [reactionBusy, setReactionBusy] = useState(false);
+  const [qaEnabled, setQaEnabled] = useState(false);
+  const [qaPrompt, setQaPrompt] = useState("Hỏi mình bất cứ điều gì nhé…");
+  const [pollEnabled, setPollEnabled] = useState(false);
+  const [pollQuestion, setPollQuestion] = useState("Tối nay nên làm gì?");
+  const [pollOptionA, setPollOptionA] = useState("Đi dạo");
+  const [pollOptionB, setPollOptionB] = useState("Ở nhà chill");
+  const [musicSticker, setMusicSticker] = useState("");
+  const [questionDraft, setQuestionDraft] = useState("");
+  const [storyQuestions, setStoryQuestions] = useState<VibeStoryQuestion[]>([]);
+  const [questionBusy, setQuestionBusy] = useState(false);
+  const [questionNotice, setQuestionNotice] = useState("");
 
   const activeIndex = activeStoryId === null ? -1 : stories.findIndex((story) => story.id === activeStoryId);
   const activeStory = activeIndex < 0 ? null : stories[activeIndex] ?? null;
+
+  useEffect(() => {
+    if (!activeStoryId) { setStoryQuestions([]); return; }
+    let alive = true;
+    void loadAnonymousQuestions(activeStoryId).then((items) => {
+      if (alive) setStoryQuestions(items);
+    }).catch(() => {
+      if (alive) setStoryQuestions([]);
+    });
+    return () => { alive = false; };
+  }, [activeStoryId, loadAnonymousQuestions]);
+
 
   useEffect(() => {
     if (activeIndex < 0 || !activeStory || !activeStoryId) return;
@@ -72,6 +96,16 @@ export function VibeStoriesBar({ currentUserName, currentUserHandle, onNotify }:
     event.preventDefault();
     const text = caption.trim();
     if (!text || saving) return;
+    const stickers = [
+      qaEnabled ? `[HỎI ẨN DANH] ${qaPrompt.trim() || "Hỏi mình bất cứ điều gì"}` : "",
+      pollEnabled ? `[BÌNH CHỌN] ${pollQuestion.trim()} · A: ${pollOptionA.trim()} · B: ${pollOptionB.trim()}` : "",
+      musicSticker.trim() ? `[ĐANG NGHE] ♪ ${musicSticker.trim()}` : "",
+    ].filter(Boolean);
+    const storyCaption = [text, ...stickers].join("\n\n");
+    if (storyCaption.length > 500) {
+      onNotify?.("Nội dung và nhãn dán vượt quá giới hạn 500 ký tự. Hãy rút gọn nội dung.");
+      return;
+    }
     setSaving(true);
     let uploadedPath: string | null = null;
     try {
@@ -91,13 +125,14 @@ export function VibeStoriesBar({ currentUserName, currentUserHandle, onNotify }:
         alias: currentUserName.trim().slice(0, 48),
         mood,
         location: location.trim().slice(0, 120) || null,
-        caption: text.slice(0, 500),
+        caption: storyCaption,
         imagePath: uploadedPath,
       });
       setCaption("");
       setLocation("");
       setMedia(null);
       setMediaError("");
+      setQaEnabled(false); setPollEnabled(false); setMusicSticker("");
       setComposerOpen(false);
       onNotify?.("Khoảnh khắc 24h đã được lưu và đồng bộ với VibeNest.");
     } catch (cause) {
@@ -111,6 +146,19 @@ export function VibeStoriesBar({ currentUserName, currentUserHandle, onNotify }:
     } finally {
       setSaving(false);
     }
+  }
+
+  async function sendAnonymousQuestion() {
+    if (!activeStory || !questionDraft.trim() || questionBusy) return;
+    setQuestionBusy(true);
+    setQuestionNotice("");
+    try {
+      await submitAnonymousQuestion(activeStory.id, questionDraft);
+      setQuestionDraft("");
+      setQuestionNotice("Câu hỏi đã được gửi ẩn danh.");
+    } catch (cause) {
+      setQuestionNotice(cause instanceof Error ? cause.message : "Chưa thể gửi câu hỏi.");
+    } finally { setQuestionBusy(false); }
   }
 
   async function reactToStory(reaction: VibeStoryReaction) {
@@ -177,6 +225,14 @@ export function VibeStoriesBar({ currentUserName, currentUserHandle, onNotify }:
             <label className="block space-y-1 text-xs font-medium text-slate-700 dark:text-slate-300">Khoảnh khắc của bạn
               <textarea value={caption} onChange={(event) => setCaption(event.target.value)} required maxLength={500} rows={4} placeholder="Chia sẻ một điều nhỏ trong ngày…" className="w-full resize-none rounded-xl border border-slate-200 bg-transparent p-3 text-sm dark:border-white/10" />
             </label>
+            <section className="space-y-3 rounded-2xl border border-fuchsia-500/20 bg-fuchsia-500/[0.05] p-3">
+              <label className="flex items-center justify-between gap-3 text-sm font-semibold"><span>💌 Hộp hỏi ẩn danh</span><input type="checkbox" checked={qaEnabled} onChange={(event) => setQaEnabled(event.target.checked)} /></label>
+              {qaEnabled && <input value={qaPrompt} onChange={(event) => setQaPrompt(event.target.value)} maxLength={100} placeholder="Ví dụ: Hỏi mình điều bạn tò mò…" className="min-h-11 w-full rounded-xl border border-slate-200 bg-transparent px-3 text-sm dark:border-white/10" />}
+              <label className="flex items-center justify-between gap-3 text-sm font-semibold"><span>📊 Nhãn dán bình chọn</span><input type="checkbox" checked={pollEnabled} onChange={(event) => setPollEnabled(event.target.checked)} /></label>
+              {pollEnabled && <div className="grid gap-2"><input value={pollQuestion} onChange={(event) => setPollQuestion(event.target.value)} maxLength={80} placeholder="Câu hỏi bình chọn" className="min-h-10 rounded-xl border border-slate-200 bg-transparent px-3 text-sm dark:border-white/10" /><div className="grid grid-cols-2 gap-2"><input value={pollOptionA} onChange={(event) => setPollOptionA(event.target.value)} maxLength={32} placeholder="Lựa chọn A" className="min-h-10 min-w-0 rounded-xl border border-slate-200 bg-transparent px-2 text-sm dark:border-white/10" /><input value={pollOptionB} onChange={(event) => setPollOptionB(event.target.value)} maxLength={32} placeholder="Lựa chọn B" className="min-h-10 min-w-0 rounded-xl border border-slate-200 bg-transparent px-2 text-sm dark:border-white/10" /></div></div>}
+              <label className="block space-y-1 text-xs font-medium">♫ Nhãn dán nhạc đang nghe<input value={musicSticker} onChange={(event) => setMusicSticker(event.target.value)} maxLength={80} placeholder="Tên bài hát · nghệ sĩ" className="min-h-10 w-full rounded-xl border border-slate-200 bg-transparent px-3 text-sm dark:border-white/10" /></label>
+              <p className="text-[10px] leading-relaxed text-slate-500">Nhãn dán được lưu cùng nội dung Story. Hộp hỏi ẩn danh có thể nhận câu hỏi sau khi migration được triển khai.</p>
+            </section>
             <label className="block space-y-1 text-xs font-medium text-slate-700 dark:text-slate-300">Khu vực (không bắt buộc)
               <input value={location} onChange={(event) => setLocation(event.target.value)} maxLength={120} placeholder="Ví dụ: Sài Gòn" className="min-h-11 w-full rounded-xl border border-slate-200 bg-transparent px-3 text-sm dark:border-white/10" />
             </label>
@@ -194,7 +250,10 @@ export function VibeStoriesBar({ currentUserName, currentUserHandle, onNotify }:
               <div className="min-w-0"><strong className="block truncate text-sm">{activeStory.alias}</strong><span className="text-xs text-white/70">{activeStory.mood} · {createdLabel(activeStory.created_at)} · còn {remainingHours(activeStory.expires_at)}</span></div>
               <button type="button" onClick={() => setActiveStoryId(null)} className="min-h-11 min-w-11 rounded-xl bg-white/10" aria-label="Đóng Stories">✕</button>
             </header>
-            <div className="relative z-10 flex flex-1 items-center justify-center px-5 py-8"><p className="whitespace-pre-wrap text-center text-xl font-medium leading-relaxed drop-shadow-lg">{activeStory.caption || activeStory.mood}</p></div>
+            <div className="relative z-10 flex flex-1 flex-col items-center justify-center gap-4 px-5 py-8"><p className="whitespace-pre-wrap text-center text-xl font-medium leading-relaxed drop-shadow-lg">{activeStory.caption || activeStory.mood}</p>
+              {activeStory.caption?.includes("[HỎI ẨN DANH]") && <form onSubmit={(event) => { event.preventDefault(); void sendAnonymousQuestion(); }} className="w-full max-w-sm space-y-2 rounded-2xl border border-white/20 bg-black/35 p-3 backdrop-blur"><strong className="block text-sm">💌 Gửi câu hỏi ẩn danh</strong><textarea value={questionDraft} onChange={(event) => setQuestionDraft(event.target.value)} maxLength={500} rows={2} placeholder="Viết câu hỏi của bạn…" className="w-full rounded-xl border border-white/15 bg-white/10 p-3 text-sm text-white placeholder:text-white/55" /><button type="submit" disabled={!questionDraft.trim() || questionBusy} className="min-h-10 rounded-xl bg-fuchsia-600 px-4 text-xs font-semibold disabled:opacity-50">{questionBusy ? "Đang gửi…" : "Gửi ẩn danh"}</button>{questionNotice && <p className="text-xs text-white/80" role="status">{questionNotice}</p>}</form>}
+              {storyQuestions.length>0 && <div className="w-full max-w-sm rounded-2xl border border-white/15 bg-black/35 p-3"><strong className="text-sm">Hộp thư câu hỏi · {storyQuestions.length}</strong>{storyQuestions.map((item)=><p key={item.id} className="mt-2 rounded-xl bg-white/10 p-2 text-sm">{item.question}</p>)}</div>}
+            </div>
             <footer className="relative z-10 flex items-center justify-between gap-3">
               <span className="text-xs text-white/80">♡ {activeStory.heart_count} · ✧ {activeStory.warmth_count}</span>
               <div className="flex gap-2"><button type="button" disabled={reactionBusy} onClick={() => void reactToStory("heart")} className="min-h-11 rounded-xl border border-white/20 bg-white/10 px-3 text-sm disabled:opacity-50">♡ Quan tâm</button><button type="button" disabled={reactionBusy} onClick={() => void reactToStory("warmth")} className="min-h-11 rounded-xl bg-rose-600 px-3 text-sm font-semibold disabled:opacity-50">✧ Gửi ấm áp</button></div>
