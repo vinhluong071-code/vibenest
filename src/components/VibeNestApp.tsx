@@ -11,6 +11,7 @@ import { Sidebar } from "@/components/Sidebar";
 import { VibeStoriesBar } from "@/components/stories/VibeStoriesBar";
 import { VibeFeedCard, type VibePostItem } from "@/components/feed/VibeFeedCard";
 import { BottomTabBar } from "@/components/navigation/BottomTabBar";
+import { AnimatedSplashScreen } from "@/components/intro/AnimatedSplashScreen";
 import { LitmatchOnboardingModal, type UserProfile } from "@/components/auth/LitmatchOnboardingModal";
 import { AccountLinkingModal } from "@/components/auth/AccountLinkingModal";
 import { InboxCenter } from "@/components/InboxCenter";
@@ -568,6 +569,7 @@ export function VibeNestApp() {
 
   return (
     <div className="app-shell">
+      <AnimatedSplashScreen />
       <div className="ambient ambient-one" /><div className="ambient ambient-two" /><div className="ambient ambient-three" />
       {realtimeToast && <div className="realtime-toast" role="status" aria-live="polite"><span>{realtimeToast}</span><button onClick={() => setRealtimeToast("")} aria-label="Đóng thông báo">×</button></div>}
       <header className="topbar">
