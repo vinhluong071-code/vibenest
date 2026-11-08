@@ -623,10 +623,7 @@ export function VibeNestApp() {
         onTouchStart={(event) => { const target = event.target; if (target instanceof Element && target.closest("button,a,input,textarea,select,[data-no-swipe],.aura-card-track,.mood-tabs,.sort-switch")) { touchOrigin.current = null; return; } const touch = event.touches[0]; if (touch) touchOrigin.current = { x: touch.clientX, y: touch.clientY }; }}
         onTouchEnd={(event) => { const start = touchOrigin.current; touchOrigin.current = null; const touch = event.changedTouches[0]; if (!start || !touch) return; const dx = touch.clientX - start.x; const dy = touch.clientY - start.y; if (Math.abs(dx) < 70 || Math.abs(dx) < Math.abs(dy) * 1.25) return; setActiveSurface((current) => { const order = ["home", "voice", "radar"] as const; const index = order.indexOf(current); return order[Math.max(0, Math.min(order.length - 1, index + (dx < 0 ? 1 : -1)))]; }); }}>
         {activeSurface === "home" && <>
-        <section className="intro-row">
-          <div><p className="eyebrow">KHÔNG GIAN LẮNG NGHE ẨN DANH</p><h1>Hôm nay trong lòng bạn<br className="desktop-break" /> đang mang theo điều gì?</h1><p className="muted">Không cần hoàn hảo. Chỉ cần là chính cảm xúc của bạn.</p></div>
-          <div className="intro-note"><span>✧</span><p>Mọi câu chuyện đều xứng đáng được lắng nghe.</p></div>
-        </section>
+        <section className="vn-home-header"><div className="vn-home-avatar">{alias.slice(0,1).toUpperCase()}</div><label className="vn-home-search"><span>⌕</span><input value={query} onChange={event=>setQuery(event.target.value)} placeholder="Tìm bạn bè, khoảnh khắc…" aria-label="Tìm bạn bè và khoảnh khắc"/></label><div className="vn-home-title"><h1>Home</h1><p>Khoảnh khắc của bạn bè và những câu chuyện mới</p></div></section>
 
         <div className="workspace-grid">
           <Sidebar alias={alias} postCount={ownPostCount} savedCount={savedCount} onChangeAlias={() => setAlias(makeAlias())} />
@@ -687,7 +684,7 @@ export function VibeNestApp() {
       </main>
 
       {!cameraOpen && <BottomTabBar
-        activeTab={messengerOpen ? "messages" : snapProfileOpen || profileOpen || isAuthModalOpen ? "profile" : activeSurface === "radar" ? "radar" : "camera"}
+        activeTab={messengerOpen ? "messages" : snapProfileOpen || profileOpen || isAuthModalOpen ? "profile" : cameraOpen ? "camera" : activeSurface === "radar" ? "radar" : "home"}
         unreadCount={chatUnreadCount}
         onOpenMessages={async () => {
           setActiveSurface("home"); setSnapProfileOpen(false);
@@ -695,7 +692,7 @@ export function VibeNestApp() {
           catch (error) { requestAuth("mở tin nhắn"); setNotice(error instanceof Error ? error.message : "Không thể mở hộp thư."); }
         }}
         onSelectTab={(tab) => {
-          if (tab === "radar") { setMessengerOpen(false); setSnapProfileOpen(false); setCameraOpen(false); setActiveSurface("radar"); return; }
+          if (tab === "radar") { setMessengerOpen(false); setSnapProfileOpen(false); setCameraOpen(false); setActiveSurface("radar"); return; }\n          if (tab === "home") { setMessengerOpen(false); setSnapProfileOpen(false); setCameraOpen(false); setActiveSurface("home"); return; }
           if (tab === "profile") {
             setMessengerOpen(false); setCameraOpen(false); setActiveSurface("home");
             if (!hasCompletedProfile) requestAuth("tạo hồ sơ cá nhân");
@@ -711,7 +708,7 @@ export function VibeNestApp() {
         userInitial={alias.slice(0, 1).toUpperCase()}
       />}
       {messengerOpen && userId && <VibeDirectMessenger userId={userId} alias={alias} onClose={() => setMessengerOpen(false)} onOpenConversation={(post) => { setMessengerOpen(false); setChatPost(post); }} />}
-      <CameraFirstView open={cameraOpen} onClose={() => setCameraOpen(false)} onCaptured={(file) => { setCapturedPhoto(file); setCameraOpen(false); setComposerOpen(true); }} />
+      <CameraFirstView open={cameraOpen} handle={profile.handle} onClose={() => setCameraOpen(false)} onCaptured={(file) => { setCapturedPhoto(file); setCameraOpen(false); setComposerOpen(true); }} />
       {chatPost && <ChatDialog post={chatPost} alias={alias} onClose={() => setChatPost(null)} onEnsureIdentity={ensureChatIdentity} onMessagesRead={handleChatMessagesRead} />}
       {inboxTab && userId && <InboxCenter key={inboxTab} userId={userId} initialTab={inboxTab} onClose={() => setInboxTab(null)} onOpenConversation={(post) => { setInboxTab(null); setChatPost(post); }} onNotificationsRead={() => { void refreshBadges(); }} />}
       <LitmatchThirdPartyAuthModal open={isAuthModalOpen} intent={authIntent} onClose={() => setIsAuthModalOpen(false)} onDemoContinue={() => { setIsAuthModalOpen(false); setProfileOpen(true); }} />
