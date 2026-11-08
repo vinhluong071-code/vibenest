@@ -641,7 +641,7 @@ export function VibeNestApp() {
             </div>
             <div className="mood-tabs" role="tablist" aria-label="Lọc tâm trạng">{moods.map((item) => <button key={item} role="tab" aria-selected={filter === item} className={filter === item ? "selected" : ""} onClick={() => setFilter(item)}>{item}</button>)}</div>
             {notice && <div className="notice" role="status" aria-live="polite"><span>{notice}</span><button onClick={() => setNotice("")} aria-label="Đóng thông báo">×</button></div>}
-            {!hasSupabaseConfig ? <div className="notice" role="alert">Hãy cấu hình Supabase URL và Publishable Key trong môi trường Preview để kết nối dữ liệu.</div> : loading ? <div className="loading-state" role="status">Đang lắng nghe những câu chuyện…</div> : feedError ? <div className="empty-state glass-panel" role="alert"><h2>Chưa tải được bảng tâm sự</h2><p>{feedError}</p><button className="secondary-button" onClick={() => { void loadFeed().catch((error: unknown) => { console.error("[VibeNest] Tải lại bảng tin thất bại:", error); setFeedError(getFriendlyError(error, "Vẫn chưa thể tải bảng tin.")); }); }}>Thử tải lại</button></div> : <div className="space-y-4">
+            {!hasSupabaseConfig ? <div className="notice" role="alert">Hãy cấu hình Supabase URL và Publishable Key trong môi trường Preview để kết nối dữ liệu.</div> : loading ? <div className="loading-state" role="status">Đang lắng nghe những câu chuyện…</div> : feedError ? <div className="empty-state glass-panel" role="alert"><h2>Chưa tải được bảng tâm sự</h2><p>{feedError}</p><button className="secondary-button" onClick={() => { void loadFeed().catch((error: unknown) => { console.error("[VibeNest] Tải lại bảng tin thất bại:", error); setFeedError(getFriendlyError(error, "Vẫn chưa thể tải bảng tin.")); }); }}>Thử tải lại</button></div> : <div className="vn-discovery-grid">
                 {feedCardPosts.length === 0 ? (
                   <div className="empty-state glass-panel"><span>✧</span><h2>Khoảng lặng cũng có ý nghĩa</h2><p>Chưa có lời tâm sự phù hợp. Bạn có thể là người đầu tiên mở lời.</p></div>
                 ) : feedCardPosts.map((cardPost) => {
@@ -692,7 +692,8 @@ export function VibeNestApp() {
           catch (error) { requestAuth("mở tin nhắn"); setNotice(error instanceof Error ? error.message : "Không thể mở hộp thư."); }
         }}
         onSelectTab={(tab) => {
-          if (tab === "radar") { setMessengerOpen(false); setSnapProfileOpen(false); setCameraOpen(false); setActiveSurface("radar"); return; }\n          if (tab === "home") { setMessengerOpen(false); setSnapProfileOpen(false); setCameraOpen(false); setActiveSurface("home"); return; }
+          if (tab === "radar") { setMessengerOpen(false); setSnapProfileOpen(false); setCameraOpen(false); setActiveSurface("radar"); return; }
+          if (tab === "home") { setMessengerOpen(false); setSnapProfileOpen(false); setCameraOpen(false); setActiveSurface("home"); return; }
           if (tab === "profile") {
             setMessengerOpen(false); setCameraOpen(false); setActiveSurface("home");
             if (!hasCompletedProfile) requestAuth("tạo hồ sơ cá nhân");
