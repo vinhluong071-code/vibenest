@@ -268,17 +268,17 @@ body{min-height:100dvh;overflow:hidden}
 
 
 /* VibeNest animated intro and custom vector bottom navigation */
-.vibenest-splash{position:fixed;z-index:200;inset:0;display:grid;place-items:center;overflow:hidden;background:#07080d;color:#fff;opacity:1;filter:blur(0);transition:opacity .65s ease,filter .65s ease;isolation:isolate}
+.vibenest-splash{position:fixed;z-index:200;inset:0;display:grid;place-items:center;overflow:hidden;background:#08080E;color:#fff;opacity:1;filter:blur(0);transition:opacity .65s ease,filter .65s ease;isolation:isolate}
 .vibenest-splash--leaving{opacity:0;filter:blur(16px);pointer-events:none}
 .vibenest-splash__center{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:9px;animation:vn-splash-rise .8s cubic-bezier(.2,.8,.2,1) both}
-.vibenest-splash__mark{width:112px;height:112px;overflow:visible;filter:drop-shadow(0 0 14px #a56bff66);animation:vn-splash-pulse 1.8s ease-in-out infinite}
+.vibenest-splash__mark{width:184px;height:184px;overflow:visible;filter:drop-shadow(0 0 14px #9333ea88);animation:vn-splash-pulse 1.2s ease-in-out infinite}
 .vibenest-splash__wordmark{margin-top:7px;font:700 28px/1.1 "Plus Jakarta Sans",sans-serif;letter-spacing:-1.1px;background:linear-gradient(100deg,#ff7898,#bd8bff 54%,#67e5ed);-webkit-background-clip:text;background-clip:text;color:transparent}
 .vibenest-splash__tagline{color:#c5c0d2;font-size:11px;letter-spacing:.12em}
 .vibenest-splash__footer{position:absolute;bottom:calc(28px + env(safe-area-inset-bottom));color:#737486;font-size:10px;letter-spacing:.16em}
 .vibenest-splash__glow{position:absolute;width:260px;height:260px;border-radius:50%;filter:blur(100px);opacity:.24;pointer-events:none}
 .vibenest-splash__glow--one{background:#e94f91;top:18%;left:8%}
 .vibenest-splash__glow--two{background:#625ce9;right:8%;bottom:14%}
-@keyframes vn-splash-pulse{0%,100%{transform:scale(.96);filter:drop-shadow(0 0 10px #a56bff55)}50%{transform:scale(1.04);filter:drop-shadow(0 0 25px #a56bffbb)}}
+@keyframes vn-splash-pulse{0%,100%{transform:scale(.96);filter:drop-shadow(0 0 10px #f43f5e77)}50%{transform:scale(1.04);filter:drop-shadow(0 0 28px #9333eadd)}}
 @keyframes vn-splash-rise{from{opacity:0;transform:translateY(14px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}
 .hybrid-nav-icon{display:grid;place-items:center;width:25px;height:25px}
 .hybrid-nav-icon svg{display:block;width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;transition:filter .2s ease,transform .2s ease}
