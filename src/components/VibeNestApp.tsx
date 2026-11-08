@@ -393,7 +393,9 @@ export function VibeNestApp() {
   }, []);
 
   const ensureIdentity = useCallback(async (actionLabel = "thực hiện thao tác này") => {
-    if (userId) return userId;
+    if (userId && authUser && !authUser.is_anonymous) return userId;
+    setAccountOpen(true);
+    throw new Error("Hãy liên kết tài khoản để " + actionLabel + ". Bạn vẫn có thể xem bảng tin mà không cần đăng nhập.");
     let session: Session | null;
     try {
       // Reuses the startup promise when an action races silent sign-in.
@@ -411,7 +413,7 @@ export function VibeNestApp() {
     setProfile(nextProfile);
     setAlias(nextProfile.displayName);
     return session.user.id;
-  }, [userId, alias]);
+  }, [userId, authUser]);
 
   const ensureChatIdentity = useCallback(
     () => ensureIdentity("mở trò chuyện riêng"),
