@@ -21,7 +21,7 @@ export function VibeNestCameraFirst(){
   <div className={tab==="feed"?"vn-tab-pane vn-feed-pane":"vn-tab-pane vn-feed-pane vn-hidden"}><VibeNestApp/></div>
   <div className={tab==="aura"?"vn-tab-pane vn-feature-pane":"vn-tab-pane vn-feature-pane vn-hidden"}><AuraAIChat/></div>
   <div className={tab==="radar"?"vn-tab-pane vn-feature-pane":"vn-tab-pane vn-feature-pane vn-hidden"}><ZenlyMoodRadar/></div>
-  {tab==="profile"&&<SnapProfileView onClose={()=>setTab("camera")} onSafety={()=>setSafety(true)}/>}
+  {tab==="profile"&&<SnapProfileView onClose={()=>setTab("camera")} onSafety={()=>setSafety(true)} onSoftGate={()=>setAuth(true)}/>}
   <nav className="vn-bottom-nav" aria-label="Điều hướng chính">{TABS.map((id,i)=><button key={id} className={tab===id?"active":""} onClick={()=>setTab(id)}><span>{["◉","⌂","✧","◎","◌"][i]}</span>{["Camera","Bảng tin","Aura","Radar","Hồ sơ"][i]}</button>)}</nav>
   {booth&&<VibeBoothStudio open={booth} onClose={()=>setBooth(false)} onSoftGate={()=>setAuth(true)}/>}
   <LitmatchThirdPartyAuthModal open={auth} onClose={()=>setAuth(false)} intent="chia sẻ khoảnh khắc"/>
