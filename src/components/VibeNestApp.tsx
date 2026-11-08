@@ -14,6 +14,8 @@ import { BottomTabBar } from "@/components/navigation/BottomTabBar";
 import { LitmatchOnboardingModal, type UserProfile } from "@/components/auth/LitmatchOnboardingModal";
 import { AccountLinkingModal } from "@/components/auth/AccountLinkingModal";
 import { InboxCenter } from "@/components/InboxCenter";
+import { VibeDirectMessenger } from "@/components/chat/VibeDirectMessenger";
+import { VibeBoothStudio } from "@/components/booth/VibeBoothStudio";
 import { AuraDiscoveryRail } from "@/components/discovery/AuraDiscoveryRail";
 import { VoiceLoungeScreen } from "@/components/experience/VoiceLoungeScreen";
 import { VibeRadarScreen } from "@/components/experience/VibeRadarScreen";
@@ -111,6 +113,8 @@ export function VibeNestApp() {
   const [activeSurface, setActiveSurface] = useState<"home" | "voice" | "radar">("home");
   const touchOrigin = useRef<{ x: number; y: number } | null>(null);
   const [inboxTab, setInboxTab] = useState<"messages" | "notifications" | null>(null);
+  const [messengerOpen, setMessengerOpen] = useState(false);
+  const [boothOpen, setBoothOpen] = useState(false);
   const [authUser, setAuthUser] = useState<Session["user"] | null>(null);
 
 
@@ -656,12 +660,17 @@ export function VibeNestApp() {
       </main>
 
       <BottomTabBar
-        activeTab={activeSurface === "home" ? (filter === "Chữa lành" ? "Chữa lành" : filter === "Đã lưu" ? "saved" : "all") : activeSurface}
-        onSelectTab={(tab) => { if (tab === "voice" || tab === "radar") { setActiveSurface(tab); return; } setActiveSurface("home"); if (tab === "profile") { setProfileOpen(true); return; } setFilter(tab === "all" ? "Tất cả" : tab === "saved" ? "Đã lưu" : "Chữa lành"); }}
+        activeTab={messengerOpen ? "messages" : boothOpen ? "booth" : activeSurface === "radar" ? "radar" : "camera"}
+        unreadCount={chatUnreadCount}
+        onOpenMessages={() => { setMessengerOpen(true); setInboxTab(null); }}
+        onOpenBooth={() => setBoothOpen(true)}
+        onSelectTab={(tab) => { if (tab === "radar") { setMessengerOpen(false); setBoothOpen(false); setActiveSurface("radar"); return; } if (tab === "profile") { setProfileOpen(true); return; } if (tab === "camera") { setMessengerOpen(false); setBoothOpen(false); setComposerOpen(true); return; } setActiveSurface("home"); }}
         onOpenComposer={() => setComposerOpen(true)}
         onOpenProfile={() => setProfileOpen(true)}
         userInitial={alias.slice(0, 1).toUpperCase()}
       />
+      {messengerOpen && userId && <VibeDirectMessenger userId={userId} alias={alias} onClose={() => setMessengerOpen(false)} onOpenConversation={(post) => { setMessengerOpen(false); setChatPost(post); }} />}
+      <VibeBoothStudio open={boothOpen} onClose={() => setBoothOpen(false)} onSoftGate={(action) => setNotice(`${action}: tính năng sẽ được kết nối trong bản cập nhật tiếp theo.`)} />
       {chatPost && <ChatDialog post={chatPost} alias={alias} onClose={() => setChatPost(null)} onEnsureIdentity={ensureChatIdentity} onMessagesRead={handleChatMessagesRead} />}
       {inboxTab && userId && <InboxCenter key={inboxTab} userId={userId} initialTab={inboxTab} onClose={() => setInboxTab(null)} onOpenConversation={(post) => { setInboxTab(null); setChatPost(post); }} onNotificationsRead={() => { void refreshBadges(); }} />}
       <LitmatchOnboardingModal
