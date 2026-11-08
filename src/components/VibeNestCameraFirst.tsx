@@ -1,5 +1,5 @@
 "use client";
-import {useEffect,useRef,useState} from "react";
+import {useEffect,useRef,useState,type TouchEvent} from "react";
 import {VibeNestApp} from "@/components/VibeNestApp";
 import {CameraFirstView} from "@/components/camera/CameraFirstView";
 import {VibeBoothStudio} from "@/components/booth/VibeBoothStudio";
@@ -13,7 +13,7 @@ const TABS:Tab[]=["camera","feed","aura","radar","profile"];
 export function VibeNestCameraFirst(){
  const [tab,setTab]=useState<Tab>("camera");const [booth,setBooth]=useState(false);const [auth,setAuth]=useState(false);const [safety,setSafety]=useState(false);const [captured,setCaptured]=useState<File|null>(null);const [preview,setPreview]=useState("");const touch=useRef<{x:number;y:number;blocked:boolean}|null>(null);
  useEffect(()=>{if(!captured){setPreview("");return;}const url=URL.createObjectURL(captured);setPreview(url);return()=>URL.revokeObjectURL(url);},[captured]);
- function startTouch(e:React.TouchEvent<HTMLDivElement>){const target=e.target as HTMLElement;touch.current={x:e.touches[0].clientX,y:e.touches[0].clientY,blocked:Boolean(target.closest(".aura-card-track,.mood-tabs,[data-no-swipe]"))};}
+ function startTouch(e:TouchEvent<HTMLDivElement>){const target=e.target as HTMLElement;touch.current={x:e.touches[0].clientX,y:e.touches[0].clientY,blocked:Boolean(target.closest(".aura-card-track,.mood-tabs,[data-no-swipe]"))};}
  function endTouch(e:React.TouchEvent<HTMLDivElement>){const start=touch.current;touch.current=null;if(!start||start.blocked)return;const dx=e.changedTouches[0].clientX-start.x,dy=e.changedTouches[0].clientY-start.y;if(Math.abs(dx)<70||Math.abs(dx)<Math.abs(dy)*1.25)return;const current=TABS.indexOf(tab);setTab(TABS[Math.max(0,Math.min(TABS.length-1,current+(dx<0?1:-1)))]);}
  return <main className="vn-app-root" onTouchStart={startTouch} onTouchEnd={endTouch}>
   <div className="vn-ambient vn-ambient-a"/><div className="vn-ambient vn-ambient-b"/>
