@@ -111,7 +111,12 @@ export function VibeStoriesBar({ currentUserName, currentUserHandle, onNotify }:
     }).catch(() => {
       if (alive) setStoryQuestions([]);
     });
-    return () => { alive = false; };
+    const supabase = createClient();
+    const channel = supabase.channel(`story-qa-${activeStoryId}`)
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "vibe_story_questions", filter: `story_id=eq.${activeStoryId}` }, () => {
+        void loadAnonymousQuestions(activeStoryId).then((items) => { if (alive) setStoryQuestions(items); });
+      }).subscribe();
+    return () => { alive = false; void supabase.removeChannel(channel); };
   }, [activeStoryId, loadAnonymousQuestions]);
 
 
