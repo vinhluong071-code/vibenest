@@ -1,6 +1,6 @@
 'use client';
 
-export type BottomNavTab='radar'|'messages'|'camera'|'home'|'profile';
+export type BottomNavTab='home'|'radar'|'camera'|'chat'|'profile';
 export interface BottomTabBarProps{activeTab:BottomNavTab;unreadCount:number;onSelectTab:(tab:BottomNavTab)=>void;onOpenComposer:()=>void;onOpenMessages:()=>void;onOpenProfile:()=>void;userInitial:string}
 
 /**
@@ -18,10 +18,10 @@ function FriendsGlyph(){return <svg viewBox="0 0 32 32" aria-hidden="true" focus
 function SpotlightGlyph(){return <svg viewBox="0 0 32 32" aria-hidden="true" focusable="false"><path d="M8 3.5h16v25l-8-5-8 5Z"/><circle cx="25.5" cy="6.5" r="4" className="glyph-dot"/></svg>}
 
 export function BottomTabBar(p:BottomTabBarProps){return <div className="hybrid-bottom-wrap"><nav className="hybrid-bottom-nav hybrid-bottom-five" aria-label="Điều hướng VibeNest">
+<button type="button" className={p.activeTab==='home'?'is-active':''} onClick={()=>p.onSelectTab('home')} aria-label="Home"><span className="hybrid-nav-icon"><FriendsGlyph/></span></button>
 <button type="button" className={p.activeTab==='radar'?'is-active':''} onClick={()=>p.onSelectTab('radar')} aria-label="Bản đồ"><span className="hybrid-nav-icon"><LocationGlyph/></span></button>
-<button type="button" className={p.activeTab==='messages'?'is-active':''} onClick={p.onOpenMessages} aria-label={`Chat, ${p.unreadCount} tin chưa đọc`}><span className="hybrid-nav-icon hybrid-message-icon"><MessageGlyph/>{p.unreadCount>0&&<b className="hybrid-nav-badge">{p.unreadCount>99?'99+':p.unreadCount}</b>}</span></button>
 <button type="button" className={`hybrid-camera-button ${p.activeTab==='camera'?'is-active':''}`} onClick={p.onOpenComposer} aria-label="Camera"><span className="hybrid-camera-ring"><CameraGlyph/></span></button>
-<button type="button" className={p.activeTab==='home'?'is-active':''} onClick={()=>p.onSelectTab('home')} aria-label="Bạn bè"><span className="hybrid-nav-icon"><FriendsGlyph/></span></button>
-<button type="button" className={p.activeTab==='profile'?'is-active':''} onClick={p.onOpenProfile} aria-label="Tâm điểm"><span className="hybrid-nav-icon"><SpotlightGlyph/></span></button>
+<button type="button" className={p.activeTab==='chat'?'is-active':''} onClick={p.onOpenMessages} aria-label={`Chat, ${p.unreadCount} tin chưa đọc`}><span className="hybrid-nav-icon hybrid-message-icon"><MessageGlyph/>{p.unreadCount>0&&<b className="hybrid-nav-badge">{p.unreadCount>99?'99+':p.unreadCount}</b>}</span></button>
+<button type="button" className={p.activeTab==='profile'?'is-active':''} onClick={p.onOpenProfile} aria-label="Cá nhân"><span className="hybrid-nav-icon"><SpotlightGlyph/></span></button>
 </nav></div>}
 export default BottomTabBar;
