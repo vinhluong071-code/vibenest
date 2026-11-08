@@ -401,3 +401,5 @@ html,body{width:100%;min-height:100%;background:#07080d}body{min-height:100dvh}.
 .vn-lbs-status{font-size:11px;color:var(--muted,#94a3b8);line-height:1.5}
 .vn-lbs-friends{margin-top:14px;padding:16px}.vn-lbs-friends-heading{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}.vn-lbs-friends-heading span{font-size:10px;color:var(--muted,#94a3b8)}
 .vn-lbs-empty{display:grid;justify-items:center;text-align:center;padding:26px 10px 12px;gap:8px}.vn-lbs-empty>span{font-size:30px;color:#67e8f9}.vn-lbs-empty strong{font-size:13px}.vn-lbs-empty p{max-width:420px;font-size:11px;line-height:1.6;color:var(--muted,#94a3b8)}
+
+/* Product bundle: Home, VibeBooth, direct inbox and privacy-first friend map. */
