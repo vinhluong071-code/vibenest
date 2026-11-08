@@ -558,8 +558,8 @@ h1,h2,h3,h4,h5,h6,.wordmark,.intro-note,.frequency-panel h2,.stat-grid strong,.d
     display: grid;
     grid-template-columns: repeat(5, minmax(0, 1fr));
     align-items: center;
-    height: 64px;
-    min-height: 64px;
+    height: 60px;
+    min-height: 60px;
     gap: 0;
     padding: 4px 8px;
     border-radius: 18px;
@@ -785,4 +785,52 @@ body { overscroll-behavior: none; }
 @media (min-width: 721px) {
   .app-screen-scroll { padding-bottom: 32px; }
   .hybrid-bottom-wrap { padding-bottom: 12px; }
+}
+
+
+/* 21:53 approved icon geometry: consistent monoline SVG treatment. */
+.hybrid-bottom-nav.hybrid-bottom-five .hybrid-nav-icon svg,
+.hybrid-bottom-nav.hybrid-bottom-five .hybrid-camera-ring svg,
+.vn-camera-side-controls svg,
+.vn-camera-flip svg,
+.vn-camera-top button svg,
+.vn-booth-editor header button svg,
+.vn-video-review header button svg {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.vn-camera-side-controls svg,
+.vn-camera-flip svg,
+.vn-camera-top button svg,
+.vn-booth-editor header button svg,
+.vn-video-review header button svg {
+  display: block;
+  width: 24px;
+  height: 24px;
+}
+.vn-camera-side-controls button,
+.vn-camera-flip,
+.vn-camera-top > button,
+.vn-booth-editor header button,
+.vn-video-review header button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.vn-camera-side-controls button,
+.vn-camera-flip {
+  flex-direction: column;
+  gap: 4px;
+}
+.vn-camera-side-controls button small,
+.vn-camera-flip small {
+  font-size: 10px;
+  line-height: 1.1;
+}
+.hybrid-bottom-nav.hybrid-bottom-five .hybrid-nav-icon svg .glyph-dot {
+  fill: #f43f5e;
+  stroke: none;
 }
