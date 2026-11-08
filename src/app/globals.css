@@ -420,3 +420,129 @@ html,body{width:100%;min-height:100%;background:#07080d}body{min-height:100dvh}.
 .vn-video-review header,.vn-video-review>div{display:flex;align-items:center;justify-content:space-between;gap:10px}
 .vn-video-review header button{font-size:28px}.vn-video-review video{width:100%;max-height:65vh;border-radius:18px;background:#000}
 .vn-video-review a,.vn-video-review>div button{min-height:44px;padding:11px 16px;border-radius:13px;background:#9333EA;color:white;font-size:12px;font-weight:700}
+
+
+/* Icon-only five-tab dock: centered glyphs, compact 62px rail. */
+@media(max-width:720px){
+  .hybrid-bottom-wrap{
+    padding:6px 12px calc(6px + env(safe-area-inset-bottom));
+    background:linear-gradient(180deg,transparent,rgba(8,11,18,.92) 20%);
+  }
+  .hybrid-bottom-nav.hybrid-bottom-five{
+    display:grid;
+    grid-template-columns:repeat(5,minmax(0,1fr));
+    align-items:center;
+    gap:4px;
+    height:62px;
+    min-height:62px;
+    padding:4px 7px;
+    border-radius:19px;
+  }
+  .hybrid-bottom-nav.hybrid-bottom-five>button{
+    position:relative;
+    display:grid;
+    place-items:center;
+    align-self:center;
+    justify-self:center;
+    width:100%;
+    min-width:0;
+    height:52px;
+    min-height:52px;
+    padding:0;
+    gap:0;
+    border:0;
+    border-radius:14px;
+    background:transparent;
+    color:#a6adbd;
+    font-size:0;
+    line-height:0;
+  }
+  .hybrid-bottom-nav.hybrid-bottom-five>button.is-active{
+    color:#ff9bad;
+    background:#f05a7812;
+  }
+  .hybrid-bottom-nav .hybrid-nav-icon{
+    position:relative;
+    display:grid;
+    place-items:center;
+    width:28px;
+    height:28px;
+    font-size:0;
+    line-height:0;
+  }
+  .hybrid-bottom-nav .hybrid-nav-icon svg{
+    display:block;
+    width:25px;
+    height:25px;
+    fill:none;
+    stroke:currentColor;
+    stroke-width:1.8;
+    stroke-linecap:round;
+    stroke-linejoin:round;
+  }
+  .hybrid-bottom-nav .hybrid-nav-icon .glyph-fill{fill:currentColor}
+  .hybrid-bottom-nav .hybrid-nav-icon .glyph-accent{stroke:#ff8ba4}
+  .hybrid-bottom-nav .hybrid-nav-icon .glyph-dot{fill:#ff8ba4;stroke:none}
+  .hybrid-bottom-nav .hybrid-camera-button{
+    width:54px;
+    min-width:54px!important;
+    height:54px;
+    min-height:54px!important;
+    padding:0;
+    display:grid;
+    place-items:center;
+    justify-self:center;
+    align-self:center;
+    border:1px solid rgba(255,255,255,.2);
+    border-radius:50%!important;
+    background:linear-gradient(140deg,#f43f5e,#9333ea)!important;
+    color:#fff!important;
+    box-shadow:0 0 0 4px rgba(147,51,234,.13),0 0 24px rgba(244,63,94,.38);
+  }
+  .hybrid-camera-button .hybrid-camera-ring{
+    display:grid;
+    place-items:center;
+    width:42px;
+    height:42px;
+    border:1.5px solid rgba(255,255,255,.8);
+    border-radius:50%;
+  }
+  .hybrid-camera-button svg{
+    display:block;
+    width:27px;
+    height:27px;
+    fill:none;
+    stroke:currentColor;
+    stroke-width:1.8;
+    stroke-linecap:round;
+    stroke-linejoin:round;
+  }
+  .hybrid-camera-button svg .glyph-fill{fill:currentColor}
+  .hybrid-bottom-nav .hybrid-message-icon{position:relative}
+  .hybrid-nav-badge{
+    top:-3px;
+    right:-7px;
+    min-width:16px;
+    height:16px;
+    padding:0 4px;
+    font-size:9px;
+    line-height:16px;
+  }
+}
+
+/* Consistent modern sans typography and predictable post-card rhythm. */
+:root{font-family:"Plus Jakarta Sans",Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+html,body,button,input,textarea,select{
+  font-family:"Plus Jakarta Sans",Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}
+h1,h2,h3,h4,h5,h6,.wordmark,.intro-note,.frequency-panel h2,.stat-grid strong,.dm-header h2{
+  font-family:"Plus Jakarta Sans",Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}
+.vibe-card,.vn-discovery-grid article,.feed-card,.post-card{
+  box-sizing:border-box;
+}
+.vibe-card{padding:18px!important}
+.vibe-card .vibe-copy{line-height:1.75}
+.vibe-card img,.vibe-card video,.vn-discovery-grid img,.vn-discovery-grid video{
+  max-width:100%;
+}
