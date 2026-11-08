@@ -66,7 +66,7 @@ export function VibeDirectMessenger({ userId, alias, onClose, onOpenConversation
   }, [userId, loadInbox]);
 
   useEffect(() => {
-    if (tab !== "discover" || !search.trim()) return;
+    if (tab !== "discover") return;
     let alive = true;
     const timer = window.setTimeout(async () => {
       setSearching(true);
@@ -91,7 +91,7 @@ export function VibeDirectMessenger({ userId, alias, onClose, onOpenConversation
   }, [alias, search, tab]);
 
   const totalUnread = useMemo(() => rooms.reduce((sum, room) => sum + Number(room.unread_count || 0), 0), [rooms]);
-  const visiblePeople = search.trim() ? people : [];
+  const visiblePeople = people;
   function openPost(post: PostRow) {
     onOpenConversation({
       id: post.id, alias: post.alias, mood: post.mood as Mood, content: post.content,
@@ -127,7 +127,7 @@ export function VibeDirectMessenger({ userId, alias, onClose, onOpenConversation
               <span className="dm-copy"><strong>{room.peer_alias}</strong><small>{room.last_message || "Bắt đầu cuộc trò chuyện"}</small><time>{new Date(room.last_message_at).toLocaleString("vi-VN", { dateStyle: "short", timeStyle: "short" })}</time></span>
               {room.unread_count > 0 && <b className="dm-unread">{room.unread_count > 99 ? "99+" : room.unread_count}</b>}
             </button>
-          ))}</div> : <p className="dm-state">Chưa có hội thoại. Chuyển sang “Tìm người” để bắt đầu kết nối từ những bài tâm sự công khai.</p>
+          ))}</div>  : <><div className="dm-list"><button type="button" className="dm-row dm-aura-pinned" disabled aria-label="Aura AI, sắp ra mắt"><span className="dm-avatar dm-aura-avatar">✦</span><span className="dm-copy"><strong>Aura <small>@Aura</small></strong><small>Trợ lý AI · đang hoàn thiện</small><time>Được ghim ở đầu hộp thư</time></span><span className="dm-start">Sắp ra mắt</span></button></div><p className="dm-state">Chưa có hội thoại. Chuyển sang “Tìm người” để bắt đầu kết nối từ những bài tâm sự công khai.</p></>
         ) : (
           <>
             <div className="dm-smart-search"><span>⌕</span><input className="dm-search" type="search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Tìm tên hoặc nội dung tâm sự…" aria-label="Tìm người để nhắn tin" /></div>
