@@ -1,4 +1,4 @@
-package vn.vibenest.app;
+package vn.id.omni.app;
 
 import com.getcapacitor.BridgeActivity;
 
