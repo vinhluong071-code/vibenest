@@ -4,9 +4,11 @@ on:
     branches:
       - feat/vibenest-camera-first-social-ui
   pull_request:
+    types: [opened, synchronize, reopened, edited]
     branches:
       - main
       - feat/nextjs-app-router-port
+      - feat/hybrid-mobile-navigation-pwa-capacitor
   workflow_dispatch:
 permissions:
   contents: read
