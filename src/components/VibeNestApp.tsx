@@ -82,6 +82,19 @@ function getFriendlyError(error: unknown, fallback: string): string {
   return fallback;
 }
 
+async function normalizeUploadImage(file: File): Promise<File> {
+  const bitmap = await createImageBitmap(file);
+  const scale = Math.min(1, 1600 / bitmap.width, 1600 / bitmap.height);
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.max(1, Math.round(bitmap.width * scale));
+  canvas.height = Math.max(1, Math.round(bitmap.height * scale));
+  const context = canvas.getContext("2d");
+  if (!context) throw new Error("Không thể xử lý ảnh tải lên.");
+  context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+  const blob = await new Promise<Blob>((resolve, reject) => canvas.toBlob((value) => value ? resolve(value) : reject(new Error("Không thể nén ảnh.")), "image/webp", 0.86));
+  return new File([blob], "vibenest-upload.webp", { type: "image/webp" });
+}
+
 async function moderateUploadedImage(file: File) {
   const image = await new Promise<string>((resolve, reject) => {
     const reader = new FileReader();
@@ -466,14 +479,14 @@ export function VibeNestApp() {
         if (!allowedTypes.includes(media.type) || media.size > 10 * 1024 * 1024) {
           throw new Error("Ảnh phải là JPG, PNG hoặc WebP và không vượt quá 10 MB.");
         }
-        await moderateUploadedImage(media);
-        const extension = media.type === "image/jpeg" ? "jpg" : media.type === "image/png" ? "png" : "webp";
-        uploadedPath = `${ownerId}/${crypto.randomUUID()}.${extension}`;
+        const uploadMedia = await normalizeUploadImage(media);
+        await moderateUploadedImage(uploadMedia);
+        uploadedPath = `${ownerId}/${crypto.randomUUID()}.webp`;
         const { error: uploadError } = await supabase.storage
           .from("vibenest-post-media")
-          .upload(uploadedPath, media, {
+          .upload(uploadedPath, uploadMedia, {
             cacheControl: "3600",
-            contentType: media.type,
+            contentType: "image/webp",
             upsert: false,
           });
         if (uploadError) throw uploadError;
