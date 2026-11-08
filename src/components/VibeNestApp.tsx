@@ -215,10 +215,17 @@ export function VibeNestApp() {
     setFeedError("");
     try {
       const supabase = createClient();
-      const { data: rows, error } = await supabase.from("vibe_posts")
-        .select("id,alias,mood,content,location,image_path,created_at,empathy_count")
-        .order("created_at", { ascending: false }).limit(60);
-      if (error) throw error;
+      const filteredResult = await supabase.rpc("vibenest_get_feed_posts");
+      let rows = filteredResult.data;
+      if (filteredResult.error?.code === "PGRST202") {
+        const legacyResult = await supabase.from("vibe_posts")
+          .select("id,alias,mood,content,location,image_path,created_at,empathy_count")
+          .order("created_at", { ascending: false }).limit(60);
+        if (legacyResult.error) throw legacyResult.error;
+        rows = legacyResult.data;
+      } else if (filteredResult.error) {
+        throw filteredResult.error;
+      }
 
       const postRows = (rows ?? []) as VibePostRow[];
       const ids = postRows.map((row: VibePostRow) => row.id);
