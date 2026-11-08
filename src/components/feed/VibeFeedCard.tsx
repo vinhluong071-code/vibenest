@@ -38,6 +38,8 @@ export interface VibeFeedCardProps {
   onToggleSave: (postId: string) => void;
   onAddReply: (postId: string, text: string) => void;
   onShare: (post: VibePostItem) => void;
+  onReport: () => void;
+  onBlock: () => void;
 }
 
 export const VibeFeedCard: React.FC<VibeFeedCardProps> = ({
@@ -48,6 +50,8 @@ export const VibeFeedCard: React.FC<VibeFeedCardProps> = ({
   onToggleSave,
   onAddReply,
   onShare,
+  onReport,
+  onBlock,
 }) => {
   const [isRepliesOpen, setIsRepliesOpen] = useState<boolean>(false);
   const [replyText, setReplyText] = useState<string>('');
@@ -226,6 +230,8 @@ export const VibeFeedCard: React.FC<VibeFeedCardProps> = ({
           Nhắn riêng
         </button>
       </div>
+
+      <div className="mt-2 flex justify-end gap-3 text-[11px] text-slate-500 dark:text-slate-400"><button type="button" onClick={onReport} className="min-h-[40px] px-2 hover:text-rose-500">Báo cáo</button><button type="button" onClick={onBlock} className="min-h-[40px] px-2 hover:text-rose-500">Chặn người đăng</button></div>
 
       {/* Expandable Comments / Replies Drawer */}
       {isRepliesOpen && (
