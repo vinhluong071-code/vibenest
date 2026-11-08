@@ -1,0 +1,111 @@
+name: VibeNest Capacitor Android APK Production CI/CD
+
+on:
+  push:
+    branches:
+      - feat/hybrid-mobile-navigation-pwa-capacitor
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: vibenest-capacitor-apk-${{ github.ref_name }}
+  cancel-in-progress: true
+
+jobs:
+  build-android-apk:
+    name: Build Capacitor Android APK (vn.id.omni.app)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL || 'https://vbuvkkheggkewnrpurqe.supabase.co' }}
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || 'sb_publishable_vibenest_ci_placeholder' }}
+      NEXT_PUBLIC_SITE_URL: https://omni.id.vn
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Set up Node.js 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Set up Java 17 (Eclipse Temurin)
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Set up Android SDK Command-line Tools
+        uses: android-actions/setup-android@v3
+
+      - name: Accept Android SDK Licenses & Install Build Tools
+        run: |
+          yes | sdkmanager --licenses || true
+          sdkmanager "platform-tools" "platforms;android-34" "build-tools;34.0.0"
+
+      - name: Install project dependencies
+        run: npm install --no-audit --no-fund || npm install --legacy-peer-deps --no-audit --no-fund
+
+      - name: Ensure Capacitor CLI & Android packages are installed
+        run: |
+          if ! npx --no-install cap --version >/dev/null 2>&1; then
+            npm install --no-save @capacitor/core @capacitor/cli @capacitor/android
+          fi
+
+      - name: Build Next.js production web application
+        run: npm run build
+
+      - name: Prepare web assets directory & Capacitor configuration (vn.id.omni.app)
+        run: |
+          mkdir -p public
+          if [ ! -f public/index.html ] && [ -f index.html ]; then
+            cp index.html public/index.html
+          fi
+          if [ ! -f capacitor.config.json ] && [ ! -f capacitor.config.ts ]; then
+            cat << 'EOF' > capacitor.config.json
+          {
+            "appId": "vn.id.omni.app",
+            "appName": "VibeNest",
+            "webDir": "public",
+            "bundledWebRuntime": false,
+            "server": {
+              "url": "https://omni.id.vn",
+              "cleartext": false,
+              "androidScheme": "https"
+            }
+          }
+          EOF
+          fi
+
+      - name: Idempotent Android platform initialization (npx cap add android)
+        run: |
+          if [ ! -f android/app/build.gradle ]; then
+            echo "Android platform not found. Running npx cap add android..."
+            npx cap add android
+          else
+            echo "Android platform (android/app/build.gradle) already exists. Skipping npx cap add android."
+          fi
+
+      - name: Sync web build & configuration into native Android project
+        run: npx cap sync android
+
+      - name: Compile Android APK via Gradle (assembleDebug)
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon --stacktrace
+
+      - name: Upload APK to GitHub Actions Artifacts for 1-Tap Mobile Download
+        uses: actions/upload-artifact@v4
+        with:
+          name: vibenest-vn.id.omni.app-debug-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 30

@@ -15,6 +15,7 @@ import { LitmatchOnboardingModal, type UserProfile } from "@/components/auth/Lit
 import { AccountLinkingModal } from "@/components/auth/AccountLinkingModal";
 import { InboxCenter } from "@/components/InboxCenter";
 import { VibeRadarModal } from "@/components/match/VibeRadarModal";
+import { InlineSpeechComposer } from "@/components/feed/InlineSpeechComposer";
 import type { InteractionType, Mood, VibePost, VibeReply } from "@/lib/vibe/types";
 
 type VibePostRow = {
@@ -523,10 +524,20 @@ export function VibeNestApp() {
         <div className="workspace-grid">
           <Sidebar alias={alias} postCount={ownPostCount} savedCount={savedCount} onChangeAlias={() => setAlias(makeAlias())} />
           <section className="feed-column" id="feed" aria-label="Luồng tâm sự">
-            <VibeStoriesBar currentUserName={alias} currentUserHandle={alias} onNotify={setNotice} />
-            <div className="composer-prompt glass-panel">
+            <VibeStoriesBar currentUserName={alias} currentUserHandle={profile.handle} onNotify={setNotice} />
+            <InlineSpeechComposer
+              displayName={alias}
+              handle={profile.handle}
+              city={profile.city}
+              onPublish={({ content, mood, city }) => {
+                void publish(content, (mood as Mood) || "Đêm muộn", city);
+              }}
+              onOpenFullComposer={() => setComposerOpen(true)}
+              onNotify={setNotice}
+            />
+            <div className="composer-prompt glass-panel" style={{ marginTop: 10 }}>
               <div className="avatar">{alias.slice(0, 1)}</div>
-              <button className="prompt-trigger" onClick={() => setComposerOpen(true)}>Viết vài dòng trút bầu tâm sự ẩn danh…</button>
+              <button className="prompt-trigger" onClick={() => setComposerOpen(true)}>Mở khung soạn thảo đầy đủ (chọn tâm trạng & địa điểm)…</button>
               <button className="prompt-plus" onClick={() => setComposerOpen(true)} aria-label="Viết tâm sự">＋</button>
             </div>
             <div className="feed-tools">

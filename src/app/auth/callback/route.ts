@@ -6,8 +6,14 @@ import { NextResponse, type NextRequest } from "next/server";
 export async function GET(request: NextRequest) {
   const url = new URL(request.url);
   const nextPath = url.searchParams.get("next");
-  const safeNext = nextPath && nextPath.startsWith("/") && !nextPath.startsWith("//") ? nextPath : "/";
-  const redirectUrl = new URL(safeNext, url.origin);
+  const isSafeRelativePath =
+    Boolean(nextPath) &&
+    nextPath!.startsWith("/") &&
+    !nextPath!.startsWith("//") &&
+    !nextPath!.includes("\\") &&
+    !nextPath!.toLowerCase().includes("%5c");
+  const candidateUrl = new URL(isSafeRelativePath ? nextPath! : "/", url.origin);
+  const redirectUrl = candidateUrl.origin === url.origin ? candidateUrl : new URL("/", url.origin);
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 
