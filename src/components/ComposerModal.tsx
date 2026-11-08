@@ -9,17 +9,20 @@ type ComposerModalProps = {
   open: boolean;
   alias: string;
   initialMood?: Mood;
+  initialMedia?: File | null;
   busy: boolean;
   onClose: () => void;
   onSubmit: (content: string, mood: Mood, location: string, media: File | null) => Promise<void>;
 };
 
-export function ComposerModal({ open, alias, initialMood = "Đêm muộn", busy, onClose, onSubmit }: ComposerModalProps) {
+export function ComposerModal({ open, alias, initialMood = "Đêm muộn", initialMedia = null, busy, onClose, onSubmit }: ComposerModalProps) {
   const [content, setContent] = useState("");
   const [mood, setMood] = useState<Mood>(initialMood);
   const [location, setLocation] = useState("");
   const [media, setMedia] = useState<File | null>(null);
   const [mediaError, setMediaError] = useState("");
+
+  useEffect(() => { if (open && initialMedia) { setMedia(initialMedia); setMediaError(""); } }, [open, initialMedia]);
 
   useEffect(() => {
     if (!open) return;

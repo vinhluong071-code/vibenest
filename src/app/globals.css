@@ -290,3 +290,22 @@ body{min-height:100dvh;overflow:hidden}
 .hybrid-camera-ring svg{width:25px;height:25px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .hybrid-camera-button:active .hybrid-camera-ring{transform:scale(.94)}
 @media(prefers-reduced-motion:reduce){.vibenest-splash,.vibenest-splash__center,.vibenest-splash__mark{animation:none!important;transition:none!important}}
+
+
+/* Touch reliability and camera-first capture */
+.vibenest-splash--leaving{pointer-events:none!important}
+.hybrid-bottom-nav button{position:relative;z-index:40;min-height:48px;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.hybrid-bottom-nav .hybrid-camera-button{min-height:48px!important;min-width:48px!important;width:48px;height:48px;touch-action:manipulation}
+.vn-camera-backdrop{z-index:160}
+.vn-camera-view{width:min(100%,560px);max-height:94dvh;overflow:auto;padding:18px;border:1px solid #ffffff20;border-radius:24px;background:#0c1120;color:#fff;box-shadow:0 25px 90px #000b}
+.vn-camera-view>header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+.vn-camera-view>header small{color:#f18a9f;font-size:9px;font-weight:800;letter-spacing:1.5px}
+.vn-camera-view>header h2{margin:4px 0 0;font-size:20px}
+.vn-camera-view>header button{width:42px;height:42px;border:1px solid #ffffff20;border-radius:12px;background:#ffffff0b;color:#fff;font-size:24px}
+.vn-camera-preview{position:relative;overflow:hidden;min-height:260px;aspect-ratio:3/4;border-radius:18px;background:#05070d}
+.vn-camera-preview video{display:block;width:100%;height:100%;min-height:260px;object-fit:cover;transform:scaleX(-1)}
+.vn-camera-placeholder{position:absolute;inset:0;display:grid;place-items:center;color:#b7bdcc;font-size:12px}
+.vn-camera-error{color:#ff9bad;font-size:11px;line-height:1.6}
+.vn-camera-actions{display:flex;align-items:center;justify-content:space-around;gap:14px;padding:18px 0 4px}
+.vn-camera-shutter{width:68px;height:68px;border:5px solid #fff;border-radius:50%;background:linear-gradient(135deg,#f05a78,#695bd0);color:#fff;font-size:28px;box-shadow:0 0 0 5px #ffffff24,0 0 28px #e9537977}
+.vn-camera-shutter:disabled{opacity:.4}

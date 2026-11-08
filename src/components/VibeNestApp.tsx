@@ -12,6 +12,9 @@ import { VibeStoriesBar } from "@/components/stories/VibeStoriesBar";
 import { VibeFeedCard, type VibePostItem } from "@/components/feed/VibeFeedCard";
 import { BottomTabBar } from "@/components/navigation/BottomTabBar";
 import { AnimatedSplashScreen } from "@/components/intro/AnimatedSplashScreen";
+import { LitmatchThirdPartyAuthModal } from "@/components/auth/LitmatchThirdPartyAuthModal";
+import { SnapProfileView } from "@/components/profile/SnapProfileView";
+import { CameraFirstView } from "@/components/camera/CameraFirstView";
 import { LitmatchOnboardingModal, type UserProfile } from "@/components/auth/LitmatchOnboardingModal";
 import { AccountLinkingModal } from "@/components/auth/AccountLinkingModal";
 import { InboxCenter } from "@/components/InboxCenter";
@@ -111,6 +114,12 @@ export function VibeNestApp() {
   const [realtimeToast, setRealtimeToast] = useState("");
   const [accountOpen, setAccountOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [authIntent, setAuthIntent] = useState("tiếp tục kết nối");
+  const [snapProfileOpen, setSnapProfileOpen] = useState(false);
+  const [cameraOpen, setCameraOpen] = useState(false);
+  const [capturedPhoto, setCapturedPhoto] = useState<File | null>(null);
+  const [localProfileComplete, setLocalProfileComplete] = useState(false);
   const [activeSurface, setActiveSurface] = useState<"home" | "voice" | "radar">("home");
   const touchOrigin = useRef<{ x: number; y: number } | null>(null);
   const [inboxTab, setInboxTab] = useState<"messages" | "notifications" | null>(null);
@@ -122,6 +131,16 @@ export function VibeNestApp() {
   // Keep feedback lightweight: action notices dismiss themselves without
   // interrupting feed browsing or requiring an extra tap.
   useEffect(() => {
+    try {
+      const saved = window.localStorage.getItem("vibenest.profile.v1");
+      if (saved) {
+        const value = JSON.parse(saved) as Partial<UserProfile>;
+        if (typeof value.displayName === "string" && typeof value.handle === "string") {
+          const restored = { ...getProfileFromAuthUser(null, value.displayName), ...value };
+          setProfile(restored); setAlias(restored.displayName); setLocalProfileComplete(true);
+        }
+      }
+    } catch { /* Ignore invalid or unavailable local profile data. */ }
     const initialClock = window.setTimeout(() => setNow(Date.now()), 0);
     const clockInterval = window.setInterval(() => setNow(Date.now()), 60_000);
     return () => {
@@ -196,6 +215,9 @@ export function VibeNestApp() {
       void supabase.removeChannel(channel);
     };
   }, [userId, chatPost, refreshBadges]);
+
+  const hasCompletedProfile = localProfileComplete || Boolean(authUser?.user_metadata?.vibenest_profile);
+  const requestAuth = useCallback((intent: string) => { setAuthIntent(intent); setIsAuthModalOpen(true); }, []);
 
   const handleChatMessagesRead = useCallback(() => {
     void refreshBadges();
@@ -425,6 +447,7 @@ export function VibeNestApp() {
   );
 
   async function publish(content: string, mood: Mood, location: string, media: File | null = null) {
+    if (!hasCompletedProfile) { requestAuth("đăng tâm sự"); setNotice("Hãy tạo hồ sơ VibeNest trước khi đăng tâm sự. Bản nháp vẫn được giữ lại."); return; }
     setBusy(true);
     let uploadedPath: string | null = null;
     let postCreated = false;
@@ -480,6 +503,7 @@ export function VibeNestApp() {
   }
 
   async function toggleInteraction(post: VibePost, action: InteractionType) {
+    if (!hasCompletedProfile) { requestAuth("gửi đồng cảm và kết nối"); return; }
     setBusyId(post.id);
     try {
       const ownerId = await ensureIdentity(action === "empathy" ? "gửi đồng cảm" : "lưu bài viết");
@@ -606,7 +630,7 @@ export function VibeNestApp() {
         <div className="workspace-grid">
           <Sidebar alias={alias} postCount={ownPostCount} savedCount={savedCount} onChangeAlias={() => setAlias(makeAlias())} />
           <section className="feed-column" id="feed" aria-label="Luồng tâm sự">
-            <AuraDiscoveryRail posts={feedCardPosts.slice(0, 3)} onOpenChat={(postId) => { const target = posts.find((item) => item.id === postId); if (target) setChatPost(target); }} />
+            <AuraDiscoveryRail posts={feedCardPosts.slice(0, 3)} onOpenChat={(postId) => { if (!hasCompletedProfile) { requestAuth("kết bạn và bắt đầu trò chuyện"); return; } const target = posts.find((item) => item.id === postId); if (target) setChatPost(target); }} />
             <VibeStoriesBar currentUserName={alias} currentUserHandle={profile.handle} onNotify={setNotice} />
             <div className="composer-prompt glass-panel">
               <div className="avatar">{alias.slice(0, 1)}</div>
@@ -662,24 +686,50 @@ export function VibeNestApp() {
       </main>
 
       <BottomTabBar
-        activeTab={messengerOpen ? "messages" : boothOpen ? "booth" : activeSurface === "radar" ? "radar" : "camera"}
+        activeTab={messengerOpen ? "messages" : boothOpen ? "booth" : snapProfileOpen || profileOpen || isAuthModalOpen ? "profile" : activeSurface === "radar" ? "radar" : "camera"}
         unreadCount={chatUnreadCount}
-        onOpenMessages={() => { setMessengerOpen(true); setInboxTab(null); }}
-        onOpenBooth={() => setBoothOpen(true)}
-        onSelectTab={(tab) => { if (tab === "radar") { setMessengerOpen(false); setBoothOpen(false); setActiveSurface("radar"); return; } if (tab === "profile") { setProfileOpen(true); return; } if (tab === "camera") { setMessengerOpen(false); setBoothOpen(false); setComposerOpen(true); return; } setActiveSurface("home"); }}
-        onOpenComposer={() => setComposerOpen(true)}
-        onOpenProfile={() => setProfileOpen(true)}
+        onOpenMessages={async () => {
+          setActiveSurface("home"); setBoothOpen(false); setSnapProfileOpen(false);
+          try { await ensureIdentity("mở hộp thư"); setMessengerOpen(true); setInboxTab(null); }
+          catch (error) { requestAuth("mở tin nhắn"); setNotice(error instanceof Error ? error.message : "Không thể mở hộp thư."); }
+        }}
+        onOpenBooth={() => { setMessengerOpen(false); setSnapProfileOpen(false); setBoothOpen(true); }}
+        onSelectTab={(tab) => {
+          if (tab === "radar") { setMessengerOpen(false); setBoothOpen(false); setSnapProfileOpen(false); setActiveSurface("radar"); return; }
+          if (tab === "profile") {
+            setMessengerOpen(false); setBoothOpen(false); setActiveSurface("home");
+            if (!hasCompletedProfile) requestAuth("tạo hồ sơ cá nhân");
+            else if (!hasSupabaseConfig) setProfileOpen(true);
+            else setSnapProfileOpen(true);
+            return;
+          }
+          if (tab === "camera") { setMessengerOpen(false); setBoothOpen(false); setSnapProfileOpen(false); setCameraOpen(true); return; }
+          setActiveSurface("home");
+        }}
+        onOpenComposer={() => { setMessengerOpen(false); setCameraOpen(true); }}
+        onOpenProfile={() => { if (!hasCompletedProfile) requestAuth("tạo hồ sơ cá nhân"); else if (!hasSupabaseConfig) setProfileOpen(true); else setSnapProfileOpen(true); }}
         userInitial={alias.slice(0, 1).toUpperCase()}
       />
       {messengerOpen && userId && <VibeDirectMessenger userId={userId} alias={alias} onClose={() => setMessengerOpen(false)} onOpenConversation={(post) => { setMessengerOpen(false); setChatPost(post); }} />}
-      <VibeBoothStudio open={boothOpen} onClose={() => setBoothOpen(false)} onSoftGate={(action) => setNotice(`${action}: tính năng sẽ được kết nối trong bản cập nhật tiếp theo.`)} />
+      <VibeBoothStudio open={boothOpen} onClose={() => setBoothOpen(false)} onSoftGate={(action) => requestAuth(action)} />
+      <CameraFirstView open={cameraOpen} onClose={() => setCameraOpen(false)} onCaptured={(file) => { setCapturedPhoto(file); setCameraOpen(false); setComposerOpen(true); }} />
       {chatPost && <ChatDialog post={chatPost} alias={alias} onClose={() => setChatPost(null)} onEnsureIdentity={ensureChatIdentity} onMessagesRead={handleChatMessagesRead} />}
       {inboxTab && userId && <InboxCenter key={inboxTab} userId={userId} initialTab={inboxTab} onClose={() => setInboxTab(null)} onOpenConversation={(post) => { setInboxTab(null); setChatPost(post); }} onNotificationsRead={() => { void refreshBadges(); }} />}
+      <LitmatchThirdPartyAuthModal open={isAuthModalOpen} intent={authIntent} onClose={() => setIsAuthModalOpen(false)} onDemoContinue={() => { setIsAuthModalOpen(false); setProfileOpen(true); }} />
+      {snapProfileOpen && <SnapProfileView onClose={() => setSnapProfileOpen(false)} onSafety={() => { setSnapProfileOpen(false); setAccountOpen(true); }} onSoftGate={(action) => requestAuth(action)} />}
       <LitmatchOnboardingModal
         isOpen={profileOpen}
         onClose={() => setProfileOpen(false)}
         currentUser={profile}
         onCompleteAuth={async (nextProfile) => {
+          const localProfile = { displayName: nextProfile.displayName.slice(0, 32), handle: nextProfile.handle.slice(0, 24), city: nextProfile.city.slice(0, 48), vibeTag: nextProfile.vibeTag.slice(0, 48), bio: nextProfile.bio.slice(0, 120) };
+          try { window.localStorage.setItem("vibenest.profile.v1", JSON.stringify(localProfile)); } catch { /* local storage may be disabled */ }
+          setLocalProfileComplete(true);
+          if (!hasSupabaseConfig) {
+            setProfile(nextProfile); setAlias(nextProfile.displayName); setProfileOpen(false);
+            setNotice("Đã lưu hồ sơ trên thiết bị này. Liên kết Supabase để đồng bộ và sử dụng các tính năng trực tuyến.");
+            return;
+          }
           const ownerId = await ensureIdentity("lưu hồ sơ cá nhân");
           const supabase = createClient();
           const { data, error } = await supabase.auth.updateUser({
@@ -701,6 +751,8 @@ export function VibeNestApp() {
           setProfile(nextProfile);
           setAlias(nextProfile.displayName);
           setNotice("Hồ sơ cá nhân đã được lưu vào tài khoản VibeNest.");
+          setProfileOpen(false);
+          setSnapProfileOpen(true);
         }}
       />
       <AccountLinkingModal
@@ -712,7 +764,7 @@ export function VibeNestApp() {
         onAccountLinked={handleAccountLinked}
         onAccountUnlinked={() => void handleAccountUnlinked()}
       />
-      <ComposerModal key={composerOpen ? composerMood : "closed"} open={composerOpen} alias={alias} initialMood={composerMood} busy={busy} onClose={() => setComposerOpen(false)} onSubmit={publish} />
+      <ComposerModal key={composerOpen ? composerMood : "closed"} open={composerOpen} alias={alias} initialMood={composerMood} initialMedia={capturedPhoto} busy={busy} onClose={() => { setComposerOpen(false); setCapturedPhoto(null); }} onSubmit={publish} />
     </div>
   );
 }

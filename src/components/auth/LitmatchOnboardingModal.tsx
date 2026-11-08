@@ -17,7 +17,7 @@ export interface LitmatchOnboardingModalProps {
   isOpen: boolean;
   onClose: () => void;
   currentUser: UserProfile;
-  onCompleteAuth: (profile: UserProfile) => void;
+  onCompleteAuth: (profile: UserProfile) => void | Promise<void>;
 }
 
 const VIBE_ARCHETYPES = [
@@ -63,24 +63,33 @@ export const LitmatchOnboardingModal: React.FC<LitmatchOnboardingModalProps> = (
   const [city, setCity] = useState<string>(currentUser.city);
   const [vibeTag, setVibeTag] = useState<string>(currentUser.vibeTag);
   const [bio, setBio] = useState<string>(currentUser.bio);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState("");
 
   if (!isOpen) return null;
 
   const cleanHandle = handle.trim().toLowerCase().replace(/[^a-z0-9._]/g, '') || 'vibenest.user';
   const avatarTheme = getAvatarThemeFromIdentity(cleanHandle);
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!displayName.trim()) return;
-
-    onCompleteAuth({
-      displayName: displayName.trim(),
-      handle: cleanHandle,
-      city,
-      vibeTag,
-      bio: bio.trim() || 'Đang tìm kiếm những tần số đồng điệu tại VibeNest.',
-    });
-    onClose();
+    if (!displayName.trim() || saving) return;
+    setSaving(true);
+    setSaveError("");
+    try {
+      await onCompleteAuth({
+        displayName: displayName.trim(),
+        handle: cleanHandle,
+        city,
+        vibeTag,
+        bio: bio.trim() || 'Đang tìm kiếm những tần số đồng điệu tại VibeNest.',
+      });
+      onClose();
+    } catch (error) {
+      setSaveError(error instanceof Error ? error.message : "Không thể lưu hồ sơ. Vui lòng thử lại.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const applyQuickPreset = (preset: UserProfile) => {
@@ -271,8 +280,9 @@ export const LitmatchOnboardingModal: React.FC<LitmatchOnboardingModalProps> = (
             type="submit"
             className="w-full min-h-[48px] px-5 py-3 rounded-2xl text-sm font-semibold bg-gradient-to-r from-rose-600 to-indigo-600 hover:from-rose-500 hover:to-indigo-500 active:scale-[0.99] text-white shadow-lg shadow-rose-600/20 transition-all"
           >
-            Vào không gian VibeNest ngay
+            {saving ? "Đang tạo hồ sơ…" : "Vào không gian VibeNest ngay"}
           </button>
+          {saveError && <p role="alert" className="text-sm text-rose-500">{saveError}</p>}
         </form>
       </div>
     </div>
