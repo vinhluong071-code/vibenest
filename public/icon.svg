@@ -1,18 +1,21 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
-  <title id="title">VibeNest Social</title>
-  <desc id="desc">A gradient heart with an audio waveform and camera lens.</desc>
+  <title id="title">VibeNest Wave Smile</title>
+  <desc id="desc">White audio waveform above a neon pink-to-violet double-line smile on an obsidian background.</desc>
   <defs>
-    <linearGradient id="bg" x1="38" y1="24" x2="474" y2="488" gradientUnits="userSpaceOnUse"><stop stop-color="#171321"/><stop offset="1" stop-color="#080d19"/></linearGradient>
-    <linearGradient id="vibe" x1="72" y1="70" x2="444" y2="440" gradientUnits="userSpaceOnUse"><stop stop-color="#FF668F"/><stop offset=".48" stop-color="#A56BFF"/><stop offset="1" stop-color="#49DDEB"/></linearGradient>
-    <radialGradient id="lens" cx="0" cy="0" r="1" gradientTransform="matrix(94 102 -102 94 255 242)" gradientUnits="userSpaceOnUse"><stop stop-color="#fff" stop-opacity=".24"/><stop offset=".45" stop-color="#a56bff" stop-opacity=".13"/><stop offset="1" stop-color="#07080d" stop-opacity=".1"/></radialGradient>
-    <filter id="glow" x="15%" y="12%" width="70%" height="76%"><feGaussianBlur stdDeviation="13" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <linearGradient id="smile" x1="90" y1="280" x2="430" y2="470" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F43F5E"/><stop offset="1" stop-color="#9333EA"/>
+    </linearGradient>
+    <filter id="neon" x="-35%" y="-55%" width="170%" height="210%">
+      <feGaussianBlur stdDeviation="11" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
   </defs>
-  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
-  <rect x="12" y="12" width="488" height="488" rx="102" fill="none" stroke="#fff" stroke-opacity=".08" stroke-width="3"/>
-  <path d="M256 424S75 316 75 190C75 99 190 58 256 151C322 58 437 99 437 190C437 316 256 424 256 424Z" fill="url(#vibe)" fill-opacity=".12" stroke="url(#vibe)" stroke-width="17" stroke-linejoin="round" filter="url(#glow)"/>
-  <circle cx="256" cy="244" r="102" fill="url(#lens)" stroke="url(#vibe)" stroke-width="13"/>
-  <circle cx="256" cy="244" r="68" fill="none" stroke="url(#vibe)" stroke-opacity=".7" stroke-width="7"/>
-  <circle cx="256" cy="244" r="31" fill="url(#vibe)" fill-opacity=".25" stroke="#fff" stroke-opacity=".8" stroke-width="5"/>
-  <path d="M115 269H151L171 225L195 307L222 253L242 275H270L291 215L315 293L337 251H397" fill="none" stroke="url(#vibe)" stroke-width="15" stroke-linecap="round" stroke-linejoin="round"/>
-  <circle cx="340" cy="164" r="13" fill="#fff" fill-opacity=".9"/>
+  <rect width="512" height="512" rx="112" fill="#08080E"/>
+  <g fill="none" stroke="#FFFFFF" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M92 176h42l23-42 33 88 35-119 38 145 34-92 28 54h95" stroke-width="17"/>
+  </g>
+  <g fill="none" stroke="url(#smile)" stroke-linecap="round" filter="url(#neon)">
+    <path d="M105 302c65 85 145 128 151 128s86-43 151-128" stroke-width="18"/>
+    <path d="M145 320c38 42 78 65 111 65s73-23 111-65" stroke-width="10" opacity=".95"/>
+  </g>
 </svg>
