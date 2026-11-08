@@ -39,3 +39,12 @@ jobs:
         env:
           NEXT_PUBLIC_SUPABASE_URL: https://build-check.supabase.co
           NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_build_check
+      - name: Package complete source tree with Python
+        run: python3 scripts/create-source-zip.py
+      - name: Upload iPhone-downloadable source ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: vibenest-source-code
+          path: artifacts/vibenest-source.zip
+          if-no-files-found: error
+          retention-days: 14
