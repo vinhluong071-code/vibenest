@@ -1,21 +1,21 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
-  <title id="title">VibeNest Wave Smile</title>
-  <desc id="desc">White audio waveform above a neon pink-to-violet double-line smile on an obsidian background.</desc>
+  <title id="title">VibeNest official wave smile</title>
+  <desc id="desc">A smooth white audio wave above two neon pink-to-violet smile curves on obsidian black.</desc>
   <defs>
-    <linearGradient id="smile" x1="90" y1="280" x2="430" y2="470" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#F43F5E"/><stop offset="1" stop-color="#9333EA"/>
+    <linearGradient id="vn-neon" x1="78" y1="300" x2="434" y2="456" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#F43F5E"/>
+      <stop offset="1" stop-color="#9333EA"/>
     </linearGradient>
-    <filter id="neon" x="-35%" y="-55%" width="170%" height="210%">
-      <feGaussianBlur stdDeviation="11" result="blur"/>
+    <filter id="vn-glow" x="-30%" y="-35%" width="160%" height="180%">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
       <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
     </filter>
   </defs>
-  <rect width="512" height="512" rx="112" fill="#08080E"/>
-  <g fill="none" stroke="#FFFFFF" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M92 176h42l23-42 33 88 35-119 38 145 34-92 28 54h95" stroke-width="17"/>
-  </g>
-  <g fill="none" stroke="url(#smile)" stroke-linecap="round" filter="url(#neon)">
-    <path d="M105 302c65 85 145 128 151 128s86-43 151-128" stroke-width="18"/>
-    <path d="M145 320c38 42 78 65 111 65s73-23 111-65" stroke-width="10" opacity=".95"/>
+  <rect width="512" height="512" rx="108" fill="#08080E"/>
+  <path d="M82 218 C132 218 151 102 211 102 C273 102 274 302 324 302 C371 302 379 154 430 154 C457 154 468 190 492 190"
+        fill="none" stroke="#F7F4FA" stroke-width="31" stroke-linecap="round" stroke-linejoin="round"/>
+  <g fill="none" stroke="url(#vn-neon)" stroke-linecap="round" filter="url(#vn-glow)">
+    <path d="M78 278 C78 410 158 472 256 472 C354 472 434 410 434 278" stroke-width="34"/>
+    <path d="M142 316 C166 382 210 411 256 411 C302 411 346 382 370 316" stroke-width="29"/>
   </g>
 </svg>
