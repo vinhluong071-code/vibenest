@@ -106,7 +106,7 @@ function escapeHtml(value: string): string {
 }
 
 function buildActionUrl(redirectTo: string | undefined, siteUrl: string | undefined, tokenHash: string, actionType: string): string {
-  const base = process.env.VIBENEST_APP_URL || siteUrl || process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const base = process.env.VIBENEST_APP_URL || siteUrl;
   if (!base) throw new Error("Missing VibeNest site URL for auth email.");
 
   const baseUrl = new URL(base);
