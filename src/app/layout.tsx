@@ -6,14 +6,10 @@ import { PwaRegister } from "@/components/PwaRegister";
 
 export const metadata: Metadata = {
   title: "VibeNest",
+  icons: { icon: [{ url: "/icon.svg", type: "image/svg+xml" }], shortcut: ["/icon.svg"], apple: [{ url: "/icon.svg", type: "image/svg+xml" }] },
   applicationName: "VibeNest",
   manifest: "/manifest.json",
   description: "Không gian tâm sự và kết nối cảm xúc ẩn danh.",
-  icons: {
-    icon: [{ url: "/icon.svg", type: "image/svg+xml" }],
-    shortcut: ["/icon.svg"],
-    apple: [{ url: "/icon.svg", type: "image/svg+xml" }],
-  },
   appleWebApp: {
     capable: true,
     title: "VibeNest",
@@ -25,7 +21,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: "#07080d",
+  themeColor: "#08080E",
 };
 
 export default function RootLayout({
