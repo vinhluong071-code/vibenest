@@ -369,7 +369,7 @@ html,body{width:100%;min-height:100%;background:#07080d}body{min-height:100dvh}.
 .vn-home-search{height:44px;display:flex;align-items:center;gap:9px;padding:0 14px;border:1px solid rgba(148,163,184,.22);border-radius:999px;background:rgba(255,255,255,.07);color:rgba(255,255,255,.7)}
 .vn-home-search input{width:100%;min-width:0;background:transparent;border:0;outline:0;color:inherit;font:inherit;font-size:13px}
 .vn-home-title{grid-column:1/-1;padding:8px 2px 0}.vn-home-title h1{margin:0;font-size:clamp(28px,7vw,38px);font-weight:900;letter-spacing:-1.5px}.vn-home-title p{margin:3px 0 0;color:var(--muted,#94a3b8);font-size:12px}
-.vn-discovery-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:start}.vn-discovery-grid>*{min-width:0;margin:0!important}.vn-discovery-grid article{height:100%;min-width:0}
+.vn-discovery-grid{columns:2;column-gap:12px;align-items:start}.vn-discovery-grid>*{display:inline-block;width:100%;min-width:0;margin:0 0 12px;break-inside:avoid}.vn-discovery-grid article{height:auto;min-width:0}
 .hybrid-bottom-five{display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr));align-items:end;gap:2px}.hybrid-bottom-five>button{min-width:0;padding-inline:2px;font-size:10px}.hybrid-bottom-five .hybrid-nav-icon{width:27px;height:27px}.hybrid-bottom-five .hybrid-camera-button{transform:translateY(-7px)}.hybrid-bottom-five .hybrid-camera-ring{width:58px;height:58px}
 .dm-aura-pinned{border:1px solid rgba(166,120,255,.38)!important;background:linear-gradient(110deg,rgba(119,74,220,.16),rgba(27,205,220,.08))!important}.dm-aura-avatar{background:linear-gradient(135deg,#9d5cff,#24d8e8)!important;color:white!important}.dm-aura-pinned .dm-start{font-size:10px;white-space:nowrap}
 .dm-suggestion-heading{padding:14px 4px 7px;display:grid;gap:4px}.dm-suggestion-heading strong{font-size:14px}.dm-suggestion-heading small{font-size:11px;line-height:1.5;color:var(--muted,#94a3b8)}
@@ -405,3 +405,5 @@ html,body{width:100%;min-height:100%;background:#07080d}body{min-height:100dvh}.
 /* Product bundle: Home, VibeBooth, direct inbox and privacy-first friend map. */
 
 /* Final requested gold-standard VibeNest feature-set commit. */
+
+@media(max-width:420px){.vn-discovery-grid{column-gap:9px}.vn-discovery-grid>*{margin-bottom:9px}.vn-discovery-grid article{padding:12px!important;border-radius:20px!important}.vn-discovery-grid article p{font-size:13px!important}}
