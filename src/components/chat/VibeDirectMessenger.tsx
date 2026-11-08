@@ -113,7 +113,7 @@ export function VibeDirectMessenger({ userId, alias, onClose, onOpenConversation
         </div>
         {tab === "inbox" ? (
           loading ? <p className="dm-state">Đang tải hội thoại…</p> : error ? <p className="dm-error" role="alert">{error}</p> :
-          rooms.length ? <div className="dm-list">{rooms.map((room) => (
+          rooms.length ? <div className="dm-list"><button type="button" className="dm-row dm-aura-pinned" disabled aria-label="Aura AI, sắp ra mắt"><span className="dm-avatar dm-aura-avatar">✦</span><span className="dm-copy"><strong>Aura <small>@Aura</small></strong><small>Trợ lý AI · đang hoàn thiện</small><time>Được ghim ở đầu hộp thư</time></span><span className="dm-start">Sắp ra mắt</span></button>{rooms.map((room) => (
             <button key={room.room_id} className="dm-row" onClick={() => {
               void (async () => {
                 const { data, error: postError } = await createClient().from("vibe_posts")
@@ -131,13 +131,13 @@ export function VibeDirectMessenger({ userId, alias, onClose, onOpenConversation
         ) : (
           <>
             <div className="dm-smart-search"><span>⌕</span><input className="dm-search" type="search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Tìm tên hoặc nội dung tâm sự…" aria-label="Tìm người để nhắn tin" /></div>
-            {searching ? <p className="dm-state">Đang tìm…</p> : visiblePeople.length ? <div className="dm-list">{visiblePeople.map((person) => (
+            {searching ? <p className="dm-state">Đang tìm…</p> : visiblePeople.length ? <><section className="dm-suggestion-heading"><strong>Gợi ý kết bạn</strong><small>Gợi ý dựa trên chủ đề và tâm trạng công khai tương đồng; chưa dùng ngày sinh hay cung hoàng đạo.</small></section><div className="dm-list">{visiblePeople.map((person) => (
               <button key={person.id} className="dm-row" onClick={() => openPost(person)}>
                 <span className="dm-avatar">{person.alias.slice(0, 1).toUpperCase()}<i /></span>
                 <span className="dm-copy"><strong>{person.alias}</strong><small>{person.content}</small><time>{person.mood} · Có thể nhắn riêng</time></span>
                 <span className="dm-start">Nhắn</span>
               </button>
-            ))}</div> : <p className="dm-state">{search ? "Không tìm thấy người phù hợp." : "Nhập tên hoặc từ khóa để khám phá người dùng VibeNest."}</p>}
+            ))}</div></> : <p className="dm-state">{search ? "Không tìm thấy người phù hợp." : "Nhập tên hoặc từ khóa để khám phá người dùng VibeNest."}</p>}
           </>
         )}
         <p className="dm-footnote">Chỉ thành viên của từng phòng chat mới đọc được tin nhắn. Tìm kiếm dựa trên bài tâm sự công khai.</p>
