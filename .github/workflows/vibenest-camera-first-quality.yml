@@ -11,7 +11,7 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: vibenest-camera-first-\${{ github.ref }}
+  group: vibenest-camera-first-${{ github.ref }}
   cancel-in-progress: true
 jobs:
   quality:
