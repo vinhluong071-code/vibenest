@@ -16,14 +16,8 @@ function authorized(request: NextRequest): boolean {
 
 export async function POST(request: NextRequest) {
   if (!authorized(request)) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
-  const declaredLength = Number(request.headers.get("content-length") ?? "0");
-  if (declaredLength > 150_000) return NextResponse.json({ error: "payload_too_large" }, { status: 413 });
-  const rawBody = await request.text();
-  if (Buffer.byteLength(rawBody, "utf8") > 150_000) {
-    return NextResponse.json({ error: "payload_too_large" }, { status: 413 });
-  }
   let input: unknown;
-  try { input = JSON.parse(rawBody); } catch {
+  try { input = await request.json(); } catch {
     return NextResponse.json({ error: "invalid_json" }, { status: 400 });
   }
   if (!input || typeof input !== "object") return NextResponse.json({ error: "invalid_payload" }, { status: 400 });
@@ -35,7 +29,7 @@ export async function POST(request: NextRequest) {
   const idempotencyKey = typeof body.idempotency_key === "string" ? body.idempotency_key.trim() : "";
   if (!emailId || (!bodyText && !bodyHtml) ||
       (bodyText && bodyText.length > 50000) || (bodyHtml && bodyHtml.length > 100000) ||
-      !idempotencyKey || idempotencyKey.length > 255) {
+      (idempotencyKey && idempotencyKey.length > 255)) {
     return NextResponse.json({ error: "invalid_reply_fields" }, { status: 400 });
   }
 

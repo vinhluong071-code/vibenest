@@ -43,7 +43,6 @@ export function ChatDialog({ post, alias, onClose, onEnsureIdentity, onMessagesR
   const [error, setError] = useState("");
   const [connection, setConnection] = useState("Đang kết nối riêng tư…");
   const [peerTyping, setPeerTyping] = useState(false);
-  const [callNotice, setCallNotice] = useState("");
   const bottomRef = useRef<HTMLDivElement>(null);
   const channelRef = useRef<RealtimeChannel | null>(null);
   const localTypingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -229,7 +228,6 @@ export function ChatDialog({ post, alias, onClose, onEnsureIdentity, onMessagesR
             <strong id="chat-title">{peerAlias}</strong>
             <span><i className={connection === "Đang trò chuyện trực tiếp" ? "chat-online" : ""} />{connection}</span>
           </div>
-          <button className="icon-button" onClick={() => setCallNotice("Gọi thoại đang ở chế độ mô phỏng; chưa kết nối WebRTC.")} aria-label="Gọi thoại (mô phỏng)">☎</button>
           <button className="icon-button" onClick={onClose} aria-label="Đóng trò chuyện">×</button>
         </header>
         <div className="chat-context">Bắt đầu từ tâm sự: “{post.content.slice(0, 110)}{post.content.length > 110 ? "…" : ""}”</div>
@@ -262,7 +260,7 @@ export function ChatDialog({ post, alias, onClose, onEnsureIdentity, onMessagesR
             {sending ? "…" : "Gửi"}
           </button>
         </form>
-        <p className="chat-privacy-note">{callNotice || "Ẩn danh với cộng đồng · Chỉ thành viên phòng mới đọc được tin nhắn"}</p>
+        <p className="chat-privacy-note">Ẩn danh với cộng đồng · Chỉ thành viên phòng mới đọc được tin nhắn</p>
       </section>
     </div>
   );

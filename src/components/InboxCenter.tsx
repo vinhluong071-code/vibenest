@@ -12,7 +12,7 @@ type InboxCenterProps = {
   onNotificationsRead: () => void;
 };
 type RoomRow = { id: string; post_id: string; participant_a: string; participant_b: string; participant_a_alias: string; participant_b_alias: string; last_message_at: string };
-type PostRow = { id: string; alias: string; mood: string; content: string; location: string | null; image_path: string | null; created_at: string; empathy_count: number | null };
+type PostRow = { id: string; alias: string; mood: string; content: string; location: string | null; created_at: string; empathy_count: number | null };
 type MessageRow = { id: string; room_id: string; sender_id: string; sender_alias: string; content: string; created_at: string; read_at: string | null };
 type NotificationRow = { id: string; notification_type: "empathy" | "reply"; actor_alias: string; post_id: string; created_at: string; read_at: string | null };
 
@@ -54,7 +54,7 @@ export function InboxCenter({ userId, initialTab, onClose, onOpenConversation, o
             return;
           }
           const [{ data: postData, error: postError }, { data: messageData, error: messageError }] = await Promise.all([
-            supabase.from("vibe_posts").select("id,alias,mood,content,location,image_path,created_at,empathy_count").in("id", postIds),
+            supabase.from("vibe_posts").select("id,alias,mood,content,location,created_at,empathy_count").in("id", postIds),
             supabase.from("chat_messages").select("id,room_id,sender_id,sender_alias,content,created_at,read_at")
               .in("room_id", roomIds).order("created_at", { ascending: false }).limit(1000),
           ]);
@@ -145,7 +145,7 @@ export function InboxCenter({ userId, initialTab, onClose, onOpenConversation, o
     if (!post) { setError("Tâm sự gốc không còn khả dụng để mở cuộc trò chuyện."); return; }
     onOpenConversation({
       id: post.id, alias: post.alias, mood: post.mood as Mood, content: post.content,
-      location: post.location, image_path: post.image_path, created_at: post.created_at, empathy_count: post.empathy_count ?? 0,
+      location: post.location, created_at: post.created_at, empathy_count: post.empathy_count ?? 0,
       replies: [], empathized: false, saved: false,
     });
   }

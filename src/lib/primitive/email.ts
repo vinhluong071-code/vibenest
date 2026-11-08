@@ -87,7 +87,7 @@ export type PrimitiveSendInput = {
   idempotency_key: string;
 };
 
-export async function sendEmail(input: PrimitiveSendInput, timeoutMs = 20_000): Promise<Record<string, unknown>> {
+export async function sendEmail(input: PrimitiveSendInput): Promise<Record<string, unknown>> {
   const { from } = getCredentials();
   const { idempotency_key, ...message } = input;
   if (!idempotency_key || idempotency_key.length > 255) {
@@ -104,7 +104,7 @@ export async function sendEmail(input: PrimitiveSendInput, timeoutMs = 20_000): 
         ...message,
       }),
     },
-    timeoutMs,
+    20_000,
   );
 }
 

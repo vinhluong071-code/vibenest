@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState } from 'react';
-import Image from 'next/image';
 import { getAvatarThemeFromIdentity } from '../../lib/avatar-hash';
 
 export interface VibeReplyItem {
@@ -24,7 +23,6 @@ export interface VibePostItem {
   content: string;
   imageUrl?: string;
   empathyCount: number;
-  auraScore: number;
   empathized: boolean;
   saved: boolean;
   replies: VibeReplyItem[];
@@ -131,14 +129,12 @@ export const VibeFeedCard: React.FC<VibeFeedCardProps> = ({
 
       {/* Optional Visual Media Attachment (Pinterest / IG Aesthetic) */}
       {post.imageUrl && (
-        <div className="relative mb-4 rounded-2xl overflow-hidden border border-slate-200/70 dark:border-white/[0.08] bg-slate-900/20 aspect-[16/10]">
-          <Image
+        <div className="mb-4 rounded-2xl overflow-hidden border border-slate-200/70 dark:border-white/[0.08] bg-slate-900/20">
+          <img
             src={post.imageUrl}
             alt={post.displayName}
-            fill
-            sizes="(max-width: 768px) 100vw, 700px"
-            unoptimized
-            className="object-cover"
+            referrerPolicy="no-referrer"
+            className="w-full max-h-[340px] object-cover"
           />
         </div>
       )}
