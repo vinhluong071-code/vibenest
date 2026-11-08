@@ -546,3 +546,126 @@ h1,h2,h3,h4,h5,h6,.wordmark,.intro-note,.frequency-panel h2,.stat-grid strong,.d
 .vibe-card img,.vibe-card video,.vn-discovery-grid img,.vn-discovery-grid video{
   max-width:100%;
 }
+
+
+/* Icon-only five-tab dock: preserve the approved SVG glyphs and center them. */
+@media (max-width: 720px) {
+  .hybrid-bottom-wrap {
+    padding: 4px 12px calc(4px + env(safe-area-inset-bottom));
+    background: linear-gradient(180deg, transparent, rgba(8,11,18,.94) 24%);
+  }
+  .hybrid-bottom-nav.hybrid-bottom-five {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    align-items: center;
+    height: 64px;
+    min-height: 64px;
+    gap: 0;
+    padding: 4px 8px;
+    border-radius: 18px;
+  }
+  .hybrid-bottom-nav.hybrid-bottom-five > button {
+    position: relative;
+    display: flex;
+    width: 100%;
+    min-width: 0;
+    min-height: 54px;
+    height: 54px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    padding: 0;
+    font-size: 0;
+    line-height: 0;
+  }
+  .hybrid-bottom-nav.hybrid-bottom-five > button > span:not(.hybrid-nav-icon):not(.hybrid-camera-ring) {
+    display: none !important;
+  }
+  .hybrid-bottom-nav.hybrid-bottom-five .hybrid-nav-icon {
+    display: grid;
+    width: 28px;
+    height: 28px;
+    place-items: center;
+    font-size: 0;
+    line-height: 1;
+  }
+  .hybrid-bottom-nav.hybrid-bottom-five .hybrid-nav-icon svg {
+    display: block;
+    width: 25px;
+    height: 25px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .hybrid-bottom-nav.hybrid-bottom-five .hybrid-nav-icon svg .glyph-fill {
+    fill: currentColor;
+  }
+  .hybrid-bottom-nav.hybrid-bottom-five .hybrid-nav-icon svg .glyph-accent {
+    stroke: #f18a9f;
+  }
+  .hybrid-bottom-nav.hybrid-bottom-five .hybrid-nav-icon svg .glyph-dot {
+    fill: #f18a9f;
+    stroke: none;
+  }
+  .hybrid-bottom-nav.hybrid-bottom-five .hybrid-camera-button {
+    justify-self: center;
+    width: 50px;
+    min-width: 50px !important;
+    height: 50px;
+    min-height: 50px !important;
+    padding: 0;
+    border-radius: 50% !important;
+    font-size: 0 !important;
+    line-height: 0;
+    box-shadow: 0 0 12px rgba(244,63,94,.34), 0 0 28px rgba(147,51,234,.25);
+  }
+  .hybrid-bottom-nav.hybrid-bottom-five .hybrid-camera-ring {
+    display: grid;
+    width: 42px;
+    height: 42px;
+    place-items: center;
+    border: 1px solid rgba(255,255,255,.5);
+    border-radius: 50%;
+    background: rgba(8,8,14,.22);
+  }
+  .hybrid-bottom-nav.hybrid-bottom-five .hybrid-camera-ring svg {
+    display: block;
+    width: 27px;
+    height: 27px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .hybrid-bottom-nav.hybrid-bottom-five .hybrid-nav-badge {
+    top: 2px;
+    right: calc(50% - 23px);
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
+    font-size: 9px;
+    line-height: 16px;
+  }
+}
+
+/* Consistent, legible app typography and predictable card sizing. */
+:root {
+  font-family: "Plus Jakarta Sans", Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+body, button, input, textarea, select {
+  font-family: "Plus Jakarta Sans", Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+.vibe-card, .glass-panel, .vn-discovery-grid article {
+  box-sizing: border-box;
+}
+.vibe-card {
+  padding: clamp(14px, 2vw, 18px);
+}
