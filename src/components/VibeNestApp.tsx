@@ -648,7 +648,7 @@ export function VibeNestApp() {
           <aside className="right-sidebar">
             <section className="glass-panel reflection-card"><p className="eyebrow">CÂU HỎI GỢI MỞ HÔM NAY</p><h2>Nếu có thể nhắn một điều đến chính mình của ba năm trước, bạn sẽ nói gì?</h2><button onClick={() => { setComposerMood("Chữa lành"); setComposerOpen(true); }}>Viết câu trả lời <span>↗</span></button></section>
             <section className="glass-panel guidelines"><h2>Một góc nhỏ dịu dàng</h2><p>01 · Lắng nghe không phán xét.</p><p>02 · Tôn trọng ranh giới và riêng tư.</p><p>03 · Chọn ngôn từ tử tế, kể cả khi bất đồng.</p><small>VibeNest · Kết nối cảm xúc ẩn danh</small></section>
-            <section className="glass-panel join-card"><span>✳</span><h2>Một nơi để được là mình.</h2><p>Bạn có thể đọc trước. Khi muốn chia sẻ hoặc tương tác, hãy tạo một phiên ẩn danh.</p><button className="secondary-button" onClick={async () => { try { await ensureIdentity(); setNotice("Bạn đã vào VibeNest bằng danh tính ẩn danh."); } catch (error) { setNotice(error instanceof Error ? error.message : "Không thể tạo phiên."); } }}>Tiếp tục ẩn danh</button></section>
+            <section className="glass-panel join-card"><span>✳</span><h2>Một nơi để được là mình.</h2><p>Bạn có thể đọc trước. Khi muốn chia sẻ hoặc trò chuyện, hãy liên kết Apple hoặc Google trong một chạm.</p><button className="secondary-button" onClick={() => setAccountOpen(true)}>Tiếp tục với tài khoản</button></section>
           </aside>
         </div>
         </>}
