@@ -28,18 +28,12 @@ function createdLabel(createdAt: string): string {
 
 function StoryTile({ story, onOpen }: { story: VibeStory; onOpen: () => void }) {
   return (
-    <button type="button" onClick={onOpen}
-      className="vn-story-circle">
-      {story.image_url && <Image src={story.image_url} alt="" fill sizes="106px" unoptimized className="absolute inset-0 h-full w-full object-cover" />}
-      <span className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/25 to-black/45" />
-      <span className="relative z-10 flex items-center justify-between gap-1 text-[10px] text-white/80">
-        <span className="flex h-8 w-8 items-center justify-center rounded-xl border border-white/25 bg-black/40 text-xs font-semibold">{story.alias.slice(0, 1).toUpperCase()}</span>
-        <span>{remainingHours(story.expires_at)}</span>
-      </span>
-      <span className="relative z-10 min-w-0">
-        <span className="mb-1 block line-clamp-2 text-[11px] leading-snug text-white/90">{story.caption || story.mood}</span>
-        <strong className="block truncate text-[11px] text-white">{story.alias}</strong>
-      </span>
+    <button type="button" onClick={onOpen} className="vn-story-circle" aria-label={`Xem khoảnh khắc của ${story.alias}, còn ${remainingHours(story.expires_at)}`}>
+      {story.image_url && <Image src={story.image_url} alt="" fill sizes="76px" unoptimized className="vn-story-photo" />}
+      <span className="vn-story-shade" />
+      <span className="vn-story-avatar">{story.alias.slice(0, 1).toUpperCase()}</span>
+      <span className="vn-story-label">{story.alias}</span>
+      <span className="vn-story-hours">{remainingHours(story.expires_at)}</span>
     </button>
   );
 }
@@ -145,8 +139,7 @@ export function VibeStoriesBar({ currentUserName, currentUserHandle, onNotify }:
       <div className="flex items-center gap-3 overflow-x-auto py-0.5 [scrollbar-width:none]">
         <button type="button" onClick={() => setComposerOpen(true)}
           className="vn-story-create">
-          <span className="flex h-8 w-8 items-center justify-center rounded-xl border border-rose-500/30 bg-rose-500/10 text-sm font-semibold text-rose-600">{currentUserName.slice(0, 1).toUpperCase()}</span>
-          <span><strong className="block text-xs text-slate-900 dark:text-white">Tạo khoảnh khắc</strong><small className="text-[10px] text-slate-500 dark:text-slate-400">Lưu giữ 24 giờ</small></span>
+          <span className="vn-story-create-avatar">＋</span><strong className="vn-story-create-label">Tạo Story</strong>
         </button>
         {stories.map((story) => <StoryTile key={story.id} story={story} onOpen={() => setActiveStoryId(story.id)} />)}
         {!loading && stories.length === 0 && <p className="max-w-[190px] text-xs leading-relaxed text-slate-500">Chưa có Stories đang hoạt động. Bạn có thể mở đầu khoảnh khắc đầu tiên.</p>}
