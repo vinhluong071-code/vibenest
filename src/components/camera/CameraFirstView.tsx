@@ -5,12 +5,12 @@ type Mode="photo"|"four";
 const STORIES=[["Your story","+","story-add"],["Vibe","V","story-violet"],["Friends","✦","story-cyan"],["Moments","M","story-rose"]];
 const FRAME_COLORS=[{name:"Hồng Y2K",value:"#ff77b7"},{name:"Đen Obsidian",value:"#11131c"},{name:"Tím Cyberpunk",value:"#7138d5"},{name:"Trắng Sữa",value:"#f7eee7"},{name:"Xanh Pastel",value:"#a8dfe5"}];
 export function CameraFirstView({open,onClose,onCaptured,handle="@vibenest.user"}:Props){
-const video=useRef<HTMLVideoElement>(null);const stream=useRef<MediaStream|null>(null);const pressTimer=useRef<number|null>(null);const recorder=useRef<MediaRecorder|null>(null);const chunks=useRef<Blob[]>([]);const micStream=useRef<MediaStream|null>(null);const audioContext=useRef<AudioContext|null>(null);const musicSource=useRef<MediaElementAudioSourceNode|null>(null);const musicElement=useRef<HTMLAudioElement>(null);const suppressClick=useRef(false);
+const video=useRef<HTMLVideoElement>(null);const stream=useRef<MediaStream|null>(null);const pressTimer=useRef<number|null>(null);const recorder=useRef<MediaRecorder|null>(null);const chunks=useRef<Blob[]>([]);const micStream=useRef<MediaStream|null>(null);const audioContext=useRef<AudioContext|null>(null);const audioDestination=useRef<MediaStreamAudioDestinationNode|null>(null);const micSource=useRef<MediaStreamAudioSourceNode|null>(null);const musicSource=useRef<MediaElementAudioSourceNode|null>(null);const pressHeld=useRef(false);const musicElement=useRef<HTMLAudioElement>(null);const suppressClick=useRef(false);
 const [error,setError]=useState("");const [ready,setReady]=useState(false);const [busy,setBusy]=useState(false);
 const [facing,setFacing]=useState<"user"|"environment">("environment");const [flash,setFlash]=useState(false);
 const [filter,setFilter]=useState<"none"|"warm"|"mono"|"dream">("none");const [mode,setMode]=useState<Mode>("photo");
 const [count,setCount]=useState<number|null>(null);const [shots,setShots]=useState<string[]>([]);const [frameColor,setFrameColor]=useState(FRAME_COLORS[0].value);const [boothPreview,setBoothPreview]=useState<string|null>(null);const [sticker,setSticker]=useState("✨");const [stampDate,setStampDate]=useState(true);const [signature,setSignature]=useState(true);const [boothFilter,setBoothFilter]=useState<"none"|"warm"|"cool"|"film">("none");const [recording,setRecording]=useState(false);const [videoPreview,setVideoPreview]=useState<string|null>(null);const [musicUrl,setMusicUrl]=useState<string|null>(null);const [musicName,setMusicName]=useState("");const [beauty,setBeauty]=useState(false);const [nightMode,setNightMode]=useState(false);
-useEffect(()=>{if(!open)return;let alive=true;const start=async()=>{setReady(false);setError("");try{if(!navigator.mediaDevices?.getUserMedia)throw new Error("Thiết bị chưa hỗ trợ camera.");const s=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:facing}},audio:false});if(!alive){s.getTracks().forEach(t=>t.stop());return;}stream.current=s;if(video.current){video.current.srcObject=s;await video.current.play();if(alive)setReady(true);}}catch(e){if(alive)setError(e instanceof Error?e.message:"Không thể mở camera. Hãy cấp quyền hoặc chọn ảnh.");}};void start();return()=>{alive=false;stream.current?.getTracks().forEach(t=>t.stop());stream.current=null;micStream.current?.getTracks().forEach(t=>t.stop());void audioContext.current?.close();};},[open,facing]);
+useEffect(()=>{if(!open)return;let alive=true;const start=async()=>{setReady(false);setError("");try{if(!navigator.mediaDevices?.getUserMedia)throw new Error("Thiết bị chưa hỗ trợ camera.");const s=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:facing}},audio:false});if(!alive){s.getTracks().forEach(t=>t.stop());return;}stream.current=s;if(video.current){video.current.srcObject=s;await video.current.play();if(alive)setReady(true);}}catch(e){if(alive)setError(e instanceof Error?e.message:"Không thể mở camera. Hãy cấp quyền hoặc chọn ảnh.");}};void start();return()=>{alive=false;stream.current?.getTracks().forEach(t=>t.stop());stream.current=null;micStream.current?.getTracks().forEach(t=>t.stop());void audioContext.current?.close();audioContext.current=null;audioDestination.current=null;musicSource.current=null;};},[open,facing]);
 if(!open)return null;
 function drawFrame():string{const v=video.current;if(!v?.videoWidth||!v.videoHeight)throw new Error("Camera chưa sẵn sàng.");const c=document.createElement("canvas");c.width=v.videoWidth;c.height=v.videoHeight;const x=c.getContext("2d");if(!x)throw new Error("Không thể xử lý ảnh.");if(facing==="user"){x.translate(c.width,0);x.scale(-1,1);}x.filter=filter==="mono"?"grayscale(1)":filter==="warm"?"sepia(.25) saturate(1.25)":filter==="dream"?"saturate(1.35) brightness(1.08)":"none";x.drawImage(v,0,0);return c.toDataURL("image/jpeg",.94);}
 function toBlob(value:string):Blob{const [meta,data]=value.split(",");const binary=atob(data);const bytes=new Uint8Array(binary.length);for(let i=0;i<binary.length;i++)bytes[i]=binary.charCodeAt(i);return new Blob([bytes],{type:meta.match(/data:(.*?);/)?.[1]||"image/jpeg"});}
@@ -18,9 +18,9 @@ async function capturePhoto(){if(!ready||busy)return;setBusy(true);try{const blo
 async function startVideoRecording(){
 if(!ready||recording||!stream.current||typeof MediaRecorder==="undefined")return;
 try{
- const mic=await navigator.mediaDevices.getUserMedia({audio:true,video:false});micStream.current=mic;
- const context=new AudioContext();audioContext.current=context;const destination=context.createMediaStreamDestination();
- const micSource=context.createMediaStreamSource(mic);micSource.connect(destination);
+ const mic=await navigator.mediaDevices.getUserMedia({audio:true,video:false});micStream.current=mic;if(!pressHeld.current){mic.getTracks().forEach(track=>track.stop());micStream.current=null;return;}
+ const context=audioContext.current??new AudioContext();audioContext.current=context;const destination=audioDestination.current??context.createMediaStreamDestination();audioDestination.current=destination;
+ const microphoneSource=context.createMediaStreamSource(mic);micSource.current=microphoneSource;microphoneSource.connect(destination);
  if(musicElement.current&&musicUrl){
   const source=musicSource.current??context.createMediaElementSource(musicElement.current);
   musicSource.current=source;source.connect(destination);source.connect(context.destination);
@@ -34,7 +34,7 @@ try{
   const blob=new Blob(chunks.current,{type:mediaRecorder.mimeType||"video/webm"});
   if(blob.size){if(videoPreview)URL.revokeObjectURL(videoPreview);setVideoPreview(URL.createObjectURL(blob));}
   micStream.current?.getTracks().forEach(track=>track.stop());micStream.current=null;
-  void audioContext.current?.close();audioContext.current=null;
+  micSource.current?.disconnect();micSource.current=null;
   if(musicElement.current)musicElement.current.pause();
   setRecording(false);
  };
@@ -42,8 +42,8 @@ try{
 }catch(e){micStream.current?.getTracks().forEach(track=>track.stop());micStream.current=null;setRecording(false);setError(e instanceof Error?e.message:"Không thể bắt đầu quay video. Hãy kiểm tra quyền micro.");}
 }
 function stopVideoRecording(){if(recorder.current?.state==="recording")recorder.current.stop();}
-function handleShutterPointerDown(){if(mode!=="photo"||!ready||busy)return;suppressClick.current=false;pressTimer.current=window.setTimeout(()=>{suppressClick.current=true;void startVideoRecording();},260);}
-function handleShutterPointerUp(){if(pressTimer.current!==null){window.clearTimeout(pressTimer.current);pressTimer.current=null;}if(recording){suppressClick.current=true;stopVideoRecording();}}
+function handleShutterPointerDown(){if(mode!=="photo"||!ready||busy)return;pressHeld.current=true;suppressClick.current=false;pressTimer.current=window.setTimeout(()=>{suppressClick.current=true;void startVideoRecording();},260);}
+function handleShutterPointerUp(){pressHeld.current=false;if(pressTimer.current!==null){window.clearTimeout(pressTimer.current);pressTimer.current=null;}if(recorder.current?.state==="recording"){suppressClick.current=true;stopVideoRecording();}}
 async function toggleTorch(){const track=stream.current?.getVideoTracks()[0];if(!track){setFlash(false);return;}try{const next=!flash;await track.applyConstraints({advanced:[{torch:next} as MediaTrackConstraintSet]});setFlash(next);}catch{setError("Flash phần cứng không được trình duyệt hoặc thiết bị hỗ trợ.");setFlash(false);}}
 function selectMusic(file:File|null){if(!file)return;if(!file.type.startsWith("audio/")){setError("Vui lòng chọn tệp âm thanh hợp lệ.");return;}const next=URL.createObjectURL(file);if(musicUrl)URL.revokeObjectURL(musicUrl);setMusicUrl(next);setMusicName(file.name);setError("");}
 async function captureFour(){if(!ready||busy)return;setBusy(true);setShots([]);const frames:string[]=[];try{for(let i=0;i<4;i++){for(let n=3;n>=1;n--){setCount(n);await new Promise(resolve=>window.setTimeout(resolve,700));}setCount(0);setFlash(true);frames.push(drawFrame());setShots([...frames]);await new Promise(resolve=>window.setTimeout(resolve,180));setFlash(false);await new Promise(resolve=>window.setTimeout(resolve,220));}setCount(null);
