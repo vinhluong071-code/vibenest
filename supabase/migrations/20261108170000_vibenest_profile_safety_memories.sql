@@ -75,3 +75,49 @@ drop policy if exists "VibeNest users update own profile media" on storage.objec
 create policy "VibeNest users update own profile media" on storage.objects for update to authenticated using (bucket_id='vibenest-profile-media' and (storage.foldername(name))[1]=(select auth.uid())::text) with check (bucket_id='vibenest-profile-media' and (storage.foldername(name))[1]=(select auth.uid())::text);
 drop policy if exists "VibeNest users delete own profile media" on storage.objects;
 create policy "VibeNest users delete own profile media" on storage.objects for delete to authenticated using (bucket_id='vibenest-profile-media' and (storage.foldername(name))[1]=(select auth.uid())::text);
+
+-- Security-definer feed RPC filters accounts blocked by the current viewer without exposing Auth UUID columns.
+create or replace function public.vibenest_get_feed_posts()
+returns table (
+  id uuid,
+  alias text,
+  mood text,
+  content text,
+  location text,
+  image_path text,
+  created_at timestamptz,
+  empathy_count integer
+)
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select p.id, p.alias, p.mood, p.content, p.location, p.image_path, p.created_at, p.empathy_count
+  from public.vibe_posts p
+  where not exists (
+    select 1 from public.vibenest_user_blocks b
+    where b.blocker_id = (select auth.uid()) and b.blocked_id = p.user_id
+  )
+  order by p.created_at desc
+  limit 60;
+$$;
+revoke all on function public.vibenest_get_feed_posts() from public, anon, authenticated;
+grant execute on function public.vibenest_get_feed_posts() to anon, authenticated;
+
+create or replace function public.vibenest_enforce_minimum_profile_age()
+returns trigger
+language plpgsql
+set search_path = ''
+as $$
+begin
+  if new.birthday is not null and new.birthday > (current_date - interval '13 years')::date then
+    raise exception 'VibeNest requires users to be at least 13 years old.' using errcode = '23514';
+  end if;
+  return new;
+end;
+$$;
+drop trigger if exists vibenest_profile_minimum_age on public.vibenest_profiles;
+create trigger vibenest_profile_minimum_age
+before insert or update of birthday on public.vibenest_profiles
+for each row execute function public.vibenest_enforce_minimum_profile_age();
