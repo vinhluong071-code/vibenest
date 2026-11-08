@@ -20,6 +20,17 @@ function remainingHours(expiresAt: string): string {
   return `${Math.max(1, Math.ceil(remaining / 3_600_000))}h`;
 }
 
+function getStorySticker(caption: string | null, label: string): string | null {
+  if (!caption) return null;
+  const line = caption.split("\n").find((item) => item.startsWith(label));
+  return line ? line.slice(label.length).trim() : null;
+}
+
+function getStoryBody(caption: string | null): string {
+  if (!caption) return "";
+  return caption.split(/\n\n\[(?:HỎI ẨN DANH|BÌNH CHỌN|ĐANG NGHE)\]/)[0];
+}
+
 function createdLabel(createdAt: string): string {
   const minutes = Math.max(0, Math.floor((Date.now() - new Date(createdAt).getTime()) / 60_000));
   if (minutes < 1) return "Vừa đăng";
@@ -250,8 +261,11 @@ export function VibeStoriesBar({ currentUserName, currentUserHandle, onNotify }:
               <div className="min-w-0"><strong className="block truncate text-sm">{activeStory.alias}</strong><span className="text-xs text-white/70">{activeStory.mood} · {createdLabel(activeStory.created_at)} · còn {remainingHours(activeStory.expires_at)}</span></div>
               <button type="button" onClick={() => setActiveStoryId(null)} className="min-h-11 min-w-11 rounded-xl bg-white/10" aria-label="Đóng Stories">✕</button>
             </header>
-            <div className="relative z-10 flex flex-1 flex-col items-center justify-center gap-4 px-5 py-8"><p className="whitespace-pre-wrap text-center text-xl font-medium leading-relaxed drop-shadow-lg">{activeStory.caption || activeStory.mood}</p>
-              {activeStory.caption?.includes("[HỎI ẨN DANH]") && <form onSubmit={(event) => { event.preventDefault(); void sendAnonymousQuestion(); }} className="w-full max-w-sm space-y-2 rounded-2xl border border-white/20 bg-black/35 p-3 backdrop-blur"><strong className="block text-sm">💌 Gửi câu hỏi ẩn danh</strong><textarea value={questionDraft} onChange={(event) => setQuestionDraft(event.target.value)} maxLength={500} rows={2} placeholder="Viết câu hỏi của bạn…" className="w-full rounded-xl border border-white/15 bg-white/10 p-3 text-sm text-white placeholder:text-white/55" /><button type="submit" disabled={!questionDraft.trim() || questionBusy} className="min-h-10 rounded-xl bg-fuchsia-600 px-4 text-xs font-semibold disabled:opacity-50">{questionBusy ? "Đang gửi…" : "Gửi ẩn danh"}</button>{questionNotice && <p className="text-xs text-white/80" role="status">{questionNotice}</p>}</form>}
+            <div className="relative z-10 flex flex-1 flex-col items-center justify-center gap-4 px-5 py-8"><p className="whitespace-pre-wrap text-center text-xl font-medium leading-relaxed drop-shadow-lg">{getStoryBody(activeStory.caption) || activeStory.mood}</p>
+              {getStorySticker(activeStory.caption, "[HỎI ẨN DANH]") && <span className="rounded-full border border-fuchsia-200/30 bg-fuchsia-500/20 px-4 py-2 text-xs">💌 {getStorySticker(activeStory.caption, "[HỎI ẨN DANH]")}</span>}
+              {getStorySticker(activeStory.caption, "[BÌNH CHỌN]") && <div className="w-full max-w-sm rounded-2xl border border-white/20 bg-black/35 p-3"><strong className="text-sm">📊 {getStorySticker(activeStory.caption, "[BÌNH CHỌN]")}</strong><p className="mt-2 text-[10px] text-white/65">Nhãn dán bình chọn</p></div>}
+              {getStorySticker(activeStory.caption, "[ĐANG NGHE]") && <span className="rounded-full border border-white/20 bg-black/35 px-4 py-2 text-xs">♫ {getStorySticker(activeStory.caption, "[ĐANG NGHE]")}</span>}
+              {activeStory.caption?.includes("[HỎI ẨN DANH]") && <form onSubmit={(event) => { event.preventDefault(); void sendAnonymousQuestion(); }} className="w-full max-w-sm space-y-2 rounded-2xl border border-white/20 bg-black/35 p-3 backdrop-blur"><strong className="block text-sm">💌 {getStorySticker(activeStory.caption, "[HỎI ẨN DANH]") || "Gửi câu hỏi ẩn danh"}</strong><textarea value={questionDraft} onChange={(event) => setQuestionDraft(event.target.value)} maxLength={500} rows={2} placeholder="Viết câu hỏi của bạn…" className="w-full rounded-xl border border-white/15 bg-white/10 p-3 text-sm text-white placeholder:text-white/55" /><button type="submit" disabled={!questionDraft.trim() || questionBusy} className="min-h-10 rounded-xl bg-fuchsia-600 px-4 text-xs font-semibold disabled:opacity-50">{questionBusy ? "Đang gửi…" : "Gửi ẩn danh"}</button>{questionNotice && <p className="text-xs text-white/80" role="status">{questionNotice}</p>}</form>}
               {storyQuestions.length>0 && <div className="w-full max-w-sm rounded-2xl border border-white/15 bg-black/35 p-3"><strong className="text-sm">Hộp thư câu hỏi · {storyQuestions.length}</strong>{storyQuestions.map((item)=><p key={item.id} className="mt-2 rounded-xl bg-white/10 p-2 text-sm">{item.question}</p>)}</div>}
             </div>
             <footer className="relative z-10 flex items-center justify-between gap-3">
