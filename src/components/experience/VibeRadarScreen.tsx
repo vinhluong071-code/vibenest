@@ -57,12 +57,12 @@ export function VibeRadarScreen({ displayName, vibeTag, posts, onOpenChat }: Pro
         <div className="vn-lbs-map-center">
           {ghostMode ? <span className="vn-lbs-ghost">◌</span> : <span className="vn-lbs-self">●</span>}
           <strong>{ghostMode ? "Bạn đang ẩn" : "Thiết bị của bạn"}</strong>
-          <small>{ghostMode ? "Ghost Mode" : locationReady ? "Vị trí được cấp quyền · chỉ cục bộ" : "Chưa có vị trí"}</small>
+          <small>{ghostMode ? "Ghost Mode · làm mờ bán kính 500 m" : locationReady ? "Vị trí được cấp quyền · chỉ cục bộ" : "Chưa có vị trí"}</small>
         </div>
         <div className="vn-lbs-map-legend"><span>●</span> Bạn bè chia sẻ vị trí sẽ xuất hiện tại đây</div>
       </div>
       <section className="vn-lbs-privacy glass-panel">
-        <div><strong>Ghost Mode</strong><small>Ẩn vị trí của bạn khỏi bản đồ</small></div>
+        <div><strong>Ghost Mode</strong><small>Ẩn vị trí chính xác · vùng hiển thị làm mờ 500 m</small></div>
         <button type="button" role="switch" aria-checked={ghostMode} disabled={locationBusy} onClick={() => void toggleGhostMode()} className={`vn-lbs-switch ${ghostMode ? "is-on" : ""}`}><span /></button>
       </section>
       <p className="vn-lbs-status" role="status">{locationBusy ? "Đang chờ quyền vị trí…" : locationMessage}</p>

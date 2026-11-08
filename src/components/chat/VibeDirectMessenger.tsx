@@ -109,7 +109,7 @@ export function VibeDirectMessenger({ userId, alias, onClose, onOpenConversation
         </header>
         <div className="dm-tabs" role="tablist" aria-label="Tin nhắn">
           <button role="tab" aria-selected={tab === "inbox"} className={tab === "inbox" ? "selected" : ""} onClick={() => setTab("inbox")}>Hộp thư {totalUnread > 0 && <b>{totalUnread > 99 ? "99+" : totalUnread}</b>}</button>
-          <button role="tab" aria-selected={tab === "discover"} className={tab === "discover" ? "selected" : ""} onClick={() => setTab("discover")}>Tìm người</button>
+          <button role="tab" aria-selected={tab === "discover"} className={tab === "discover" ? "selected" : ""} onClick={() => setTab("discover")}>Gợi ý kết bạn</button>
         </div>
         {tab === "inbox" ? (
           loading ? <p className="dm-state">Đang tải hội thoại…</p> : error ? <p className="dm-error" role="alert">{error}</p> :

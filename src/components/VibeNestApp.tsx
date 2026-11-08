@@ -8,6 +8,7 @@ import { ComposerModal } from "@/components/ComposerModal";
 import { ChatDialog } from "@/components/ChatDialog";
 import { Sidebar } from "@/components/Sidebar";
 import { VibeStoriesBar } from "@/components/stories/VibeStoriesBar";
+import { HomeFeedView } from "@/components/feed/HomeFeedView";
 import { VibeFeedCard, type VibePostItem } from "@/components/feed/VibeFeedCard";
 import { BottomTabBar, type BottomNavTab } from "@/components/navigation/BottomTabBar";
 import { AnimatedSplashScreen } from "@/components/intro/AnimatedSplashScreen";
@@ -635,6 +636,7 @@ export function VibeNestApp() {
         {activeSurface === "home" && <>
         <section className="vn-home-header"><div className="vn-home-avatar">{alias.slice(0,1).toUpperCase()}</div><label className="vn-home-search"><span>⌕</span><input value={query} onChange={event=>setQuery(event.target.value)} placeholder="Tìm bạn bè, khoảnh khắc…" aria-label="Tìm bạn bè và khoảnh khắc"/></label><div className="vn-home-title"><h1>Home</h1><p>Khoảnh khắc của bạn bè và những câu chuyện mới</p></div></section>
 
+        <HomeFeedView alias={alias} posts={feedCardPosts} onCompose={()=>setComposerOpen(true)} onSearch={()=>{document.querySelector<HTMLInputElement>(".feed-tools input")?.focus();}} onNotifications={()=>setInboxTab("notifications")}>
         <div className="workspace-grid">
           <Sidebar alias={alias} postCount={ownPostCount} savedCount={savedCount} onChangeAlias={() => setAlias(makeAlias())} />
           <section className="feed-column" id="feed" aria-label="Luồng tâm sự">
@@ -690,6 +692,7 @@ export function VibeNestApp() {
             <section className="glass-panel join-card"><span>✳</span><h2>Một nơi để được là mình.</h2><p>Bạn có thể đọc trước. Khi muốn chia sẻ hoặc tương tác, hãy tạo một phiên ẩn danh.</p><button className="secondary-button" onClick={async () => { try { await ensureIdentity(); setNotice("Bạn đã vào VibeNest bằng danh tính ẩn danh."); } catch (error) { setNotice(error instanceof Error ? error.message : "Không thể tạo phiên."); } }}>Tiếp tục ẩn danh</button></section>
           </aside>
         </div>
+        </HomeFeedView>
         </>}
         {activeSurface === "voice" && <VoiceLoungeScreen />}
         {activeSurface === "radar" && <VibeRadarScreen displayName={profile.displayName} vibeTag={profile.vibeTag} posts={feedCardPosts.slice(0, 12)} onOpenChat={(postId) => { const target = posts.find((item) => item.id === postId); if (target) setChatPost(target); }} />}
