@@ -9,7 +9,7 @@ import { ChatDialog } from "@/components/ChatDialog";
 import { Sidebar } from "@/components/Sidebar";
 import { VibeStoriesBar } from "@/components/stories/VibeStoriesBar";
 import { VibeFeedCard, type VibePostItem } from "@/components/feed/VibeFeedCard";
-import { BottomTabBar } from "@/components/navigation/BottomTabBar";
+import { BottomTabBar, type BottomNavTab } from "@/components/navigation/BottomTabBar";
 import { AnimatedSplashScreen } from "@/components/intro/AnimatedSplashScreen";
 import { LitmatchThirdPartyAuthModal } from "@/components/auth/LitmatchThirdPartyAuthModal";
 import { SnapProfileView } from "@/components/profile/SnapProfileView";
@@ -614,6 +614,14 @@ export function VibeNestApp() {
   const savedCount = posts.filter((post) => post.saved).length;
   const ownPostCount = posts.filter((post) => post.alias === alias).length;
 
+  // One authoritative tab identity drives the dock. The corresponding screen
+  // is rendered exclusively by the existing home/radar surfaces or full-screen
+  // camera, messenger, and profile layers below.
+  const activeTab: BottomNavTab = cameraOpen ? "camera"
+    : messengerOpen ? "chat"
+    : snapProfileOpen || profileOpen || isAuthModalOpen ? "profile"
+    : activeSurface === "radar" ? "radar" : "home";
+
   return (
     <div className="app-shell">
       <AnimatedSplashScreen />
@@ -689,7 +697,7 @@ export function VibeNestApp() {
       )}
 
       {!cameraOpen && <BottomTabBar
-        activeTab={messengerOpen ? "chat" : snapProfileOpen || profileOpen || isAuthModalOpen ? "profile" : cameraOpen ? "camera" : activeSurface === "radar" ? "radar" : "home"}
+        activeTab={activeTab}
         unreadCount={chatUnreadCount}
         onOpenMessages={async () => {
           setActiveSurface("home"); setSnapProfileOpen(false);
