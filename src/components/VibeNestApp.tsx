@@ -711,12 +711,12 @@ export function VibeNestApp() {
         userInitial={alias.slice(0, 1).toUpperCase()}
       />
       {messengerOpen && userId && <VibeDirectMessenger userId={userId} alias={alias} onClose={() => setMessengerOpen(false)} onOpenConversation={(post) => { setMessengerOpen(false); setChatPost(post); }} />}
-      <VibeBoothStudio open={boothOpen} onClose={() => setBoothOpen(false)} onSoftGate={() => requestAuth("liên kết tài khoản để lưu hồ sơ")} />
+      <VibeBoothStudio open={boothOpen} onClose={() => setBoothOpen(false)} onSoftGate={(action) => requestAuth(action)} />
       <CameraFirstView open={cameraOpen} onClose={() => setCameraOpen(false)} onCaptured={(file) => { setCapturedPhoto(file); setCameraOpen(false); setComposerOpen(true); }} />
       {chatPost && <ChatDialog post={chatPost} alias={alias} onClose={() => setChatPost(null)} onEnsureIdentity={ensureChatIdentity} onMessagesRead={handleChatMessagesRead} />}
       {inboxTab && userId && <InboxCenter key={inboxTab} userId={userId} initialTab={inboxTab} onClose={() => setInboxTab(null)} onOpenConversation={(post) => { setInboxTab(null); setChatPost(post); }} onNotificationsRead={() => { void refreshBadges(); }} />}
       <LitmatchThirdPartyAuthModal open={isAuthModalOpen} intent={authIntent} onClose={() => setIsAuthModalOpen(false)} onDemoContinue={() => { setIsAuthModalOpen(false); setProfileOpen(true); }} />
-      {snapProfileOpen && <SnapProfileView onClose={() => setSnapProfileOpen(false)} onSafety={() => { setSnapProfileOpen(false); setAccountOpen(true); }} onSoftGate={(action) => requestAuth(action)} />}
+      {snapProfileOpen && <SnapProfileView onClose={() => setSnapProfileOpen(false)} onSafety={() => { setSnapProfileOpen(false); setAccountOpen(true); }} onSoftGate={() => requestAuth("liên kết tài khoản để lưu hồ sơ")} />}
       <LitmatchOnboardingModal
         isOpen={profileOpen}
         onClose={() => setProfileOpen(false)}
