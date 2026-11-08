@@ -689,7 +689,7 @@ export function VibeNestApp() {
       )}
 
       {!cameraOpen && <BottomTabBar
-        activeTab={messengerOpen ? "messages" : snapProfileOpen || profileOpen || isAuthModalOpen ? "profile" : cameraOpen ? "camera" : activeSurface === "radar" ? "radar" : "home"}
+        activeTab={messengerOpen ? "chat" : snapProfileOpen || profileOpen || isAuthModalOpen ? "profile" : cameraOpen ? "camera" : activeSurface === "radar" ? "radar" : "home"}
         unreadCount={chatUnreadCount}
         onOpenMessages={async () => {
           setActiveSurface("home"); setSnapProfileOpen(false);
