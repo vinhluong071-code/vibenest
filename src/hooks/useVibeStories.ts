@@ -15,6 +15,17 @@ function getErrorMessage(error: unknown): string {
   return "Không thể tải Khoảnh khắc. Vui lòng thử lại.";
 }
 
+export type VibeStoryQuestion = { id: string; story_id: string; question: string; created_at: string };
+type StoryQuestionTable = {
+  insert: (row: { story_id: string; sender_id: string; question: string }) => Promise<{ error: { message: string } | null }>;
+  select: (columns: string) => {
+    eq: (column: "story_id", value: string) => {
+      order: (column: "created_at", options: { ascending: boolean }) => Promise<{ data: VibeStoryQuestion[] | null; error: { message: string } | null }>;
+    };
+  };
+};
+type StoryQuestionClient = { from: (table: "vibe_story_questions") => StoryQuestionTable };
+
 export function useVibeStories(enabled = true, limit = 60) {
   const [stories, setStories] = useState<VibeStory[]>([]);
   const [loading, setLoading] = useState(enabled);
@@ -187,6 +198,27 @@ export function useVibeStories(enabled = true, limit = 60) {
     setStories((current) => current.filter((story) => story.id !== storyId));
   }, []);
 
+  const submitAnonymousQuestion = useCallback(async (storyId: string, question: string) => {
+    const text = question.trim();
+    if (!text || text.length > 500) throw new Error("Câu hỏi cần từ 1 đến 500 ký tự.");
+    const supabase = createClient();
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError) throw userError;
+    if (!user) throw new Error("Hãy kết nối phiên VibeNest để gửi câu hỏi ẩn danh.");
+    const table = (supabase as unknown as StoryQuestionClient).from("vibe_story_questions");
+    const { error: insertError } = await table.insert({ story_id: storyId, sender_id: user.id, question: text });
+    if (insertError) throw new Error(insertError.message);
+  }, []);
+
+  const loadAnonymousQuestions = useCallback(async (storyId: string) => {
+    const supabase = createClient();
+    const table = (supabase as unknown as StoryQuestionClient).from("vibe_story_questions");
+    const { data, error: queryError } = await table.select("id,story_id,question,created_at")
+      .eq("story_id", storyId).order("created_at", { ascending: false });
+    if (queryError) throw new Error(queryError.message);
+    return data ?? [];
+  }, []);
+
   return {
     stories: enabled ? stories : [],
     loading: enabled ? loading : false,
@@ -195,5 +227,7 @@ export function useVibeStories(enabled = true, limit = 60) {
     createStory,
     toggleWarmth,
     deleteStory,
+    submitAnonymousQuestion,
+    loadAnonymousQuestions,
   };
 }
