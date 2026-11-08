@@ -28,3 +28,5 @@
 .vn-legal-page{max-width:780px;margin:0 auto;padding:32px 22px 80px;color:#e9e9f4;font:15px/1.8 "DM Sans",sans-serif}.vn-legal-page h1{font:800 32px Manrope}.vn-legal-page h2{margin-top:28px;font:700 19px Manrope}.vn-legal-page p{color:#b7b8c9}.vn-legal-page a{color:#b7a8ff}
 .vn-feed-pane{padding-bottom:0}.vn-feed-pane .hybrid-bottom-wrap{display:none}.vn-feed-pane .topbar{position:relative}
 @media(min-width:760px){.vn-camera{max-width:520px;margin:auto;border-left:1px solid #ffffff10;border-right:1px solid #ffffff10}.vn-bottom-nav{left:calc(50% - 245px);right:calc(50% - 245px)}.vn-feature-panel{width:min(520px,calc(100vw - 40px))}}
+
+.vn-oauth-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}.vn-oauth-row .vn-oauth-primary{min-width:0;padding:12px 8px;font-size:11px;gap:6px}
