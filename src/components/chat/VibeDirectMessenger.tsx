@@ -102,9 +102,9 @@ export function VibeDirectMessenger({ userId, alias, onClose, onOpenConversation
 
   return (
     <div className="dm-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
-      <section className="dm-panel glass-panel" role="dialog" aria-modal="true" aria-labelledby="dm-title">
+      <section className="dm-panel glass-panel dm-premium" role="dialog" aria-modal="true" aria-labelledby="dm-title">
         <header className="dm-header">
-          <div><p className="eyebrow">VIBENEST · PRIVATE CONNECTION</p><h2 id="dm-title">Tin nhắn</h2><p className="dm-subtitle">Những cuộc trò chuyện riêng tư của bạn</p></div>
+          <div><p className="eyebrow">VIBENEST · DIRECT</p><h2 id="dm-title">Messages <span>✦</span></h2><p className="dm-subtitle">Your people, your private space.</p></div>
           <button className="icon-button" onClick={onClose} aria-label="Đóng tin nhắn">×</button>
         </header>
         <div className="dm-tabs" role="tablist" aria-label="Tin nhắn">
@@ -123,14 +123,14 @@ export function VibeDirectMessenger({ userId, alias, onClose, onOpenConversation
                 openPost(data as PostRow);
               })();
             }}>
-              <span className="dm-avatar">{room.peer_alias.slice(0, 1).toUpperCase()}<i /></span>
+              <span className="dm-avatar dm-avatar-glow">{room.peer_alias.slice(0, 1).toUpperCase()}<i /></span>
               <span className="dm-copy"><strong>{room.peer_alias}</strong><small>{room.last_message || "Bắt đầu cuộc trò chuyện"}</small><time>{new Date(room.last_message_at).toLocaleString("vi-VN", { dateStyle: "short", timeStyle: "short" })}</time></span>
               {room.unread_count > 0 && <b className="dm-unread">{room.unread_count > 99 ? "99+" : room.unread_count}</b>}
             </button>
           ))}</div> : <p className="dm-state">Chưa có hội thoại. Chuyển sang “Tìm người” để bắt đầu kết nối từ những bài tâm sự công khai.</p>
         ) : (
           <>
-            <input className="dm-search" type="search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Tìm tên hoặc nội dung tâm sự…" aria-label="Tìm người để nhắn tin" />
+            <div className="dm-smart-search"><span>⌕</span><input className="dm-search" type="search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Tìm tên hoặc nội dung tâm sự…" aria-label="Tìm người để nhắn tin" /></div>
             {searching ? <p className="dm-state">Đang tìm…</p> : visiblePeople.length ? <div className="dm-list">{visiblePeople.map((person) => (
               <button key={person.id} className="dm-row" onClick={() => openPost(person)}>
                 <span className="dm-avatar">{person.alias.slice(0, 1).toUpperCase()}<i /></span>
