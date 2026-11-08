@@ -115,6 +115,8 @@ export function VibeStoriesBar({ currentUserName, currentUserHandle, onNotify }:
     const channel = supabase.channel(`story-qa-${activeStoryId}`)
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "vibe_story_questions", filter: `story_id=eq.${activeStoryId}` }, () => {
         void loadAnonymousQuestions(activeStoryId).then((items) => { if (alive) setStoryQuestions(items); });
+      }).on("postgres_changes", { event: "INSERT", schema: "public", table: "vibe_story_poll_votes", filter: `story_id=eq.${activeStoryId}` }, () => {
+        void loadStoryPollResults(activeStoryId).then((counts) => { if (alive) setPollResults(counts); });
       }).subscribe();
     return () => { alive = false; void supabase.removeChannel(channel); };
   }, [activeStoryId, loadAnonymousQuestions]);
