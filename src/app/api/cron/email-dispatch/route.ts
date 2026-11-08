@@ -70,7 +70,7 @@ export async function GET(request: NextRequest) {
       if (!user?.email || !user.email_confirmed_at || !optedIn) {
         await admin.from("vibenest_email_notification_queue").update({ status: "skipped" }).eq("id", item.id);
         skipped += 1;
-        continue;
+        return;
       }
 
       const isReply = item.event_type === "reply";
