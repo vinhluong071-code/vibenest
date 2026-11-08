@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
-import { VibeNestApp } from "@/components/VibeNestApp";
+import { VibeNestCameraFirst } from "@/components/VibeNestCameraFirst";
+import "./vibenest-camera-first.css";
 
 export const metadata: Metadata = {
-  title: "VibeNest — Không Gian Tâm Sự Ẩn Danh",
-  description: "Một không gian dịu dàng để chia sẻ và kết nối cảm xúc ẩn danh.",
+  title: "VibeNest — Your Vibe, Your People",
+  description: "Chụp, lưu giữ và kết nối những khoảnh khắc chân thật.",
 };
 
 export default function HomePage() {
-  return <VibeNestApp />;
+  return <VibeNestCameraFirst />;
 }

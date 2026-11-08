@@ -12,7 +12,8 @@ import { VibeStoriesBar } from "@/components/stories/VibeStoriesBar";
 import { VibeFeedCard, type VibePostItem } from "@/components/feed/VibeFeedCard";
 import { BottomTabBar } from "@/components/navigation/BottomTabBar";
 import { LitmatchOnboardingModal, type UserProfile } from "@/components/auth/LitmatchOnboardingModal";
-import { AccountLinkingModal } from "@/components/auth/AccountLinkingModal";
+import { LitmatchThirdPartyAuthModal } from "@/components/auth/LitmatchThirdPartyAuthModal";
+import { SafetyComplianceModal } from "@/components/safety/SafetyComplianceModal";
 import { InboxCenter } from "@/components/InboxCenter";
 import { AuraDiscoveryRail } from "@/components/discovery/AuraDiscoveryRail";
 import { VoiceLoungeScreen } from "@/components/experience/VoiceLoungeScreen";
@@ -31,8 +32,7 @@ type VibePostRow = {
 };
 
 const moods = ["Tất cả", "Đêm muộn", "Chênh vênh", "Chữa lành", "Thầm thương", "Đã lưu"] as const;
-const aliases = ["Mây Lang Thang", "Người Qua Đêm", "Kẻ Mộng Mơ", "Một Vì Sao", "Gió Nhẹ"];
-const makeAlias = () => aliases[Math.floor(Math.random() * aliases.length)] + " #" + Math.floor(100 + Math.random() * 900);
+const makeAlias = () => "Khách VibeNest";
 
 function getProfileFromAuthUser(user: Session["user"] | null, fallbackName: string): UserProfile {
   const rawProfile: unknown = user?.user_metadata?.vibenest_profile;
@@ -82,13 +82,38 @@ function getFriendlyError(error: unknown, fallback: string): string {
   return fallback;
 }
 
+async function normalizeUploadImage(file: File): Promise<File> {
+  const bitmap = await createImageBitmap(file);
+  const scale = Math.min(1, 1600 / bitmap.width, 1600 / bitmap.height);
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.max(1, Math.round(bitmap.width * scale));
+  canvas.height = Math.max(1, Math.round(bitmap.height * scale));
+  const context = canvas.getContext("2d");
+  if (!context) throw new Error("Không thể xử lý ảnh tải lên.");
+  context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+  const blob = await new Promise<Blob>((resolve, reject) => canvas.toBlob((value) => value ? resolve(value) : reject(new Error("Không thể nén ảnh.")), "image/webp", 0.86));
+  return new File([blob], "vibenest-upload.webp", { type: "image/webp" });
+}
+
+async function moderateUploadedImage(file: File) {
+  const image = await new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => typeof reader.result === "string" ? resolve(reader.result) : reject(new Error("Không thể đọc ảnh để kiểm duyệt."));
+    reader.onerror = () => reject(new Error("Không thể đọc ảnh để kiểm duyệt."));
+    reader.readAsDataURL(file);
+  });
+  const response = await fetch("/api/moderation/check", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ image }) });
+  const result = await response.json() as { error?: string };
+  if (!response.ok) throw new Error(result.error || "Ảnh chưa vượt qua kiểm duyệt.");
+}
+
 export function VibeNestApp() {
   const hasSupabaseConfig = Boolean(
     process.env.NEXT_PUBLIC_SUPABASE_URL &&
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
   );
-  const [alias, setAlias] = useState("Mây Lang Thang #409");
-  const [profile, setProfile] = useState<UserProfile>(() => getProfileFromAuthUser(null, "Mây Lang Thang #409"));
+  const [alias, setAlias] = useState("Khách VibeNest");
+  const [profile, setProfile] = useState<UserProfile>(() => getProfileFromAuthUser(null, "Khách VibeNest"));
   const [userId, setUserId] = useState<string | null>(null);
   const [posts, setPosts] = useState<VibePost[]>([]);
   const [filter, setFilter] = useState<string>("Tất cả");
@@ -107,6 +132,7 @@ export function VibeNestApp() {
   const [chatUnreadCount, setChatUnreadCount] = useState(0);
   const [realtimeToast, setRealtimeToast] = useState("");
   const [accountOpen, setAccountOpen] = useState(false);
+  const [safetyPostId, setSafetyPostId] = useState<string | null>(null);
   const [profileOpen, setProfileOpen] = useState(false);
   const [activeSurface, setActiveSurface] = useState<"home" | "voice" | "radar">("home");
   const touchOrigin = useRef<{ x: number; y: number } | null>(null);
@@ -202,10 +228,17 @@ export function VibeNestApp() {
     setFeedError("");
     try {
       const supabase = createClient();
-      const { data: rows, error } = await supabase.from("vibe_posts")
-        .select("id,alias,mood,content,location,image_path,created_at,empathy_count")
-        .order("created_at", { ascending: false }).limit(60);
-      if (error) throw error;
+      const filteredResult = await supabase.rpc("vibenest_get_feed_posts");
+      let rows = filteredResult.data;
+      if (filteredResult.error?.code === "PGRST202") {
+        const legacyResult = await supabase.from("vibe_posts")
+          .select("id,alias,mood,content,location,image_path,created_at,empathy_count")
+          .order("created_at", { ascending: false }).limit(60);
+        if (legacyResult.error) throw legacyResult.error;
+        rows = legacyResult.data;
+      } else if (filteredResult.error) {
+        throw filteredResult.error;
+      }
 
       const postRows = (rows ?? []) as VibePostRow[];
       const ids = postRows.map((row: VibePostRow) => row.id);
@@ -247,7 +280,7 @@ export function VibeNestApp() {
       (_event: AuthChangeEvent, session: Session | null) => {
         if (alive) {
           const nextUser = session?.user ?? null;
-          const nextProfile = getProfileFromAuthUser(nextUser, "Mây Lang Thang #409");
+          const nextProfile = getProfileFromAuthUser(nextUser, "Khách VibeNest");
           setUserId(nextUser?.id ?? null);
           if (!nextUser) {
             setNotificationCount(0);
@@ -265,7 +298,7 @@ export function VibeNestApp() {
     void signInAnonymously().then((session) => {
       if (alive) {
         const nextUser = session?.user ?? null;
-        const nextProfile = getProfileFromAuthUser(nextUser, "Mây Lang Thang #409");
+        const nextProfile = getProfileFromAuthUser(nextUser, "Khách VibeNest");
         setUserId(nextUser?.id ?? null);
         if (!nextUser) {
           setNotificationCount(0);
@@ -394,30 +427,28 @@ export function VibeNestApp() {
   }, []);
 
   const ensureIdentity = useCallback(async (actionLabel = "thực hiện thao tác này") => {
-    if (userId) return userId;
-    let session: Session | null;
-    try {
-      // Reuses the startup promise when an action races silent sign-in.
-      session = await signInAnonymously();
-    } catch (error) {
-      console.error("[VibeNest] Tạo phiên ẩn danh thất bại:", error);
-      throw new Error(getFriendlyError(error, `Chưa thể tạo phiên ẩn danh để ${actionLabel}. Vui lòng thử lại.`));
-    }
-    if (!session?.user) {
-      throw new Error(`Chưa thể xác nhận danh tính ẩn danh để ${actionLabel}. Vui lòng thử lại.`);
-    }
-    setUserId(session.user.id);
-    setAuthUser(session.user);
-    const nextProfile = getProfileFromAuthUser(session.user, alias);
-    setProfile(nextProfile);
-    setAlias(nextProfile.displayName);
-    return session.user.id;
-  }, [userId, alias]);
+    if (userId && authUser && !authUser.is_anonymous) return userId;
+    setAccountOpen(true);
+    throw new Error("Hãy liên kết tài khoản để " + actionLabel + ". Bạn vẫn có thể xem bảng tin mà không cần đăng nhập.");
+  }, [userId, authUser]);
 
   const ensureChatIdentity = useCallback(
     () => ensureIdentity("mở trò chuyện riêng"),
     [ensureIdentity],
   );
+
+  async function blockPost(postId: string) {
+    try {
+      await ensureIdentity("chặn tài khoản");
+      const response = await fetch("/api/safety/block-post", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ postId }) });
+      const result = await response.json() as { error?: string };
+      if (!response.ok) throw new Error(result.error || "Không thể chặn tài khoản.");
+      setNotice("Đã chặn người đăng. Bài viết của họ sẽ được ẩn khỏi bảng tin sau khi migration an toàn được áp dụng.");
+      await loadFeed();
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : "Không thể chặn tài khoản.");
+    }
+  }
 
   async function publish(content: string, mood: Mood, location: string, media: File | null = null) {
     setBusy(true);
@@ -431,13 +462,14 @@ export function VibeNestApp() {
         if (!allowedTypes.includes(media.type) || media.size > 10 * 1024 * 1024) {
           throw new Error("Ảnh phải là JPG, PNG hoặc WebP và không vượt quá 10 MB.");
         }
-        const extension = media.type === "image/jpeg" ? "jpg" : media.type === "image/png" ? "png" : "webp";
-        uploadedPath = `${ownerId}/${crypto.randomUUID()}.${extension}`;
+        const uploadMedia = await normalizeUploadImage(media);
+        await moderateUploadedImage(uploadMedia);
+        uploadedPath = `${ownerId}/${crypto.randomUUID()}.webp`;
         const { error: uploadError } = await supabase.storage
           .from("vibenest-post-media")
-          .upload(uploadedPath, media, {
+          .upload(uploadedPath, uploadMedia, {
             cacheControl: "3600",
-            contentType: media.type,
+            contentType: "image/webp",
             upsert: false,
           });
         if (uploadError) throw uploadError;
@@ -637,6 +669,8 @@ export function VibeNestApp() {
                         if (target) void sendReply(target, text);
                       }}
                       onShare={handleSharePost}
+                      onReport={() => setSafetyPostId(sourcePost.id)}
+                      onBlock={() => void blockPost(sourcePost.id)}
                       onChat={() => setChatPost(sourcePost)}
                     />
                   );
@@ -647,7 +681,7 @@ export function VibeNestApp() {
           <aside className="right-sidebar">
             <section className="glass-panel reflection-card"><p className="eyebrow">CÂU HỎI GỢI MỞ HÔM NAY</p><h2>Nếu có thể nhắn một điều đến chính mình của ba năm trước, bạn sẽ nói gì?</h2><button onClick={() => { setComposerMood("Chữa lành"); setComposerOpen(true); }}>Viết câu trả lời <span>↗</span></button></section>
             <section className="glass-panel guidelines"><h2>Một góc nhỏ dịu dàng</h2><p>01 · Lắng nghe không phán xét.</p><p>02 · Tôn trọng ranh giới và riêng tư.</p><p>03 · Chọn ngôn từ tử tế, kể cả khi bất đồng.</p><small>VibeNest · Kết nối cảm xúc ẩn danh</small></section>
-            <section className="glass-panel join-card"><span>✳</span><h2>Một nơi để được là mình.</h2><p>Bạn có thể đọc trước. Khi muốn chia sẻ hoặc tương tác, hãy tạo một phiên ẩn danh.</p><button className="secondary-button" onClick={async () => { try { await ensureIdentity(); setNotice("Bạn đã vào VibeNest bằng danh tính ẩn danh."); } catch (error) { setNotice(error instanceof Error ? error.message : "Không thể tạo phiên."); } }}>Tiếp tục ẩn danh</button></section>
+            <section className="glass-panel join-card"><span>✳</span><h2>Một nơi để được là mình.</h2><p>Bạn có thể đọc trước. Khi muốn chia sẻ hoặc trò chuyện, hãy liên kết Apple hoặc Google trong một chạm.</p><button className="secondary-button" onClick={() => setAccountOpen(true)}>Tiếp tục với tài khoản</button></section>
           </aside>
         </div>
         </>}
@@ -692,15 +726,8 @@ export function VibeNestApp() {
           setNotice("Hồ sơ cá nhân đã được lưu vào tài khoản VibeNest.");
         }}
       />
-      <AccountLinkingModal
-        isOpen={accountOpen}
-        onClose={() => setAccountOpen(false)}
-        currentAlias={alias}
-        onAliasChange={setAlias}
-        linkedEmail={authUser?.email && authUser.email_confirmed_at ? authUser.email : undefined}
-        onAccountLinked={handleAccountLinked}
-        onAccountUnlinked={() => void handleAccountUnlinked()}
-      />
+      <LitmatchThirdPartyAuthModal open={accountOpen} onClose={() => setAccountOpen(false)} intent="liên kết tài khoản" />
+      <SafetyComplianceModal open={Boolean(safetyPostId)} onClose={() => setSafetyPostId(null)} targetContentId={safetyPostId ?? undefined} showAccountActions={false} />
       <ComposerModal key={composerOpen ? composerMood : "closed"} open={composerOpen} alias={alias} initialMood={composerMood} busy={busy} onClose={() => setComposerOpen(false)} onSubmit={publish} />
     </div>
   );
