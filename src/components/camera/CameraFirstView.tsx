@@ -1,12 +1,12 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
-type Props={onCapture:(file:File)=>void;onOpenBooth:()=>void;onOpenFeed:()=>void;onSoftGate:(action:string)=>void};
-export function CameraFirstView({onCapture,onOpenBooth,onOpenFeed,onSoftGate}:Props){
+type Props={active:boolean;onCapture:(file:File)=>void;onOpenBooth:()=>void;onOpenFeed:()=>void;onSoftGate:(action:string)=>void};
+export function CameraFirstView({active,onCapture,onOpenBooth,onOpenFeed,onSoftGate}:Props){
  const videoRef=useRef<HTMLVideoElement>(null);const streamRef=useRef<MediaStream|null>(null);
  const [state,setState]=useState<"starting"|"ready"|"denied"|"unsupported">("starting");const [filter,setFilter]=useState("none");
  const stop=useCallback(()=>{streamRef.current?.getTracks().forEach(t=>t.stop());streamRef.current=null;},[]);
  const start=useCallback(async()=>{if(!navigator.mediaDevices?.getUserMedia){setState("unsupported");return;}try{stop();const stream=await navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:{ideal:"user"},width:{ideal:1440},height:{ideal:1920}}});streamRef.current=stream;if(videoRef.current){videoRef.current.srcObject=stream;await videoRef.current.play().catch(()=>undefined);}setState("ready");}catch{setState("denied");}},[stop]);
- useEffect(()=>{void start();return stop;},[start,stop]);
+ useEffect(()=>{if(!active){stop();return;}void start();return stop;},[active,start,stop]);
  const capture=useCallback(()=>{const video=videoRef.current;if(!video||video.readyState<2||!video.videoWidth){onSoftGate("chụp ảnh");return;}const canvas=document.createElement("canvas");canvas.width=video.videoWidth;canvas.height=video.videoHeight;const ctx=canvas.getContext("2d");if(!ctx)return;ctx.filter=filter;ctx.translate(canvas.width,0);ctx.scale(-1,1);ctx.drawImage(video,0,0);canvas.toBlob(blob=>{if(blob)onCapture(new File([blob],"vibenest-capture.webp",{type:"image/webp"}));},"image/webp",.92);},[filter,onCapture,onSoftGate]);
  return <section className="vn-camera" aria-label="Camera VibeNest"><video ref={videoRef} className="vn-camera-video" autoPlay muted playsInline/><div className="vn-camera-shade"/><header className="vn-camera-top"><div><span className="vn-brand-mark">V</span><span className="vn-brand-name">VibeNest</span></div><button className="vn-glass-button" onClick={onOpenFeed}>Khám phá feed ↗</button></header>
  {state!=="ready"&&<div className="vn-camera-permission"><div className="vn-camera-symbol">◉</div><h1>{state==="starting"?"Đang mở camera…":"Camera chưa sẵn sàng"}</h1><p>{state==="denied"?"Hãy cấp quyền Camera hoặc chọn ảnh từ thư viện.":state==="unsupported"?"Trình duyệt không hỗ trợ camera trực tiếp.":"VibeNest chỉ sử dụng camera khi bạn cho phép."}</p><button className="vn-primary-button" onClick={()=>void start()}>Thử mở camera</button><label className="vn-secondary-button">Chọn ảnh<input hidden type="file" accept="image/*" onChange={e=>{const f=e.target.files?.[0];if(f)onCapture(f);}}/></label></div>}
