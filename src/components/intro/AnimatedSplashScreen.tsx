@@ -25,16 +25,23 @@ export function AnimatedSplashScreen() {
   if (phase === "hidden") return null;
   return (
     <div className={`vibenest-splash vibenest-splash--${phase}`} role="status" aria-label="VibeNest đang khởi động">
-      <div className="vibenest-splash__center">
-        <svg className="vibenest-splash__mark" viewBox="0 0 512 512" fill="none" aria-hidden="true">
-          <defs><linearGradient id="vn-wave-smile" x1="90" y1="280" x2="430" y2="470"><stop stopColor="#F43F5E"/><stop offset="1" stopColor="#9333EA"/></linearGradient></defs>
-          <path d="M92 176h42l23-42 33 88 35-119 38 145 34-92 28 54h95" stroke="white" strokeWidth="17" strokeLinecap="round" strokeLinejoin="round"/>
-          <path d="M105 302c65 85 145 128 151 128s86-43 151-128" stroke="url(#vn-wave-smile)" strokeWidth="18" strokeLinecap="round"/>
-          <path d="M145 320c38 42 78 65 111 65s73-23 111-65" stroke="url(#vn-wave-smile)" strokeWidth="10" strokeLinecap="round"/>
-        </svg>
-        <span className="vibenest-splash__wordmark">VibeNest</span>
-      </div>
+      <svg className="vibenest-splash__mark" viewBox="0 0 512 512" aria-hidden="true">
+        <defs>
+          <linearGradient id="vn-splash-neon" x1="78" y1="300" x2="434" y2="456">
+            <stop offset="0" stopColor="#F43F5E" />
+            <stop offset="1" stopColor="#9333EA" />
+          </linearGradient>
+        </defs>
+        <rect width="512" height="512" rx="108" fill="#08080E" />
+        <path d="M82 218 C132 218 151 102 211 102 C273 102 274 302 324 302 C371 302 379 154 430 154 C457 154 468 190 492 190"
+          fill="none" stroke="#F7F4FA" strokeWidth="31" strokeLinecap="round" strokeLinejoin="round" />
+        <g fill="none" stroke="url(#vn-splash-neon)" strokeLinecap="round">
+          <path d="M78 278 C78 410 158 472 256 472 C354 472 434 410 434 278" strokeWidth="34" />
+          <path d="M142 316 C166 382 210 411 256 411 C302 411 346 382 370 316" strokeWidth="29" />
+        </g>
+      </svg>
     </div>
   );
 }
+
 export default AnimatedSplashScreen;
