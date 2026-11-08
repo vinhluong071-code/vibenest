@@ -15,8 +15,8 @@ export function CameraFirstView({ open, onClose, onCaptured }: Props) {
     let active = true;
     const resetTimer = window.setTimeout(() => { setError(""); setReady(false); }, 0);
     if (!navigator.mediaDevices?.getUserMedia) {
-      setError("Trình duyệt không hỗ trợ camera trực tiếp. Bạn có thể chọn ảnh từ thiết bị.");
-      return;
+      const unsupportedTimer = window.setTimeout(() => setError("Trình duyệt không hỗ trợ camera trực tiếp. Bạn có thể chọn ảnh từ thiết bị."), 0);
+      return () => { active = false; window.clearTimeout(resetTimer); window.clearTimeout(unsupportedTimer); };
     }
     void navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" } }, audio: false })
       .then((stream) => {
