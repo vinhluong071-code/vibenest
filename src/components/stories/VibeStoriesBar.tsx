@@ -119,7 +119,7 @@ export function VibeStoriesBar({ currentUserName, currentUserHandle, onNotify }:
         void loadStoryPollResults(activeStoryId).then((counts) => { if (alive) setPollResults(counts); });
       }).subscribe();
     return () => { alive = false; void supabase.removeChannel(channel); };
-  }, [activeStoryId, loadAnonymousQuestions]);
+  }, [activeStoryId, loadAnonymousQuestions, loadStoryPollResults]);
 
 
   useEffect(() => {
