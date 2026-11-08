@@ -7,7 +7,7 @@ import { PwaRegister } from "@/components/PwaRegister";
 export const metadata: Metadata = {
   title: "VibeNest",
   applicationName: "VibeNest",
-  manifest: "/manifest.webmanifest",
+  manifest: "/manifest.json",
   description: "Không gian tâm sự và kết nối cảm xúc ẩn danh.",
   icons: {
     icon: [{ url: "/icon.svg", type: "image/svg+xml" }],
