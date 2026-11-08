@@ -430,23 +430,6 @@ export function VibeNestApp() {
     if (userId && authUser && !authUser.is_anonymous) return userId;
     setAccountOpen(true);
     throw new Error("Hãy liên kết tài khoản để " + actionLabel + ". Bạn vẫn có thể xem bảng tin mà không cần đăng nhập.");
-    let session: Session | null;
-    try {
-      // Reuses the startup promise when an action races silent sign-in.
-      session = await signInAnonymously();
-    } catch (error) {
-      console.error("[VibeNest] Tạo phiên ẩn danh thất bại:", error);
-      throw new Error(getFriendlyError(error, `Chưa thể tạo phiên ẩn danh để ${actionLabel}. Vui lòng thử lại.`));
-    }
-    if (!session?.user) {
-      throw new Error(`Chưa thể xác nhận danh tính ẩn danh để ${actionLabel}. Vui lòng thử lại.`);
-    }
-    setUserId(session.user.id);
-    setAuthUser(session.user);
-    const nextProfile = getProfileFromAuthUser(session.user, alias);
-    setProfile(nextProfile);
-    setAlias(nextProfile.displayName);
-    return session.user.id;
   }, [userId, authUser]);
 
   const ensureChatIdentity = useCallback(
