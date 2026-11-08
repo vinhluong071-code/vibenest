@@ -81,6 +81,18 @@ function getFriendlyError(error: unknown, fallback: string): string {
   return fallback;
 }
 
+async function moderateUploadedImage(file: File) {
+  const image = await new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => typeof reader.result === "string" ? resolve(reader.result) : reject(new Error("Không thể đọc ảnh để kiểm duyệt."));
+    reader.onerror = () => reject(new Error("Không thể đọc ảnh để kiểm duyệt."));
+    reader.readAsDataURL(file);
+  });
+  const response = await fetch("/api/moderation/check", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ image }) });
+  const result = await response.json() as { error?: string };
+  if (!response.ok) throw new Error(result.error || "Ảnh chưa vượt qua kiểm duyệt.");
+}
+
 export function VibeNestApp() {
   const hasSupabaseConfig = Boolean(
     process.env.NEXT_PUBLIC_SUPABASE_URL &&
@@ -432,6 +444,7 @@ export function VibeNestApp() {
         if (!allowedTypes.includes(media.type) || media.size > 10 * 1024 * 1024) {
           throw new Error("Ảnh phải là JPG, PNG hoặc WebP và không vượt quá 10 MB.");
         }
+        await moderateUploadedImage(media);
         const extension = media.type === "image/jpeg" ? "jpg" : media.type === "image/png" ? "png" : "webp";
         uploadedPath = `${ownerId}/${crypto.randomUUID()}.${extension}`;
         const { error: uploadError } = await supabase.storage
