@@ -57,3 +57,16 @@ create policy "Vote once on active story polls" on public.vibe_story_poll_votes
 revoke all on public.vibe_story_poll_votes from anon, authenticated;
 grant select (story_id, option_index) on public.vibe_story_poll_votes to authenticated;
 grant insert (story_id, voter_id, option_index) on public.vibe_story_poll_votes to authenticated;
+
+do $$
+begin
+  if exists (select 1 from pg_publication where pubname = 'supabase_realtime') then
+    if not exists (select 1 from pg_publication_tables where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'vibe_story_questions') then
+      alter publication supabase_realtime add table public.vibe_story_questions;
+    end if;
+    if not exists (select 1 from pg_publication_tables where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'vibe_story_poll_votes') then
+      alter publication supabase_realtime add table public.vibe_story_poll_votes;
+    end if;
+  end if;
+end;
+$$;
