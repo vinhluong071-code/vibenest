@@ -33,6 +33,8 @@ export interface VibePostItem {
 export interface VibeFeedCardProps {
   post: VibePostItem;
   busy?: boolean;
+  pinned?: boolean;
+  onTogglePin: () => void;
   onChat: () => void;
   onToggleEmpathy: (postId: string) => void;
   onToggleSave: (postId: string) => void;
@@ -43,6 +45,8 @@ export interface VibeFeedCardProps {
 export const VibeFeedCard: React.FC<VibeFeedCardProps> = ({
   post,
   busy = false,
+  pinned = false,
+  onTogglePin,
   onChat,
   onToggleEmpathy,
   onToggleSave,
@@ -97,6 +101,10 @@ export const VibeFeedCard: React.FC<VibeFeedCardProps> = ({
           </div>
         </div>
 
+        <div className="flex items-center gap-1 shrink-0">
+          <button type="button" onClick={onTogglePin} aria-pressed={pinned} aria-label={pinned ? "Bỏ ghim bài viết" : "Ghim bài viết lên đầu"} title={pinned ? "Bỏ ghim" : "Ghim lên đầu"} className={`min-h-[44px] min-w-[44px] rounded-xl flex items-center justify-center ${pinned ? "text-fuchsia-500" : "text-slate-400 hover:text-fuchsia-500"}`}>
+            <svg className="w-5 h-5" viewBox="0 0 24 24" fill={pinned ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.8"><path strokeLinecap="round" strokeLinejoin="round" d="M8 4h8l-1 6 3 3v2H6v-2l3-3-1-6ZM12 15v6"/></svg>
+          </button>
         <button
           type="button"
           onClick={() => onToggleSave(post.id)}
@@ -122,6 +130,7 @@ export const VibeFeedCard: React.FC<VibeFeedCardProps> = ({
             />
           </svg>
         </button>
+        </div>
       </div>
 
       {/* Post Body Text */}
