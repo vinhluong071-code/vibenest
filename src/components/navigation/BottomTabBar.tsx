@@ -7,10 +7,10 @@ function CameraGlyph(){return <svg viewBox="0 0 36 36" aria-hidden="true"><path 
 function HomeGlyph(){return <svg viewBox="0 0 32 32" aria-hidden="true"><path d="m4 14 12-10 12 10v13H19v-8h-6v8H4z"/></svg>}
 function ProfileGlyph(){return <svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="10" r="6"/><path d="M4 29a12 12 0 0 1 24 0z"/></svg>}
 export function BottomTabBar(p:BottomTabBarProps){return <div className="hybrid-bottom-wrap"><nav className="hybrid-bottom-nav hybrid-bottom-five" aria-label="Điều hướng VibeNest">
-<button type="button" className={p.activeTab==='radar'?'is-active':''} onClick={()=>p.onSelectTab('radar')} aria-label="Bản đồ"><span className="hybrid-nav-icon"><RadarGlyph/></span><span>Bản đồ</span></button>
-<button type="button" className={p.activeTab==='messages'?'is-active':''} onClick={p.onOpenMessages} aria-label={`Chat, ${p.unreadCount} chưa đọc`}><span className="hybrid-nav-icon hybrid-message-icon"><MessageGlyph/>{p.unreadCount>0&&<b className="hybrid-nav-badge">{p.unreadCount>99?'99+':p.unreadCount}</b>}</span><span>Chat</span></button>
-<button type="button" className={`hybrid-camera-button ${p.activeTab==='camera'?'is-active':''}`} onClick={p.onOpenComposer} aria-label="Camera và VibeBooth"><span className="hybrid-camera-ring"><CameraGlyph/></span><span>Camera</span></button>
-<button type="button" className={p.activeTab==='home'?'is-active':''} onClick={()=>p.onSelectTab('home')} aria-label="Home"><span className="hybrid-nav-icon"><HomeGlyph/></span><span>Home</span></button>
-<button type="button" className={p.activeTab==='profile'?'is-active':''} onClick={p.onOpenProfile} aria-label={`Cá nhân ${p.userInitial}`}><span className="hybrid-nav-icon"><ProfileGlyph/></span><span>Cá nhân</span></button>
+<button type="button" className={p.activeTab==='home'?'is-active':''} onClick={()=>p.onSelectTab('home')} aria-label="Home, bảng tin và Story"><span className="hybrid-nav-icon"><HomeGlyph/></span></button>
+<button type="button" className={p.activeTab==='radar'?'is-active':''} onClick={()=>p.onSelectTab('radar')} aria-label="Bản đồ, Radar"><span className="hybrid-nav-icon"><RadarGlyph/></span></button>
+<button type="button" className={`hybrid-camera-button ${p.activeTab==='camera'?'is-active':''}`} onClick={p.onOpenComposer} aria-label="Camera và VibeBooth"><span className="hybrid-camera-ring"><CameraGlyph/></span></button>
+<button type="button" className={p.activeTab==='messages'?'is-active':''} onClick={p.onOpenMessages} aria-label={`Chat, ${p.unreadCount} chưa đọc`}><span className="hybrid-nav-icon hybrid-message-icon"><MessageGlyph/>{p.unreadCount>0&&<b className="hybrid-nav-badge">{p.unreadCount>99?'99+':p.unreadCount}</b>}</span></button>
+<button type="button" className={p.activeTab==='profile'?'is-active':''} onClick={p.onOpenProfile} aria-label={`Cá nhân, ${p.userInitial}`}><span className="hybrid-nav-icon"><ProfileGlyph/></span></button>
 </nav></div>}
 export default BottomTabBar;
