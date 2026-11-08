@@ -92,11 +92,21 @@ export function VibeStoriesBar({ currentUserName, currentUserHandle, onNotify }:
   const activeIndex = activeStoryId === null ? -1 : stories.findIndex((story) => story.id === activeStoryId);
   const activeStory = activeIndex < 0 ? null : stories[activeIndex] ?? null;
 
+  function openStory(storyId: string | null) {
+    setActiveStoryId(storyId);
+    setStoryQuestions([]);
+    setPollResults([0, 0]);
+    setPollVoted(false);
+    setPollNotice("");
+    setQuestionDraft("");
+    setQuestionNotice("");
+  }
+
   useEffect(() => {
-    if (!activeStoryId) { setPollResults([0, 0]); setPollVoted(false); return; }
+    if (!activeStoryId) return;
     let alive = true;
     void loadStoryPollResults(activeStoryId).then((counts) => {
-      if (alive) setPollResults(counts);
+      if (alive) { setPollResults(counts); setPollVoted(false); }
     }).catch(() => {
       if (alive) setPollResults([0, 0]);
     });
@@ -104,7 +114,7 @@ export function VibeStoriesBar({ currentUserName, currentUserHandle, onNotify }:
   }, [activeStoryId, loadStoryPollResults]);
 
   useEffect(() => {
-    if (!activeStoryId) { setStoryQuestions([]); return; }
+    if (!activeStoryId) return;
     let alive = true;
     void loadAnonymousQuestions(activeStoryId).then((items) => {
       if (alive) setStoryQuestions(items);
@@ -243,7 +253,7 @@ export function VibeStoriesBar({ currentUserName, currentUserHandle, onNotify }:
           className="vn-story-create">
           <span className="vn-story-create-avatar">＋</span><strong className="vn-story-create-label">Tạo Story</strong>
         </button>
-        {stories.map((story) => <StoryTile key={story.id} story={story} onOpen={() => setActiveStoryId(story.id)} />)}
+        {stories.map((story) => <StoryTile key={story.id} story={story} onOpen={() => openStory(story.id)} />)}
         {!loading && stories.length === 0 && <p className="max-w-[190px] text-xs leading-relaxed text-slate-500">Chưa có Stories đang hoạt động. Bạn có thể mở đầu khoảnh khắc đầu tiên.</p>}
       </div>
 
@@ -302,7 +312,7 @@ export function VibeStoriesBar({ currentUserName, currentUserHandle, onNotify }:
             <div className="absolute inset-0 bg-gradient-to-b from-black/65 via-black/20 to-black/80" />
             <header className="relative z-10 flex items-center justify-between gap-3">
               <div className="min-w-0"><strong className="block truncate text-sm">{activeStory.alias}</strong><span className="text-xs text-white/70">{activeStory.mood} · {createdLabel(activeStory.created_at)} · còn {remainingHours(activeStory.expires_at)}</span></div>
-              <button type="button" onClick={() => setActiveStoryId(null)} className="min-h-11 min-w-11 rounded-xl bg-white/10" aria-label="Đóng Stories">✕</button>
+              <button type="button" onClick={() => openStory(null)} className="min-h-11 min-w-11 rounded-xl bg-white/10" aria-label="Đóng Stories">✕</button>
             </header>
             <div className="relative z-10 flex flex-1 flex-col items-center justify-center gap-4 px-5 py-8"><p className="whitespace-pre-wrap text-center text-xl font-medium leading-relaxed drop-shadow-lg">{getStoryBody(activeStory.caption) || activeStory.mood}</p>
               {getStorySticker(activeStory.caption, "[HỎI ẨN DANH]") && <span className="rounded-full border border-fuchsia-200/30 bg-fuchsia-500/20 px-4 py-2 text-xs">💌 {getStorySticker(activeStory.caption, "[HỎI ẨN DANH]")}</span>}
@@ -315,7 +325,7 @@ export function VibeStoriesBar({ currentUserName, currentUserHandle, onNotify }:
               <span className="text-xs text-white/80">♡ {activeStory.heart_count} · ✧ {activeStory.warmth_count}</span>
               <div className="flex gap-2"><button type="button" disabled={reactionBusy} onClick={() => void reactToStory("heart")} className="min-h-11 rounded-xl border border-white/20 bg-white/10 px-3 text-sm disabled:opacity-50">♡ Quan tâm</button><button type="button" disabled={reactionBusy} onClick={() => void reactToStory("warmth")} className="min-h-11 rounded-xl bg-rose-600 px-3 text-sm font-semibold disabled:opacity-50">✧ Gửi ấm áp</button></div>
             </footer>
-            <div className="relative z-10 mt-4 flex justify-between"><button type="button" onClick={() => setActiveStoryId(activeIndex > 0 ? stories[activeIndex - 1].id : activeStoryId)} className="text-xs text-white/75">← Trước</button><button type="button" onClick={() => setActiveStoryId(activeIndex >= 0 && activeIndex + 1 < stories.length ? stories[activeIndex + 1].id : null)} className="text-xs text-white/75">Tiếp →</button></div>
+            <div className="relative z-10 mt-4 flex justify-between"><button type="button" onClick={() => openStory(activeIndex > 0 ? stories[activeIndex - 1].id : activeStoryId)} className="text-xs text-white/75">← Trước</button><button type="button" onClick={() => openStory(activeIndex >= 0 && activeIndex + 1 < stories.length ? stories[activeIndex + 1].id : null)} className="text-xs text-white/75">Tiếp →</button></div>
           </article>
         </div>
       )}
