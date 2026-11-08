@@ -5,7 +5,7 @@ type Mode="photo"|"four";
 const STORIES=[["Your story","+","story-add"],["Vibe","V","story-violet"],["Friends","✦","story-cyan"],["Moments","M","story-rose"]];
 const FRAME_COLORS=[{name:"Hồng Y2K",value:"#ff77b7"},{name:"Đen Obsidian",value:"#11131c"},{name:"Tím Cyberpunk",value:"#7138d5"},{name:"Trắng Sữa",value:"#f7eee7"},{name:"Xanh Pastel",value:"#a8dfe5"}];
 export function CameraFirstView({open,onClose,onCaptured,handle="@vibenest.user"}:Props){
-const video=useRef<HTMLVideoElement>(null);const stream=useRef<MediaStream|null>(null);const pressTimer=useRef<number|null>(null);const recorder=useRef<MediaRecorder|null>(null);const chunks=useRef<Blob[]>([]);const micStream=useRef<MediaStream|null>(null);const audioContext=useRef<AudioContext|null>(null);const audioDestination=useRef<MediaStreamAudioDestinationNode|null>(null);const micSource=useRef<MediaStreamAudioSourceNode|null>(null);const musicSource=useRef<MediaElementAudioSourceNode|null>(null);const pressHeld=useRef(false);const musicElement=useRef<HTMLAudioElement>(null);const suppressClick=useRef(false);
+const video=useRef<HTMLVideoElement>(null);const stream=useRef<MediaStream|null>(null);const pressTimer=useRef<number|null>(null);const recordingTimer=useRef<number|null>(null);const recorder=useRef<MediaRecorder|null>(null);const chunks=useRef<Blob[]>([]);const micStream=useRef<MediaStream|null>(null);const audioContext=useRef<AudioContext|null>(null);const audioDestination=useRef<MediaStreamAudioDestinationNode|null>(null);const micSource=useRef<MediaStreamAudioSourceNode|null>(null);const musicSource=useRef<MediaElementAudioSourceNode|null>(null);const pressHeld=useRef(false);const musicElement=useRef<HTMLAudioElement>(null);const suppressClick=useRef(false);
 const [error,setError]=useState("");const [ready,setReady]=useState(false);const [busy,setBusy]=useState(false);
 const [facing,setFacing]=useState<"user"|"environment">("environment");const [flash,setFlash]=useState(false);
 const [filter,setFilter]=useState<"none"|"warm"|"mono"|"dream">("none");const [mode,setMode]=useState<Mode>("photo");
@@ -35,10 +35,11 @@ try{
   if(blob.size){if(videoPreview)URL.revokeObjectURL(videoPreview);setVideoExtension(blob.type.includes("mp4")?"mp4":"webm");setVideoPreview(URL.createObjectURL(blob));}
   micStream.current?.getTracks().forEach(track=>track.stop());micStream.current=null;
   micSource.current?.disconnect();micSource.current=null;
+  if(recordingTimer.current!==null){window.clearTimeout(recordingTimer.current);recordingTimer.current=null;}
   if(musicElement.current)musicElement.current.pause();
   setRecording(false);
  };
- recorder.current=mediaRecorder;mediaRecorder.start(250);setRecording(true);
+ recorder.current=mediaRecorder;mediaRecorder.start(250);setRecording(true);recordingTimer.current=window.setTimeout(()=>stopVideoRecording(),30000);
 }catch(e){micStream.current?.getTracks().forEach(track=>track.stop());micStream.current=null;setRecording(false);setError(e instanceof Error?e.message:"Không thể bắt đầu quay video. Hãy kiểm tra quyền micro.");}
 }
 function stopVideoRecording(){if(recorder.current?.state==="recording")recorder.current.stop();}
