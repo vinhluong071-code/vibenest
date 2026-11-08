@@ -26,6 +26,15 @@ type StoryQuestionTable = {
 };
 type StoryQuestionClient = { from: (table: "vibe_story_questions") => StoryQuestionTable };
 
+type StoryPollTable = {
+  insert: (row: { story_id: string; voter_id: string; option_index: number }) => Promise<{ error: { message: string } | null }>;
+  select: (columns: string) => {
+    eq: (column: "story_id", value: string) => Promise<{ data: Array<{ option_index: number }> | null; error: { message: string } | null }>;
+  };
+};
+type StoryPollClient = { from: (table: "vibe_story_poll_votes") => StoryPollTable };
+
+
 export function useVibeStories(enabled = true, limit = 60) {
   const [stories, setStories] = useState<VibeStory[]>([]);
   const [loading, setLoading] = useState(enabled);
@@ -210,6 +219,28 @@ export function useVibeStories(enabled = true, limit = 60) {
     if (insertError) throw new Error(insertError.message);
   }, []);
 
+  const submitStoryPollVote = useCallback(async (storyId: string, optionIndex: number) => {
+    if (optionIndex !== 0 && optionIndex !== 1) throw new Error("Lựa chọn bình chọn không hợp lệ.");
+    const supabase = createClient();
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError) throw userError;
+    if (!user) throw new Error("Hãy kết nối phiên VibeNest để bình chọn.");
+    const table = (supabase as unknown as StoryPollClient).from("vibe_story_poll_votes");
+    const { error: insertError } = await table.insert({ story_id: storyId, voter_id: user.id, option_index: optionIndex });
+    if (insertError) throw new Error(insertError.message);
+  }, []);
+
+  const loadStoryPollResults = useCallback(async (storyId: string) => {
+    const supabase = createClient();
+    const table = (supabase as unknown as StoryPollClient).from("vibe_story_poll_votes");
+    const { data, error: queryError } = await table.select("option_index").eq("story_id", storyId);
+    if (queryError) throw new Error(queryError.message);
+    return (data ?? []).reduce((counts, vote) => {
+      counts[vote.option_index] = (counts[vote.option_index] ?? 0) + 1;
+      return counts;
+    }, [0, 0] as [number, number]);
+  }, []);
+
   const loadAnonymousQuestions = useCallback(async (storyId: string) => {
     const supabase = createClient();
     const table = (supabase as unknown as StoryQuestionClient).from("vibe_story_questions");
@@ -229,5 +260,7 @@ export function useVibeStories(enabled = true, limit = 60) {
     deleteStory,
     submitAnonymousQuestion,
     loadAnonymousQuestions,
+    submitStoryPollVote,
+    loadStoryPollResults,
   };
 }
