@@ -2,6 +2,10 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+  <key>NSCameraUsageDescription</key>
+  <string>VibeNest cần camera để bạn chụp và tạo dải ảnh khi bạn chủ động sử dụng tính năng này.</string>
+  <key>NSPhotoLibraryUsageDescription</key>
+  <string>VibeNest cần quyền truy cập ảnh để bạn chọn ảnh đại diện và chia sẻ khoảnh khắc do bạn chọn.</string>
   <key>CAPACITOR_DEBUG</key>
 	<string>$(CAPACITOR_DEBUG)</string>
 	<key>CFBundleDevelopmentRegion</key>
