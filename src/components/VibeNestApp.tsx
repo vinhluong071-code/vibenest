@@ -13,6 +13,7 @@ import { VibeFeedCard, type VibePostItem } from "@/components/feed/VibeFeedCard"
 import { BottomTabBar } from "@/components/navigation/BottomTabBar";
 import { LitmatchOnboardingModal, type UserProfile } from "@/components/auth/LitmatchOnboardingModal";
 import { LitmatchThirdPartyAuthModal } from "@/components/auth/LitmatchThirdPartyAuthModal";
+import { SafetyComplianceModal } from "@/components/safety/SafetyComplianceModal";
 import { InboxCenter } from "@/components/InboxCenter";
 import { AuraDiscoveryRail } from "@/components/discovery/AuraDiscoveryRail";
 import { VoiceLoungeScreen } from "@/components/experience/VoiceLoungeScreen";
@@ -118,6 +119,7 @@ export function VibeNestApp() {
   const [chatUnreadCount, setChatUnreadCount] = useState(0);
   const [realtimeToast, setRealtimeToast] = useState("");
   const [accountOpen, setAccountOpen] = useState(false);
+  const [safetyPostId, setSafetyPostId] = useState<string | null>(null);
   const [profileOpen, setProfileOpen] = useState(false);
   const [activeSurface, setActiveSurface] = useState<"home" | "voice" | "radar">("home");
   const touchOrigin = useRef<{ x: number; y: number } | null>(null);
@@ -432,6 +434,19 @@ export function VibeNestApp() {
     [ensureIdentity],
   );
 
+  async function blockPost(postId: string) {
+    try {
+      await ensureIdentity("chặn tài khoản");
+      const response = await fetch("/api/safety/block-post", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ postId }) });
+      const result = await response.json() as { error?: string };
+      if (!response.ok) throw new Error(result.error || "Không thể chặn tài khoản.");
+      setNotice("Đã chặn người đăng. Bài viết của họ sẽ được ẩn khỏi bảng tin sau khi migration an toàn được áp dụng.");
+      await loadFeed();
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : "Không thể chặn tài khoản.");
+    }
+  }
+
   async function publish(content: string, mood: Mood, location: string, media: File | null = null) {
     setBusy(true);
     let uploadedPath: string | null = null;
@@ -651,6 +666,8 @@ export function VibeNestApp() {
                         if (target) void sendReply(target, text);
                       }}
                       onShare={handleSharePost}
+                      onReport={() => setSafetyPostId(sourcePost.id)}
+                      onBlock={() => void blockPost(sourcePost.id)}
                       onChat={() => setChatPost(sourcePost)}
                     />
                   );
@@ -707,6 +724,7 @@ export function VibeNestApp() {
         }}
       />
       <LitmatchThirdPartyAuthModal open={accountOpen} onClose={() => setAccountOpen(false)} intent="liên kết tài khoản" />
+      <SafetyComplianceModal open={Boolean(safetyPostId)} onClose={() => setSafetyPostId(null)} targetContentId={safetyPostId ?? undefined} showAccountActions={false} />
       <ComposerModal key={composerOpen ? composerMood : "closed"} open={composerOpen} alias={alias} initialMood={composerMood} busy={busy} onClose={() => setComposerOpen(false)} onSubmit={publish} />
     </div>
   );
