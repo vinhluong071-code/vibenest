@@ -12,7 +12,7 @@ import { VibeStoriesBar } from "@/components/stories/VibeStoriesBar";
 import { VibeFeedCard, type VibePostItem } from "@/components/feed/VibeFeedCard";
 import { BottomTabBar } from "@/components/navigation/BottomTabBar";
 import { LitmatchOnboardingModal, type UserProfile } from "@/components/auth/LitmatchOnboardingModal";
-import { AccountLinkingModal } from "@/components/auth/AccountLinkingModal";
+import { LitmatchThirdPartyAuthModal } from "@/components/auth/LitmatchThirdPartyAuthModal";
 import { InboxCenter } from "@/components/InboxCenter";
 import { AuraDiscoveryRail } from "@/components/discovery/AuraDiscoveryRail";
 import { VoiceLoungeScreen } from "@/components/experience/VoiceLoungeScreen";
@@ -31,8 +31,7 @@ type VibePostRow = {
 };
 
 const moods = ["Tất cả", "Đêm muộn", "Chênh vênh", "Chữa lành", "Thầm thương", "Đã lưu"] as const;
-const aliases = ["Mây Lang Thang", "Người Qua Đêm", "Kẻ Mộng Mơ", "Một Vì Sao", "Gió Nhẹ"];
-const makeAlias = () => aliases[Math.floor(Math.random() * aliases.length)] + " #" + Math.floor(100 + Math.random() * 900);
+const makeAlias = () => "Khách VibeNest";
 
 function getProfileFromAuthUser(user: Session["user"] | null, fallbackName: string): UserProfile {
   const rawProfile: unknown = user?.user_metadata?.vibenest_profile;
@@ -87,8 +86,8 @@ export function VibeNestApp() {
     process.env.NEXT_PUBLIC_SUPABASE_URL &&
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
   );
-  const [alias, setAlias] = useState("Mây Lang Thang #409");
-  const [profile, setProfile] = useState<UserProfile>(() => getProfileFromAuthUser(null, "Mây Lang Thang #409"));
+  const [alias, setAlias] = useState("Khách VibeNest");
+  const [profile, setProfile] = useState<UserProfile>(() => getProfileFromAuthUser(null, "Khách VibeNest"));
   const [userId, setUserId] = useState<string | null>(null);
   const [posts, setPosts] = useState<VibePost[]>([]);
   const [filter, setFilter] = useState<string>("Tất cả");
@@ -247,7 +246,7 @@ export function VibeNestApp() {
       (_event: AuthChangeEvent, session: Session | null) => {
         if (alive) {
           const nextUser = session?.user ?? null;
-          const nextProfile = getProfileFromAuthUser(nextUser, "Mây Lang Thang #409");
+          const nextProfile = getProfileFromAuthUser(nextUser, "Khách VibeNest");
           setUserId(nextUser?.id ?? null);
           if (!nextUser) {
             setNotificationCount(0);
@@ -265,7 +264,7 @@ export function VibeNestApp() {
     void signInAnonymously().then((session) => {
       if (alive) {
         const nextUser = session?.user ?? null;
-        const nextProfile = getProfileFromAuthUser(nextUser, "Mây Lang Thang #409");
+        const nextProfile = getProfileFromAuthUser(nextUser, "Khách VibeNest");
         setUserId(nextUser?.id ?? null);
         if (!nextUser) {
           setNotificationCount(0);
@@ -692,15 +691,7 @@ export function VibeNestApp() {
           setNotice("Hồ sơ cá nhân đã được lưu vào tài khoản VibeNest.");
         }}
       />
-      <AccountLinkingModal
-        isOpen={accountOpen}
-        onClose={() => setAccountOpen(false)}
-        currentAlias={alias}
-        onAliasChange={setAlias}
-        linkedEmail={authUser?.email && authUser.email_confirmed_at ? authUser.email : undefined}
-        onAccountLinked={handleAccountLinked}
-        onAccountUnlinked={() => void handleAccountUnlinked()}
-      />
+      <LitmatchThirdPartyAuthModal open={accountOpen} onClose={() => setAccountOpen(false)} intent="liên kết tài khoản" />
       <ComposerModal key={composerOpen ? composerMood : "closed"} open={composerOpen} alias={alias} initialMood={composerMood} busy={busy} onClose={() => setComposerOpen(false)} onSubmit={publish} />
     </div>
   );
