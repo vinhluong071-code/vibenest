@@ -669,3 +669,120 @@ body, button, input, textarea, select {
 .vibe-card {
   padding: clamp(14px, 2vw, 18px);
 }
+
+
+/* Isolated, single-screen app architecture: each selected surface owns its scroll. */
+html,
+body {
+  width: 100%;
+  height: 100dvh;
+  max-height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+body { overscroll-behavior: none; }
+.app-shell {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100dvh;
+  max-height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+  isolation: isolate;
+}
+.app-screen {
+  position: relative;
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  max-height: 100dvh;
+}
+.app-screen-scroll {
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: calc(88px + env(safe-area-inset-bottom));
+}
+.hybrid-bottom-wrap {
+  position: fixed;
+  z-index: 80;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding-bottom: env(safe-area-inset-bottom);
+  pointer-events: none;
+}
+.hybrid-bottom-nav { pointer-events: auto; }
+.vn-camera-backdrop,
+.dm-backdrop,
+.vn-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  width: 100%;
+  height: 100dvh;
+  max-height: 100dvh;
+  overflow: hidden;
+}
+.vn-camera-screen,
+.vn-camera-view,
+.dm-panel,
+.vn-profile-modal {
+  box-sizing: border-box;
+  max-height: 100dvh;
+}
+.vn-camera-screen {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  padding: 0;
+}
+.vn-camera-view {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+.dm-backdrop {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+}
+.dm-panel {
+  width: min(100%, 620px);
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  border-radius: 0;
+}
+.vn-profile-modal {
+  width: min(100%, 620px);
+  max-height: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.app-shell :is(input, textarea, select, .vibe-card, .glass-panel, .vn-discovery-grid article) {
+  box-sizing: border-box;
+}
+.app-shell :is(input, textarea, select) {
+  min-height: 44px;
+  border-radius: 16px;
+}
+.app-shell :is(.vibe-card, .vn-discovery-grid article) {
+  padding: 16px;
+  border-radius: 24px;
+}
+.app-shell :is(h1, h2, h3) {
+  line-height: 1.2;
+  text-wrap: balance;
+}
+@media (min-width: 721px) {
+  .app-screen-scroll { padding-bottom: 32px; }
+  .hybrid-bottom-wrap { padding-bottom: 12px; }
+}
