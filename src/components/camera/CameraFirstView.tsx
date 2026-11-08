@@ -1,75 +1,16 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
-
-type Props = { open: boolean; onClose: () => void; onCaptured: (file: File) => void };
-
-export function CameraFirstView({ open, onClose, onCaptured }: Props) {
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const streamRef = useRef<MediaStream | null>(null);
-  const [error, setError] = useState("");
-  const [ready, setReady] = useState(false);
-  const [busy, setBusy] = useState(false);
-
-  useEffect(() => {
-    if (!open) return;
-    let active = true;
-    const resetTimer = window.setTimeout(() => { setError(""); setReady(false); }, 0);
-    if (!navigator.mediaDevices?.getUserMedia) {
-      const unsupportedTimer = window.setTimeout(() => setError("Trình duyệt không hỗ trợ camera trực tiếp. Bạn có thể chọn ảnh từ thiết bị."), 0);
-      return () => { active = false; window.clearTimeout(resetTimer); window.clearTimeout(unsupportedTimer); };
-    }
-    void navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" } }, audio: false })
-      .then((stream) => {
-        if (!active) { stream.getTracks().forEach((track) => track.stop()); return; }
-        streamRef.current = stream;
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-          void videoRef.current.play().then(() => setReady(true)).catch(() => setError("Không thể khởi động camera."));
-        }
-      })
-      .catch(() => setError("Không thể truy cập camera. Hãy cấp quyền camera hoặc chọn ảnh từ thư viện."));
-    return () => {
-      active = false;
-      window.clearTimeout(resetTimer);
-      streamRef.current?.getTracks().forEach((track) => track.stop());
-      streamRef.current = null;
-    };
-  }, [open]);
-
-  if (!open) return null;
-
-  async function capture() {
-    const video = videoRef.current;
-    if (!video || !video.videoWidth || busy) return;
-    setBusy(true);
-    try {
-      const canvas = document.createElement("canvas");
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      const context = canvas.getContext("2d");
-      if (!context) throw new Error("Không thể xử lý ảnh từ camera.");
-      context.drawImage(video, 0, 0);
-      const blob = await new Promise<Blob>((resolve, reject) => canvas.toBlob((value) => value ? resolve(value) : reject(new Error("Không thể chụp ảnh.")), "image/jpeg", .92));
-      onCaptured(new File([blob], `vibenest-${Date.now()}.jpg`, { type: "image/jpeg" }));
-    } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "Không thể chụp ảnh.");
-    } finally { setBusy(false); }
-  }
-
-  return (
-    <div className="vn-modal-backdrop vn-camera-backdrop" role="dialog" aria-modal="true" aria-label="Camera VibeNest">
-      <section className="vn-camera-view">
-        <header><div><small>CAMERA FIRST</small><h2>Khoảnh khắc của bạn</h2></div><button type="button" onClick={onClose} aria-label="Đóng camera">×</button></header>
-        <div className="vn-camera-preview">
-          <video ref={videoRef} autoPlay muted playsInline />
-          {!ready && <div className="vn-camera-placeholder">Đang chờ camera…</div>}
-        </div>
-        {error && <p className="vn-camera-error" role="alert">{error}</p>}
-        <div className="vn-camera-actions">
-          <label className="vn-secondary-button">Chọn từ thư viện<input hidden type="file" accept="image/*" capture="environment" onChange={(event) => { const file = event.target.files?.[0]; if (file) onCaptured(file); }} /></label>
-          <button type="button" className="vn-camera-shutter" disabled={!ready || busy} onClick={() => void capture()} aria-label="Chụp ảnh">{busy ? "…" : "●"}</button>
-        </div>
-      </section>
-    </div>
-  );
-}
+import {useEffect,useRef,useState} from "react";
+type Props={open:boolean;onClose:()=>void;onCaptured:(file:File)=>void};
+const STORIES=[["Your story","+","story-add"],["Vibe","V","story-violet"],["Friends","✦","story-cyan"],["Moments","M","story-rose"]];
+export function CameraFirstView({open,onClose,onCaptured}:Props){
+const video=useRef<HTMLVideoElement>(null);const stream=useRef<MediaStream|null>(null);const [error,setError]=useState("");const [ready,setReady]=useState(false);const [busy,setBusy]=useState(false);const [facing,setFacing]=useState<"user"|"environment">("environment");const [flash,setFlash]=useState(false);const [filter,setFilter]=useState<"none"|"warm"|"mono"|"dream">("none");
+useEffect(()=>{if(!open)return;let alive=true;const start=async()=>{setReady(false);setError("");try{if(!navigator.mediaDevices?.getUserMedia)throw new Error("Thiết bị chưa hỗ trợ camera.");const s=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:facing}},audio:false});if(!alive){s.getTracks().forEach(t=>t.stop());return;}stream.current=s;if(video.current){video.current.srcObject=s;await video.current.play();setReady(true);}}catch(e){setError(e instanceof Error?e.message:"Không thể mở camera. Hãy cấp quyền hoặc chọn ảnh.");}};void start();return()=>{alive=false;stream.current?.getTracks().forEach(t=>t.stop());stream.current=null;};},[open,facing]);
+if(!open)return null;
+async function capture(){const v=video.current;if(!v?.videoWidth||busy)return;setBusy(true);try{const c=document.createElement("canvas");c.width=v.videoWidth;c.height=v.videoHeight;const x=c.getContext("2d");if(!x)throw new Error("Không thể xử lý ảnh.");if(facing==="user"){x.translate(c.width,0);x.scale(-1,1);}x.filter=filter==="mono"?"grayscale(1)":filter==="warm"?"sepia(.25) saturate(1.25)":filter==="dream"?"saturate(1.35) brightness(1.08)":"none";x.drawImage(v,0,0);const blob=await new Promise<Blob>((resolve,reject)=>c.toBlob(b=>b?resolve(b):reject(new Error("Không thể chụp ảnh.")),"image/jpeg",.94));onCaptured(new File([blob],`vibenest-${Date.now()}.jpg`,{type:"image/jpeg"}));}catch(e){setError(e instanceof Error?e.message:"Chụp ảnh thất bại.");}finally{setBusy(false);}}
+return <div className="vn-modal-backdrop vn-camera-backdrop" role="dialog" aria-modal="true" aria-label="Camera VibeNest"><section className="vn-camera-view vn-camera-first">
+<header className="vn-camera-top"><div><small>VIBENEST · CAMERA</small><h2>Capture the feeling.</h2></div><button type="button" onClick={onClose} aria-label="Đóng camera">×</button></header>
+<div className="vn-story-rail" aria-label="Vibe Stories">{STORIES.map(s=><div className="vn-story-item" key={s[0]}><span className={`vn-story-ring ${s[2]}`}><i>{s[1]}</i></span><small>{s[0]}</small></div>)}</div>
+<div className="vn-camera-preview vn-camera-full-preview"><video ref={video} autoPlay muted playsInline className={`vn-filter-${filter}`}/>{!ready&&<div className="vn-camera-placeholder">{error||"Đang kết nối camera…"}</div>}<div className="vn-camera-side-controls"><button type="button" className={flash?"selected":""} onClick={()=>setFlash(v=>!v)} aria-label="Flash">⚡<small>Flash</small></button><button type="button" onClick={()=>setFacing(v=>v==="user"?"environment":"user")} aria-label="Flip camera">↻<small>Flip</small></button><button type="button" onClick={()=>setFilter(v=>v==="none"?"warm":v==="warm"?"mono":v==="mono"?"dream":"none")} aria-label="Mood filter">✧<small>Mood</small></button></div><span className={`vn-flash-wash ${flash?"is-on":""}`}/></div>
+{error&&<p className="vn-camera-error" role="alert">{error}</p>}
+<div className="vn-camera-bottom"><label className="vn-gallery-pick">▧<small>Thư viện</small><input hidden type="file" accept="image/*" onChange={e=>{const f=e.target.files?.[0];if(f)onCaptured(f);}}/></label><button type="button" className={`vn-camera-shutter vn-shutter-ready ${ready?"ready":""}`} disabled={!ready||busy} onClick={()=>void capture()} aria-label="Chụp ảnh"><span/></button><button type="button" className="vn-camera-flip" onClick={()=>setFacing(v=>v==="user"?"environment":"user")} aria-label="Đổi camera">⟳<small>Đổi góc</small></button></div><div className="vn-camera-filter-label">{filter.toUpperCase()} · LIVE MOOD</div>
+</section></div>}

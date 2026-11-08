@@ -1,55 +1,16 @@
 'use client';
-
-export type BottomNavTab = 'camera' | 'radar' | 'messages' | 'booth' | 'profile';
-
-export interface BottomTabBarProps {
-  activeTab: BottomNavTab;
-  unreadCount: number;
-  onSelectTab: (tab: BottomNavTab) => void;
-  onOpenComposer: () => void;
-  onOpenMessages: () => void;
-  onOpenBooth: () => void;
-  onOpenProfile: () => void;
-  userInitial: string;
-}
-
-function RadarIcon() {
-  return <svg viewBox="0 0 28 28" aria-hidden="true"><circle cx="14" cy="14" r="10.5" /><circle cx="14" cy="14" r="6.5" /><path d="M14 14 22 6M14 3.5v2M24.5 14h-2M14 24.5v-2M3.5 14h2" /><path d="M14 14 20.5 10" className="nav-icon__accent" /></svg>;
-}
-function MessengerIcon() {
-  return <svg viewBox="0 0 28 28" aria-hidden="true"><path d="M4 7.5A4.5 4.5 0 0 1 8.5 3h11A4.5 4.5 0 0 1 24 7.5v7a4.5 4.5 0 0 1-4.5 4.5H12l-5.5 4v-4.8A4.5 4.5 0 0 1 4 14.5z" /><path d="m8 12 4-4 3 3 5-4" className="nav-icon__accent" /><path d="M2.5 9v9a4 4 0 0 0 4 4" /></svg>;
-}
-function CameraIcon() {
-  return <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M5 10.5A2.5 2.5 0 0 1 7.5 8h3l2-3h7l2 3h3a2.5 2.5 0 0 1 2.5 2.5v13a2.5 2.5 0 0 1-2.5 2.5h-17A2.5 2.5 0 0 1 5 23.5z" /><circle cx="16" cy="17" r="5.2" /><circle cx="24" cy="11.5" r="1" className="nav-icon__accent-fill" /></svg>;
-}
-function BoothIcon() {
-  return <svg viewBox="0 0 28 28" aria-hidden="true"><rect x="5" y="2.5" width="18" height="23" rx="2.5" /><path d="M9 6.5h4v4H9zM15 6.5h4v4h-4zM9 13.5h4v4H9zM15 13.5h4v4h-4z" /><path d="M9 21h10" className="nav-icon__accent" /></svg>;
-}
-function ProfileIcon() {
-  return <svg viewBox="0 0 28 28" aria-hidden="true"><path d="m8 7 3 3 3-5 3 5 3-3-.8 6H8.8z" className="nav-icon__accent-fill" /><circle cx="14" cy="16.5" r="4" /><path d="M5 26a9 9 0 0 1 18 0" /><path d="m8 7 3 3 3-5 3 5 3-3" /></svg>;
-}
-
-export function BottomTabBar({ activeTab, unreadCount, onSelectTab, onOpenComposer, onOpenMessages, onOpenBooth, onOpenProfile, userInitial }: BottomTabBarProps) {
-  return (
-    <div className="hybrid-bottom-wrap">
-      <nav className="hybrid-bottom-nav" aria-label="Điều hướng VibeNest">
-        <button type="button" className={activeTab === 'radar' ? 'is-active' : ''} onClick={() => onSelectTab('radar')} aria-label="Bản đồ Radar" aria-current={activeTab === 'radar' ? 'page' : undefined}>
-          <span className="hybrid-nav-icon"><RadarIcon /></span><span>Radar</span>
-        </button>
-        <button type="button" className={activeTab === 'messages' ? 'is-active' : ''} onClick={onOpenMessages} aria-label={`Tin nhắn, ${unreadCount} chưa đọc`} aria-current={activeTab === 'messages' ? 'page' : undefined}>
-          <span className="hybrid-nav-icon hybrid-message-icon"><MessengerIcon />{unreadCount > 0 && <b className="hybrid-nav-badge">{unreadCount > 99 ? '99+' : unreadCount}</b>}</span><span>Tin nhắn</span>
-        </button>
-        <button type="button" className={`hybrid-camera-button ${activeTab === 'camera' ? 'is-active' : ''}`} onClick={onOpenComposer} aria-label="Mở camera VibeNest">
-          <span className="hybrid-camera-ring"><CameraIcon /></span>
-        </button>
-        <button type="button" className={activeTab === 'booth' ? 'is-active' : ''} onClick={onOpenBooth} aria-label="Tiệm ảnh VibeBooth" aria-current={activeTab === 'booth' ? 'page' : undefined}>
-          <span className="hybrid-nav-icon"><BoothIcon /></span><span>VibeBooth</span>
-        </button>
-        <button type="button" className={activeTab === 'profile' ? 'is-active' : ''} onClick={onOpenProfile} aria-label={`Trang cá nhân ${userInitial}`} aria-current={activeTab === 'profile' ? 'page' : undefined}>
-          <span className="hybrid-nav-icon"><ProfileIcon /></span><span>Cá nhân</span>
-        </button>
-      </nav>
-    </div>
-  );
-}
+export type BottomNavTab='camera'|'radar'|'messages'|'booth'|'profile';
+export interface BottomTabBarProps{activeTab:BottomNavTab;unreadCount:number;onSelectTab:(tab:BottomNavTab)=>void;onOpenComposer:()=>void;onOpenMessages:()=>void;onOpenBooth:()=>void;onOpenProfile:()=>void;userInitial:string}
+function Radar(){return <svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="12"/><circle cx="16" cy="16" r="7.5"/><circle cx="16" cy="16" r="2" className="glyph-fill"/><path d="M16 16 26 7M16 2v3M30 16h-3M16 30v-3M2 16h3M16 16 24 11" className="glyph-accent"/><circle cx="24" cy="11" r="2" className="glyph-dot"/></svg>}
+function Messages(){return <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M5 7.5A5.5 5.5 0 0 1 10.5 2h11A5.5 5.5 0 0 1 27 7.5v10a5.5 5.5 0 0 1-5.5 5.5H14l-7.5 5v-6.8A5.5 5.5 0 0 1 5 17.5z"/><path d="m9 15 5-5 3.5 3.5L23 9" className="glyph-accent"/></svg>}
+function Camera(){return <svg viewBox="0 0 36 36" aria-hidden="true"><path d="M7 11a3 3 0 0 1 3-3h4l2.2-3h5.6L24 8h3a3 3 0 0 1 3 3v15a3 3 0 0 1-3 3H10a3 3 0 0 1-3-3z"/><circle cx="18" cy="18.5" r="7"/><circle cx="18" cy="18.5" r="3" className="glyph-fill"/></svg>}
+function Booth(){return <svg viewBox="0 0 32 32" aria-hidden="true"><rect x="7" y="2.5" width="18" height="27" rx="3"/><rect x="10.5" y="6" width="5" height="5" rx="1"/><rect x="17" y="6" width="5" height="5" rx="1"/><rect x="10.5" y="13" width="5" height="5" rx="1"/><rect x="17" y="13" width="5" height="5" rx="1"/><path d="m16 21 1 2 2 .3-1.5 1.5.4 2.1-1.9-1-1.9 1 .4-2.1-1.5-1.5 2.1-.3z" className="glyph-accent glyph-fill"/></svg>}
+function Profile(){return <svg viewBox="0 0 32 32" aria-hidden="true"><path d="m7 9 5 4 4-8 4 8 5-4-2 9H9z" className="crown-fill"/><circle cx="16" cy="14" r="5.5"/><path d="M5 29a11 11 0 0 1 22 0M9 20h14l2 3H7z"/></svg>}
+export function BottomTabBar(p:BottomTabBarProps){return <div className="hybrid-bottom-wrap"><nav className="hybrid-bottom-nav" aria-label="Điều hướng VibeNest">
+<button type="button" className={p.activeTab==='radar'?'is-active':''} onClick={()=>p.onSelectTab('radar')} aria-label="Radar"><span className="hybrid-nav-icon"><Radar/></span><span>Radar</span></button>
+<button type="button" className={p.activeTab==='messages'?'is-active':''} onClick={p.onOpenMessages} aria-label={`Tin nhắn, ${p.unreadCount} chưa đọc`}><span className="hybrid-nav-icon hybrid-message-icon"><Messages/>{p.unreadCount>0&&<b className="hybrid-nav-badge">{p.unreadCount>99?'99+':p.unreadCount}</b>}</span><span>Inbox</span></button>
+<button type="button" className={`hybrid-camera-button ${p.activeTab==='camera'?'is-active':''}`} onClick={p.onOpenComposer} aria-label="Mở camera"><span className="hybrid-camera-ring"><Camera/></span></button>
+<button type="button" className={p.activeTab==='booth'?'is-active':''} onClick={p.onOpenBooth} aria-label="VibeBooth"><span className="hybrid-nav-icon"><Booth/></span><span>Booth</span></button>
+<button type="button" className={p.activeTab==='profile'?'is-active':''} onClick={p.onOpenProfile} aria-label={`Hồ sơ ${p.userInitial}`}><span className="hybrid-nav-icon"><Profile/></span><span>Profile</span></button>
+</nav></div>}
 export default BottomTabBar;
