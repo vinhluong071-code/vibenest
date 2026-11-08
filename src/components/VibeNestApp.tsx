@@ -131,19 +131,22 @@ export function VibeNestApp() {
   // Keep feedback lightweight: action notices dismiss themselves without
   // interrupting feed browsing or requiring an extra tap.
   useEffect(() => {
-    try {
-      const saved = window.localStorage.getItem("vibenest.profile.v1");
-      if (saved) {
-        const value = JSON.parse(saved) as Partial<UserProfile>;
-        if (typeof value.displayName === "string" && typeof value.handle === "string") {
-          const restored = { ...getProfileFromAuthUser(null, value.displayName), ...value };
-          setProfile(restored); setAlias(restored.displayName); setLocalProfileComplete(true);
+    const restoreTimer = window.setTimeout(() => {
+      try {
+        const saved = window.localStorage.getItem("vibenest.profile.v1");
+        if (saved) {
+          const value = JSON.parse(saved) as Partial<UserProfile>;
+          if (typeof value.displayName === "string" && typeof value.handle === "string") {
+            const restored = { ...getProfileFromAuthUser(null, value.displayName), ...value };
+            setProfile(restored); setAlias(restored.displayName); setLocalProfileComplete(true);
+          }
         }
-      }
-    } catch { /* Ignore invalid or unavailable local profile data. */ }
+      } catch { /* Ignore invalid or unavailable local profile data. */ }
+    }, 0);
     const initialClock = window.setTimeout(() => setNow(Date.now()), 0);
     const clockInterval = window.setInterval(() => setNow(Date.now()), 60_000);
     return () => {
+      window.clearTimeout(restoreTimer);
       window.clearTimeout(initialClock);
       window.clearInterval(clockInterval);
     };
@@ -764,7 +767,7 @@ export function VibeNestApp() {
         onAccountLinked={handleAccountLinked}
         onAccountUnlinked={() => void handleAccountUnlinked()}
       />
-      <ComposerModal key={composerOpen ? composerMood : "closed"} open={composerOpen} alias={alias} initialMood={composerMood} initialMedia={capturedPhoto} busy={busy} onClose={() => { setComposerOpen(false); setCapturedPhoto(null); }} onSubmit={publish} />
+      <ComposerModal key={composerOpen ? `${composerMood}-${capturedPhoto?.name ?? "empty"}` : "closed"} open={composerOpen} alias={alias} initialMood={composerMood} initialMedia={capturedPhoto} busy={busy} onClose={() => { setComposerOpen(false); setCapturedPhoto(null); }} onSubmit={publish} />
     </div>
   );
 }

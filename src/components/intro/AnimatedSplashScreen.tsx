@@ -13,10 +13,11 @@ export function AnimatedSplashScreen() {
       // Storage can be unavailable in private browsing; the intro still works once.
     }
 
-    setPhase("visible");
+    const showTimer = window.setTimeout(() => setPhase("visible"), 0);
     const leaveTimer = window.setTimeout(() => setPhase("leaving"), 1200);
     const removeTimer = window.setTimeout(() => setPhase("hidden"), 1850);
     return () => {
+      window.clearTimeout(showTimer);
       window.clearTimeout(leaveTimer);
       window.clearTimeout(removeTimer);
     };

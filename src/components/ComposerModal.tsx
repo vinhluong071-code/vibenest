@@ -19,10 +19,9 @@ export function ComposerModal({ open, alias, initialMood = "Đêm muộn", initi
   const [content, setContent] = useState("");
   const [mood, setMood] = useState<Mood>(initialMood);
   const [location, setLocation] = useState("");
-  const [media, setMedia] = useState<File | null>(null);
+  const [media, setMedia] = useState<File | null>(initialMedia);
   const [mediaError, setMediaError] = useState("");
 
-  useEffect(() => { if (open && initialMedia) { setMedia(initialMedia); setMediaError(""); } }, [open, initialMedia]);
 
   useEffect(() => {
     if (!open) return;

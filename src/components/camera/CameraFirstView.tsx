@@ -13,8 +13,7 @@ export function CameraFirstView({ open, onClose, onCaptured }: Props) {
   useEffect(() => {
     if (!open) return;
     let active = true;
-    setError("");
-    setReady(false);
+    const resetTimer = window.setTimeout(() => { setError(""); setReady(false); }, 0);
     if (!navigator.mediaDevices?.getUserMedia) {
       setError("Trình duyệt không hỗ trợ camera trực tiếp. Bạn có thể chọn ảnh từ thiết bị.");
       return;
@@ -31,6 +30,7 @@ export function CameraFirstView({ open, onClose, onCaptured }: Props) {
       .catch(() => setError("Không thể truy cập camera. Hãy cấp quyền camera hoặc chọn ảnh từ thư viện."));
     return () => {
       active = false;
+      window.clearTimeout(resetTimer);
       streamRef.current?.getTracks().forEach((track) => track.stop());
       streamRef.current = null;
     };
