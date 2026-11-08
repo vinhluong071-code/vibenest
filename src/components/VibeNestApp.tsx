@@ -745,7 +745,7 @@ export function VibeNestApp() {
       {cameraOpen && <CameraFirstView open={true} handle={profile.handle} onClose={() => setCameraOpen(false)} onCaptured={(file) => { setCapturedPhoto(file); setCameraOpen(false); setComposerOpen(true); }} /> }
       {datingOpen&&<SoulDatingModal birthDate={birthDate} onClose={()=>setDatingOpen(false)}/>}
       {mysticOpen&&<MysticOracleModal birthDate={birthDate} onClose={()=>setMysticOpen(false)}/>}
-      {spacesOpen&&<CommunitySpacesModal onClose={()=>setSpacesOpen(false)}/>}
+      {spacesOpen&&<CommunitySpacesModal birthDate={birthDate} onClose={()=>setSpacesOpen(false)}/>}
       {chatPost && <ChatDialog post={chatPost} alias={alias} onClose={() => setChatPost(null)} onEnsureIdentity={ensureChatIdentity} onMessagesRead={handleChatMessagesRead} />}
       {inboxTab && userId && <InboxCenter key={inboxTab} userId={userId} initialTab={inboxTab} onClose={() => setInboxTab(null)} onOpenConversation={(post) => { setInboxTab(null); setChatPost(post); }} onNotificationsRead={() => { void refreshBadges(); }} />}
       <LitmatchThirdPartyAuthModal open={isAuthModalOpen} intent={authIntent} onClose={() => setIsAuthModalOpen(false)} onDemoContinue={() => { setIsAuthModalOpen(false); setProfileOpen(true); }} />
