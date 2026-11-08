@@ -45,7 +45,11 @@ function StoryTile({ story, onOpen }: { story: VibeStory; onOpen: () => void }) 
 }
 
 export function VibeStoriesBar({ currentUserName, currentUserHandle, onNotify }: Props) {
-  const { stories, loading, error, createStory, toggleWarmth, refreshStories } = useVibeStories(true, 60);
+  const hasSupabaseConfig = Boolean(
+    process.env.NEXT_PUBLIC_SUPABASE_URL &&
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+  );
+  const { stories, loading, error, createStory, toggleWarmth, refreshStories } = useVibeStories(hasSupabaseConfig, 60);
   const [composerOpen, setComposerOpen] = useState(false);
   const [caption, setCaption] = useState("");
   const [mood, setMood] = useState<(typeof moods)[number]>("Đêm muộn");
