@@ -17,7 +17,7 @@ export function VibeNestCameraFirst(){
  function endTouch(e:React.TouchEvent<HTMLDivElement>){const start=touch.current;touch.current=null;if(!start||start.blocked)return;const dx=e.changedTouches[0].clientX-start.x,dy=e.changedTouches[0].clientY-start.y;if(Math.abs(dx)<70||Math.abs(dx)<Math.abs(dy)*1.25)return;const current=TABS.indexOf(tab);setTab(TABS[Math.max(0,Math.min(TABS.length-1,current+(dx<0?1:-1)))]);}
  return <main className="vn-app-root" onTouchStart={startTouch} onTouchEnd={endTouch}>
   <div className="vn-ambient vn-ambient-a"/><div className="vn-ambient vn-ambient-b"/>
-  <div className={tab==="camera"?"vn-tab-pane":"vn-tab-pane vn-hidden"}><CameraFirstView onCapture={file=>setCaptured(file)} onOpenBooth={()=>setBooth(true)} onOpenFeed={()=>setTab("feed")} onSoftGate={()=>setAuth(true)}/></div>
+  <div className={tab==="camera"?"vn-tab-pane":"vn-tab-pane vn-hidden"}><CameraFirstView active={tab==="camera"} onCapture={file=>setCaptured(file)} onOpenBooth={()=>setBooth(true)} onOpenFeed={()=>setTab("feed")} onSoftGate={()=>setAuth(true)}/></div>
   <div className={tab==="feed"?"vn-tab-pane vn-feed-pane":"vn-tab-pane vn-feed-pane vn-hidden"}><VibeNestApp/></div>
   <div className={tab==="aura"?"vn-tab-pane vn-feature-pane":"vn-tab-pane vn-feature-pane vn-hidden"}><AuraAIChat/></div>
   <div className={tab==="radar"?"vn-tab-pane vn-feature-pane":"vn-tab-pane vn-feature-pane vn-hidden"}><ZenlyMoodRadar/></div>
