@@ -199,29 +199,28 @@ export function HomeFeedView({ alias, posts, children, onCompose, onSearch, onNo
   <header className="vn-home-feed-top">
    <span className="vn-home-feed-avatar" aria-hidden="true">{alias.slice(0,1).toUpperCase()}</span>
    <button type="button" className="vn-home-thought-prompt" onClick={onCompose}>Bạn đang nghĩ gì?</button>
-   <button type="button" className="vn-home-feed-icon" onClick={onSearch} aria-label="Tìm kiếm"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 5 5"/></svg></button>
-   <button type="button" className="vn-home-feed-icon" onClick={onNotifications} aria-label="Thông báo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg></button>
+   <button type="button" className="vn-home-feed-icon vn-home-media-trigger" onClick={onCompose} aria-label="Thêm ảnh hoặc video"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="8.5" cy="9" r="1.5"/><path d="m21 15-5-5L5 20"/></svg></button>
   </header>
   <div className="vn-home-feed-tabs" role="tablist" aria-label="Nội dung Home">
-   <button type="button" role="tab" aria-selected={mode==="stories"} className={mode==="stories"?"selected":""} onClick={()=>setMode("stories")}>Tin</button>
-   <button type="button" role="tab" aria-selected={mode==="reels"} className={mode==="reels"?"selected":""} onClick={()=>setMode("reels")}>Reels</button>
+   <button type="button" role="tab" aria-selected={mode==="stories"} className={mode==="stories"?"selected":""} onClick={()=>setMode("stories")}><span aria-hidden="true">📖</span> Tin</button>
+   <button type="button" role="tab" aria-selected={mode==="reels"} className={mode==="reels"?"selected":""} onClick={()=>setMode("reels")}><span aria-hidden="true">🎬</span> Reels</button>
   </div>
   {mode === "stories" ? <>
-   <section className="vn-home-stories-rail" aria-label="Tin bạn bè">
-    <button type="button" className="vn-home-story-create" onClick={() => void createStory()} disabled={busy}><span>＋</span><small>{busy ? "Đang đăng…" : "Tạo tin"}</small></button>
+   <section className="vn-home-stories-rail" aria-label="Stories">
+    <button type="button" className="vn-home-story-create" onClick={() => void createStory()} disabled={busy} aria-label="Tạo tin">
+     <span className="vn-home-create-avatar">{alias.slice(0,1).toUpperCase()}</span><span className="vn-home-create-plus" aria-hidden="true">＋</span><small>{busy ? "Đang đăng…" : "Tạo tin"}</small>
+    </button>
     {stories.map((story, index) => <button type="button" className="vn-home-story-card vn-home-story-neon" key={story.id} onClick={() => setStoryIndex(index)}>
-     {story.media && ( /\.(mp4|webm|mov)(\?|$)/i.test(story.media) ? <video src={story.media} muted playsInline /> : <Image src={story.media} alt="" fill sizes="88px" unoptimized /> )}
-     <span>{story.owner}</span><i>{index + 1}</i>
+     {story.media ? (/\.(mp4|webm|mov)(\?|$)/i.test(story.media) ? <video src={story.media} muted playsInline /> : <Image src={story.media} alt="" fill sizes="104px" unoptimized />) : <span className="vn-home-story-gradient" />}
+     <span>{story.owner}</span>
     </button>)}
-    {!stories.length && <p className="vn-home-media-empty">Chưa có tin mới. Hãy tạo Story đầu tiên!</p>}
    </section>
    {children}
   </> : <section className="vn-home-reels-player" aria-label="Reels video dọc">
    {[...reels, ...reelsFromPosts].length ? [...reels, ...reelsFromPosts].map(reel => <article className="vn-reel-slide" key={reel.id} style={{ aspectRatio: "9 / 16" }}>
     <video ref={node => { if (node) videoRefs.current.set(reel.id, node); else videoRefs.current.delete(reel.id); }} src={reel.media} playsInline loop muted={muted} preload="metadata" onClick={event => handleReelTap(event, reel.id)} onTimeUpdate={event => { const video = event.currentTarget; if (video.duration) setReelProgress(current => ({ ...current, [reel.id]: (video.currentTime / video.duration) * 100 })); }} />
     {reelFeedback?.id === reel.id && <span key={`${reel.id}-${reelFeedback.kind}-${Math.round(reelFeedback.x)}`} className={`vn-reel-feedback vn-reel-feedback-${reelFeedback.kind}`} style={{ left: `${reelFeedback.x}%`, top: `${reelFeedback.y}%` }} aria-hidden="true">{reelFeedback.kind === "heart" ? "♥" : reelFeedback.kind === "play" ? "▶" : "Ⅱ"}</span>}
-    <div className="vn-reel-progress" aria-label="Tiến trình video"><span style={{ width: `${reelProgress[reel.id] ?? 0}%` }} /></div>
-    <div className="vn-reel-gradient" />
+    <div className="vn-reel-progress"><span style={{ width: `${reelProgress[reel.id] ?? 0}%` }} /></div><div className="vn-reel-gradient" />
     <div className="vn-reel-caption"><strong>@{reel.owner}</strong><p>{reel.captionText}</p><span>♫ {reel.audioTitle}</span></div>
     <aside className="vn-reel-actions">
      <button type="button" className={liked.includes(reel.id) ? "liked" : ""} onClick={() => toggleLike(reel.id)} aria-label="Thả tim"><span>♥</span><small>{liked.includes(reel.id) ? "Đã thích" : "Thích"}</small></button>
@@ -229,7 +228,7 @@ export function HomeFeedView({ alias, posts, children, onCompose, onSearch, onNo
      <button type="button" onClick={() => { if (navigator.share) void navigator.share({ title: "VibeNest Reel", text: reel.captionText, url: reel.media }).catch(() => undefined); else void navigator.clipboard?.writeText(reel.media); }} aria-label="Chia sẻ"><span>↗</span><small>Chia sẻ</small></button>
      <button type="button" className="vn-reel-disc" onClick={() => setMuted(value => !value)} aria-label={muted ? "Bật âm thanh" : "Tắt âm thanh"}>♫</button>
     </aside>
-   </article>) : <div className="vn-home-media-empty"><h2>Chưa có Reels video</h2><p>Video dọc từ bảng vibenest_reels sẽ xuất hiện tại đây.</p></div>}
+   </article>) : <div className="vn-home-media-empty"><h2>Chưa có Reels</h2></div>}
   </section>}
   {activeStory && <div className="vn-story-viewer" role="dialog" aria-modal="true" aria-label={"Story của " + activeStory.owner}>
    <div className="vn-story-progress"><span style={{ width: storyProgress + "%" }} /></div>

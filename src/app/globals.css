@@ -341,3 +341,34 @@
 .vn-message-reaction-picker button{display:grid;place-items:center;width:31px;height:31px;border:0;border-radius:50%;background:#ffffff0b;font-size:17px}
 .vn-message-reaction-badges{position:absolute;right:8px;bottom:-9px;display:flex;gap:3px;padding:2px 6px;border:1px solid #ffffff22;border-radius:999px;background:#171326;font-size:12px}
 @media(prefers-reduced-motion:reduce){.vn-voice-avatar.is-speaking,.vn-voice-avatar i{animation:none}}
+
+
+/* Home refresh — compact Facebook x Instagram dark composition */
+.vn-home-feed-shell{display:flex;flex-direction:column;gap:0;min-width:0;padding:0 0 calc(18px + env(safe-area-inset-bottom));background:#08090f;color:#f8fafc}
+.vn-home-feed-top{display:grid;grid-template-columns:42px minmax(0,1fr) 44px;align-items:center;gap:10px;margin:0;padding:12px 14px;border-bottom:1px solid #ffffff0d;background:linear-gradient(180deg,#11121b,#0b0c13)}
+.vn-home-feed-avatar{display:grid;place-items:center;width:40px;height:40px;border-radius:50%;border:1px solid #ffffff28;background:linear-gradient(145deg,#f43f5e,#9333ea);color:white;font-size:16px;font-weight:800;box-shadow:0 0 18px #f43f5e30}
+.vn-home-thought-prompt{display:flex;align-items:center;min-width:0;height:44px;padding:0 17px;border:1px solid #ffffff16;border-radius:24px;background:#ffffff09;color:#d4d4dc;text-align:left;font-size:14px}
+.vn-home-feed-icon{display:grid;place-items:center;width:42px;height:42px;border:1px solid #f43f5e55;border-radius:50%;background:#f43f5e14;color:#fb7185}
+.vn-home-feed-icon svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.vn-home-feed-tabs{display:grid;grid-template-columns:1fr 1fr;gap:0;margin:0;padding:0 14px;border-bottom:1px solid #ffffff12;background:#0b0c13}
+.vn-home-feed-tabs button{position:relative;display:flex;justify-content:center;align-items:center;gap:8px;min-height:48px;padding:0 10px;border:0;border-radius:0;background:transparent;color:#858592;font-size:13px;font-weight:700}
+.vn-home-feed-tabs button.selected{border:0;background:transparent;color:#fff;box-shadow:none}
+.vn-home-feed-tabs button.selected:after{position:absolute;right:18%;bottom:0;left:18%;height:3px;border-radius:4px 4px 0 0;background:#f43f5e;box-shadow:0 0 9px #f43f5e,0 0 20px #f43f5e88;content:""}
+.vn-home-stories-rail{display:flex;align-items:stretch;gap:10px;min-height:0;margin:0;padding:14px;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:none;scroll-snap-type:x proximity}
+.vn-home-stories-rail::-webkit-scrollbar{display:none}
+.vn-home-story-create,.vn-home-story-card{position:relative;isolation:isolate;display:flex;flex:0 0 104px;width:104px;height:158px;overflow:hidden;align-items:flex-end;justify-content:flex-start;border-radius:18px;scroll-snap-align:start}
+.vn-home-story-create{align-items:center;justify-content:flex-end;gap:0;padding:0 0 11px;border:1px solid #ffffff1c;background:linear-gradient(160deg,#1b1b28,#10111a 72%);color:#f8fafc;box-shadow:inset 0 1px #ffffff12,0 8px 22px #0004}
+.vn-home-create-avatar{position:absolute;top:11px;left:50%;display:grid;place-items:center;width:38px;height:38px;transform:translateX(-50%);border:2px solid #f43f5e;border-radius:50%;background:linear-gradient(145deg,#f43f5e,#9333ea);color:white;font-size:14px;font-weight:800;box-shadow:0 0 0 3px #f43f5e20}
+.vn-home-create-plus{position:absolute;top:50%;left:50%;display:grid;place-items:center;width:48px;height:48px;transform:translate(-50%,-50%);border:1px solid #fb7185aa;border-radius:50%;background:linear-gradient(145deg,#f43f5e,#be123c);color:white;font-size:34px;line-height:1;box-shadow:0 0 12px #f43f5eaa,0 0 30px #f43f5e55}
+.vn-home-story-create small{position:relative;z-index:2;color:#f4f4f5;font-size:11px;font-weight:700}
+.vn-home-story-card{border:1px solid #ffffff25;background:linear-gradient(155deg,#312044 0%,#1c2943 48%,#10131d 100%);box-shadow:0 8px 22px #0005}
+.vn-home-story-card:before{position:absolute;z-index:-1;inset:0;content:"";background:linear-gradient(145deg,#f43f5e66,#9333ea55 48%,#06b6d455)}
+.vn-home-story-card:after{position:absolute;z-index:1;inset:42% 0 0;content:"";background:linear-gradient(180deg,transparent,#050509df)}
+.vn-home-story-card img,.vn-home-story-card video{position:absolute;inset:0;width:100%;height:100%;border-radius:17px;object-fit:cover}
+.vn-home-story-card>span:not(.vn-home-story-gradient){position:relative;z-index:2;width:100%;padding:0 9px 11px;color:#fff;font-size:11px;font-weight:700;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 1px 5px #000}
+.vn-home-story-card>i{display:none}
+.vn-home-story-gradient{position:absolute;inset:0;background:radial-gradient(circle at 75% 20%,#fda4af88,transparent 32%),linear-gradient(145deg,#3b2456,#172b49 58%,#10121b)}
+.vn-home-media-empty{align-self:center;color:#a1a1aa;font-size:12px}
+.vn-rich-post-card{margin:0 12px 12px!important;border:1px solid #ffffff1a!important;border-radius:20px!important;overflow:hidden;background:linear-gradient(150deg,#151620,#0e1018 78%)!important;box-shadow:0 10px 28px #0004,inset 0 1px #ffffff08!important}
+.vn-home-reels-player{margin:12px;border:1px solid #ffffff12;border-radius:20px}
+@media(max-width:390px){.vn-home-feed-top{grid-template-columns:38px minmax(0,1fr) 42px;gap:8px;padding:10px 12px}.vn-home-feed-avatar{width:36px;height:36px}.vn-home-thought-prompt{height:42px;font-size:13px}.vn-home-story-create,.vn-home-story-card{flex-basis:96px;width:96px;height:148px}}
