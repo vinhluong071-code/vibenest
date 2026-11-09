@@ -23,6 +23,7 @@ type FriendLocation = {
   battery: number | null;
   charging: boolean;
   ghost: boolean;
+  mutual: boolean;
   active: boolean;
 };
 type BatteryManagerLike = EventTarget & {
@@ -98,9 +99,20 @@ function normalizeFriends(value: unknown): FriendLocation[] {
       battery: readNumber(row, ["battery", "battery_level", "battery_percent", "p_battery"]),
       charging: readBoolean(row, ["is_charging", "charging", "p_charging"]),
       ghost,
+      mutual: readBoolean(row, ["is_mutual_friend", "mutual_friend", "is_friend"]) || readString(row, ["friendship_status", "relationship_status"]) === "accepted",
       active: readBoolean(row, ["is_active", "active", "online"]),
     }];
   });
+}
+
+function moodOrbPosition(friend: FriendLocation): Coordinates {
+  const hash = Array.from(friend.id).reduce((value, char) => (value * 31 + char.charCodeAt(0)) >>> 0, 7);
+  const angle = (hash % 360) * Math.PI / 180;
+  const radiusMeters = 180 + ((hash >>> 8) % 120);
+  const latOffset = (radiusMeters * Math.cos(angle)) / 111_320;
+  const lonScale = Math.max(0.2, Math.cos(friend.lat * Math.PI / 180));
+  const lonOffset = (radiusMeters * Math.sin(angle)) / (111_320 * lonScale);
+  return { lat: friend.lat + latOffset, lon: friend.lon + lonOffset };
 }
 
 function mercatorY(latitude: number) {
@@ -315,14 +327,20 @@ export function VibeRadarScreen({ displayName, vibeTag, posts, onOpenChat, force
         {layer === "mood" && <div className="vn-snapmap-mood-overlay"><span>✧</span><strong>Mood Map</strong><small>Lớp dữ liệu tâm trạng đang chờ đồng thuận cộng đồng</small></div>}
         <div className="vn-snapmap-friend-markers" aria-label="Vị trí bạn bè">
           {visibleFriends.map((friend) => {
-            const point = getMarkerPosition(friend, center);
-            return (
-              <div key={friend.id} className={"vn-snapmap-friend-marker" + (friend.ghost ? " is-ghost" : "")} style={{ left: point.left + "%", top: point.top + "%" }} title={friend.ghost ? friend.handle + " · Đang tàng hình ~500m" : friend.handle}>
+            const isPrivateOrb = !friend.mutual || friend.ghost || ghostMode;
+            const point = getMarkerPosition(isPrivateOrb ? moodOrbPosition(friend) : friend, center);
+            return isPrivateOrb ? (
+              <div key={friend.id} className="vn-snapmap-friend-marker is-ghost is-mood-orb" style={{ left: point.left + "%", top: point.top + "%" }} title="Đốm sáng cảm xúc · vị trí đã làm mờ">
+                <span className="vn-snapmap-marker-glow" aria-hidden="true" />
+                <strong>✧</strong><small>Mood Orb · ~500m</small>
+              </div>
+            ) : (
+              <div key={friend.id} className="vn-snapmap-friend-marker" style={{ left: point.left + "%", top: point.top + "%" }} title={friend.handle}>
                 <span className={"vn-snapmap-friend-avatar" + (friend.active ? " is-active" : "")}>
                   {friend.avatar ? <img src={friend.avatar} alt="" /> : <span>{friend.handle.slice(0, 1).toUpperCase()}</span>}
                 </span>
                 <strong>@{friend.handle}</strong>
-                <small>{friend.ghost ? "Đang tàng hình ~500m" : friend.battery === null ? "Pin N/A" : "🔋 " + friend.battery + "%" + (friend.charging ? " ⚡" : "")}</small>
+                <small>{friend.battery === null ? "Pin N/A" : "🔋 " + friend.battery + "%" + (friend.charging ? " ⚡" : "")}</small>
               </div>
             );
           })}
