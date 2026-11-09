@@ -13,6 +13,8 @@ type ChatMessage = {
   content: string;
   created_at: string;
   read_at: string | null;
+  media_url?: string | null;
+  message_type?: "text" | "image" | "photostrip" | "voice" | null;
 };
 
 type ChatDialogProps = {
@@ -44,6 +46,8 @@ export function ChatDialog({ post, alias, onClose, onEnsureIdentity, onMessagesR
   const [connection, setConnection] = useState("Đang kết nối riêng tư…");
   const [peerTyping, setPeerTyping] = useState(false);
   const [callNotice, setCallNotice] = useState("");
+  const [memories, setMemories] = useState<Array<{id:string;caption:string|null;strip_url:string;created_at:string}>>([]);
+  const [showMemories, setShowMemories] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const channelRef = useRef<RealtimeChannel | null>(null);
   const localTypingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -83,6 +87,8 @@ export function ChatDialog({ post, alias, onClose, onEnsureIdentity, onMessagesR
         const id = await onEnsureIdentity();
         if (!alive) return;
         setUserId(id);
+        const { data: memoryRows } = await createClient().from("vibenest_memories").select("id,caption,strip_url,created_at").eq("user_id", id).order("created_at", { ascending: false }).limit(30);
+        if (alive) setMemories((memoryRows ?? []) as Array<{id:string;caption:string|null;strip_url:string;created_at:string}>);
 
         const supabase = createClient();
         const { data: roomData, error: roomError } = await supabase.rpc(
@@ -148,7 +154,7 @@ export function ChatDialog({ post, alias, onClose, onEnsureIdentity, onMessagesR
 
         const { data: history, error: historyError } = await supabase
           .from("chat_messages")
-          .select("id,room_id,sender_id,sender_alias,content,created_at,read_at")
+          .select("id,room_id,sender_id,sender_alias,content,created_at,read_at,media_url,message_type")
           .eq("room_id", idOfRoom)
           .order("created_at", { ascending: true })
           .limit(200);
@@ -218,6 +224,17 @@ export function ChatDialog({ post, alias, onClose, onEnsureIdentity, onMessagesR
     }
   }, [alias, broadcastTyping, draft, roomId, sending, userId]);
 
+  const sendPhotostrip = async (memory: {id:string;caption:string|null;strip_url:string}) => {
+    if (!roomId || !userId || sending) return;
+    setSending(true); setError("");
+    try {
+      const { data, error: insertError } = await createClient().from("chat_messages").insert({ room_id: roomId, sender_id: userId, sender_alias: alias, content: memory.caption?.trim() || "Đã gửi một dải ảnh kỷ niệm ✨", media_url: memory.strip_url, message_type: "photostrip" }).select("id,room_id,sender_id,sender_alias,content,created_at,read_at,media_url,message_type").single();
+      if (insertError) throw insertError;
+      const sent = data as ChatMessage;
+      setMessages(current => current.some(item => item.id === sent.id) ? current : [...current, sent]);
+      setShowMemories(false);
+    } catch (cause) { setError(friendlyChatError(cause)); } finally { setSending(false); }
+  };
   return (
     <div className="chat-backdrop" role="presentation" onMouseDown={(event) => {
       if (event.target === event.currentTarget) onClose();
@@ -240,6 +257,7 @@ export function ChatDialog({ post, alias, onClose, onEnsureIdentity, onMessagesR
             <div className={message.sender_id === userId ? "chat-message mine" : "chat-message"} key={message.id}>
               <span>{message.sender_id === userId ? "Bạn" : message.sender_alias}</span>
               <p>{message.content}</p>
+              {message.media_url && <a className="chat-photostrip-link" href={message.media_url} target="_blank" rel="noreferrer"><img className="chat-photostrip" src={message.media_url} alt="Dải ảnh Photobooth được chia sẻ" loading="lazy" /></a>}
               <time>{new Date(message.created_at).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })}</time>
               {message.sender_id === userId && <small className="chat-read-state">{message.read_at ? "Đã xem" : "Đã gửi"}</small>}
             </div>
@@ -248,7 +266,9 @@ export function ChatDialog({ post, alias, onClose, onEnsureIdentity, onMessagesR
           <div ref={bottomRef} />
         </div>
         {error && <p className="chat-error" role="alert">{error}</p>}
+        {showMemories && <section className="chat-memory-picker" aria-label="Kho Kỷ Niệm"><strong>Kho Kỷ Niệm · Chọn dải ảnh</strong>{memories.length ? memories.map(memory => <button type="button" key={memory.id} disabled={sending} onClick={() => void sendPhotostrip(memory)}><img src={memory.strip_url} alt="" loading="lazy"/><span>{memory.caption || "Photobooth"}<small>{new Date(memory.created_at).toLocaleDateString("vi-VN")}</small></span></button>) : <p>Chưa có dải ảnh trong Kho Kỷ Niệm.</p>}<button type="button" onClick={() => setShowMemories(false)}>Đóng</button></section>}
         <form className="chat-compose" onSubmit={sendMessage}>
+          <button type="button" className="chat-attach-memory" onClick={() => setShowMemories(value => !value)} aria-label="Gửi dải ảnh từ Kho Kỷ Niệm" title="Gửi dải ảnh Photobooth">▧</button>
           <input
             value={draft}
             onChange={(event) => updateDraft(event.target.value)}

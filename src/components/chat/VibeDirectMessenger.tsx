@@ -23,9 +23,10 @@ type Props = {
   alias: string;
   onClose: () => void;
   onOpenConversation: (post: VibePost) => void;
+  onOpenAura: () => void;
 };
 
-export function VibeDirectMessenger({ userId, alias, onClose, onOpenConversation }: Props) {
+export function VibeDirectMessenger({ userId, alias, onClose, onOpenConversation, onOpenAura }: Props) {
   const [tab, setTab] = useState<"inbox" | "discover">("inbox");
   const [rooms, setRooms] = useState<InboxRow[]>([]);
   const [people, setPeople] = useState<PostRow[]>([]);
@@ -113,7 +114,7 @@ export function VibeDirectMessenger({ userId, alias, onClose, onOpenConversation
         </div>
         {tab === "inbox" ? (
           loading ? <p className="dm-state">Đang tải hội thoại…</p> : error ? <p className="dm-error" role="alert">{error}</p> :
-          rooms.length ? <div className="dm-list"><button type="button" className="dm-row dm-aura-pinned" disabled aria-label="Aura AI, sắp ra mắt"><span className="dm-avatar dm-aura-avatar">✦</span><span className="dm-copy"><strong>Aura <small>@Aura</small></strong><small>Trợ lý AI · đang hoàn thiện</small><time>Được ghim ở đầu hộp thư</time></span><span className="dm-start">Sắp ra mắt</span></button>{rooms.map((room) => (
+          rooms.length ? <div className="dm-list"><button type="button" className="dm-row dm-aura-pinned" onClick={onOpenAura} aria-label="Mở trò chuyện với Aura AI"><span className="dm-avatar dm-aura-avatar">✦</span><span className="dm-copy"><strong>Aura <small>@Aura</small></strong><small>Trợ lý AI · luôn sẵn sàng lắng nghe</small><time>Hỏi chuyện, ý tưởng pose và sáng tạo ảnh</time></span><span className="dm-start">Trò chuyện</span></button>{rooms.map((room) => (
             <button key={room.room_id} className="dm-row" onClick={() => {
               void (async () => {
                 const { data, error: postError } = await createClient().from("vibe_posts")

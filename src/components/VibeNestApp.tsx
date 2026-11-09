@@ -19,6 +19,7 @@ import { LitmatchOnboardingModal, type UserProfile } from "@/components/auth/Lit
 import { AccountLinkingModal } from "@/components/auth/AccountLinkingModal";
 import { InboxCenter } from "@/components/InboxCenter";
 import { VibeDirectMessenger } from "@/components/chat/VibeDirectMessenger";
+import { AuraAIChat } from "@/components/ai/AuraAIChat";
 import { AuraDiscoveryRail } from "@/components/discovery/AuraDiscoveryRail";
 import { VoiceLoungeScreen } from "@/components/experience/VoiceLoungeScreen";
 import { VibeRadarScreen } from "@/components/experience/VibeRadarScreen";
@@ -127,6 +128,7 @@ export function VibeNestApp() {
   const touchOrigin = useRef<{ x: number; y: number } | null>(null);
   const [inboxTab, setInboxTab] = useState<"messages" | "notifications" | null>(null);
   const [messengerOpen, setMessengerOpen] = useState(false);
+  const [auraOpen, setAuraOpen] = useState(false);
   const [authUser, setAuthUser] = useState<Session["user"] | null>(null);
   const [pinnedPostIds, setPinnedPostIds] = useState<string[]>([]);
   const [datingOpen,setDatingOpen]=useState(false);
@@ -742,7 +744,8 @@ export function VibeNestApp() {
         onOpenProfile={() => { if (!hasCompletedProfile) requestAuth("tạo hồ sơ cá nhân"); else if (!hasSupabaseConfig) setProfileOpen(true); else setSnapProfileOpen(true); }}
         userInitial={alias.slice(0, 1).toUpperCase()}
       />}
-      {messengerOpen && userId && <VibeDirectMessenger userId={userId} alias={alias} onClose={() => setMessengerOpen(false)} onOpenConversation={(post) => { setMessengerOpen(false); setChatPost(post); }} />}
+      {messengerOpen && userId && <VibeDirectMessenger userId={userId} alias={alias} onClose={() => setMessengerOpen(false)} onOpenConversation={(post) => { setMessengerOpen(false); setChatPost(post); }} onOpenAura={() => { setMessengerOpen(false); setAuraOpen(true); }} />}
+      {auraOpen && <AuraAIChat onClose={() => setAuraOpen(false)} />}
       {cameraOpen && <CameraFirstView open={true} handle={profile.handle} onClose={() => setCameraOpen(false)} onCaptured={(file) => { setCapturedPhoto(file); setCameraOpen(false); setComposerOpen(true); }} /> }
       {datingOpen&&<SoulDatingModal birthDate={birthDate} onClose={()=>setDatingOpen(false)}/>}
       {mysticOpen&&<MysticOracleModal birthDate={birthDate} onClose={()=>setMysticOpen(false)}/>}
