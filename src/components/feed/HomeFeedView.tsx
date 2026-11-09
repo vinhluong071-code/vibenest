@@ -6,6 +6,7 @@ type Props={alias:string;posts:VibePostItem[];children:ReactNode;onCompose:()=>v
 export function HomeFeedView({alias,posts,children,onCompose,onSearch,onNotifications}:Props){
  const [mode,setMode]=useState<"stories"|"reels">("stories");
  const reels=posts.filter(post=>post.imageUrl);
+ const storyPosts=posts.filter(post=>post.imageUrl).slice(0,10);
  return <section className="vn-home-feed-shell" aria-label="Home feed">
   <header className="vn-home-feed-top">
    <span className="vn-home-feed-avatar" aria-hidden="true">{alias.slice(0,1).toUpperCase()}</span>
