@@ -255,7 +255,6 @@ export function VibeRadarScreen({ displayName, vibeTag, posts, onOpenChat, force
         setMyLocation(next);
         setCenter(next);
         setLocationBusy(false);
-        void syncLocation();
       },
       (error) => {
         setLocationBusy(false);
