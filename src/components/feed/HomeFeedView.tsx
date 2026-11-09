@@ -92,7 +92,7 @@ export function HomeFeedView({ alias, posts, children, onCompose, onSearch, onNo
   const observer = new IntersectionObserver(entries => {
    entries.forEach(entry => {
     const video = entry.target as HTMLVideoElement;
-    if (entry.isIntersecting && entry.intersectionRatio >= 0.65) void video.play().catch(() => undefined);
+    if (entry.isIntersecting && entry.intersectionRatio >= 0.5) void video.play().catch(() => undefined);
     else video.pause();
    });
   }, { threshold: [0, 0.65, 1] });
@@ -178,8 +178,8 @@ export function HomeFeedView({ alias, posts, children, onCompose, onSearch, onNo
    </section>
    {children}
   </> : <section className="vn-home-reels-player" aria-label="Reels video dọc">
-   {[...reels, ...reelsFromPosts].length ? [...reels, ...reelsFromPosts].map(reel => <article className="vn-reel-slide" key={reel.id}>
-    <video ref={node => { if (node) videoRefs.current.set(reel.id, node); else videoRefs.current.delete(reel.id); }} src={reel.media} playsInline loop muted={muted} autoPlay preload="metadata" onClick={event => { const video = event.currentTarget; if (video.paused) void video.play(); else video.pause(); }} />
+   {[...reels, ...reelsFromPosts].length ? [...reels, ...reelsFromPosts].map(reel => <article className="vn-reel-slide" key={reel.id} style={{ aspectRatio: "9 / 16" }}>
+    <video ref={node => { if (node) videoRefs.current.set(reel.id, node); else videoRefs.current.delete(reel.id); }} src={reel.media} playsInline loop muted={muted} preload="metadata" onClick={event => { const video = event.currentTarget; if (video.paused) void video.play(); else video.pause(); }} />
     <div className="vn-reel-gradient" />
     <div className="vn-reel-caption"><strong>@{reel.owner}</strong><p>{reel.captionText}</p><span>♫ {reel.audioTitle}</span></div>
     <aside className="vn-reel-actions">
