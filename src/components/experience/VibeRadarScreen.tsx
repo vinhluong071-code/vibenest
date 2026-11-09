@@ -38,7 +38,8 @@ export function VibeRadarScreen({ displayName, vibeTag, posts, onOpenChat, force
   const [layersOpen, setLayersOpen] = useState(false);
   const [friendsOpen, setFriendsOpen] = useState(false);
   const [city, setCity] = useState("Thành phố Hồ Chí Minh");
-  const [weather, setWeather] = useState("29°C · ⛅");
+  const [weather] = useState("29°C · ⛅");
+  const [activeDiscovery, setActiveDiscovery] = useState("Kỷ niệm");
 
   useEffect(() => {
     if (forceGhostMode) {
@@ -76,11 +77,12 @@ export function VibeRadarScreen({ displayName, vibeTag, posts, onOpenChat, force
       return;
     }
     if (ghostMode) {
-      setLocationMessage("Bạn có thể dùng GPS cục bộ. VibeNest chưa có dịch vụ chia sẻ vị trí bạn bè realtime.");
+      setGhostMode(false);
+      setLocationMessage("Ghost Mode đã tắt trên thiết bị. Chia sẻ vị trí với bạn bè vẫn chưa khả dụng ở máy chủ.");
       locateMe();
     } else {
       setGhostMode(true);
-      setLocationMessage("Ghost Mode đã bật trên giao diện. Chưa có backend phát vị trí để thu hồi.");
+      setLocationMessage("Ghost Mode đã bật trên thiết bị. Không có vị trí nào được phát lên máy chủ.");
     }
   }
 
@@ -95,13 +97,13 @@ export function VibeRadarScreen({ displayName, vibeTag, posts, onOpenChat, force
           <button className="vn-snapmap-story" type="button" onClick={() => setFriendsOpen(true)} aria-label="Story của bạn">✦</button>
         </header>
         <nav className="vn-snapmap-pills" aria-label="Khám phá bản đồ">
-          <button type="button" onClick={() => setLocationMessage("Kỷ niệm sẽ hiển thị khi VibeNest có kho lưu trữ địa điểm cá nhân.")}>▣ <span>Kỷ niệm</span></button>
-          <button type="button" onClick={() => setLocationMessage("Chưa có dữ liệu lượt ghé thăm được tổng hợp.")}>🏆 <span>Nhiều người ghé thăm nhất</span></button>
-          <button type="button" onClick={() => setLocationMessage("Xu hướng địa điểm cần dữ liệu check-in có đồng thuận.")}>↗ <span>Thịnh hành</span></button>
+          <button type="button" className={activeDiscovery === "Kỷ niệm" ? "selected" : ""} aria-pressed={activeDiscovery === "Kỷ niệm"} onClick={() => { setActiveDiscovery("Kỷ niệm"); setLocationMessage("Kỷ niệm địa điểm sẽ hiển thị khi kho lưu trữ cá nhân được kết nối."); }}>📖 <span>Kỷ niệm</span></button>
+          <button type="button" className={activeDiscovery === "Nhiều người ghé thăm nhất" ? "selected" : ""} aria-pressed={activeDiscovery === "Nhiều người ghé thăm nhất"} onClick={() => { setActiveDiscovery("Nhiều người ghé thăm nhất"); setLocationMessage("Chưa có dữ liệu lượt ghé thăm/check-in được tổng hợp."); }}>🏆 <span>Nhiều người ghé thăm nhất</span></button>
+          <button type="button" className={activeDiscovery === "Thịnh hành" ? "selected" : ""} aria-pressed={activeDiscovery === "Thịnh hành"} onClick={() => { setActiveDiscovery("Thịnh hành"); setLocationMessage("Xu hướng địa điểm cần dữ liệu check-in có đồng thuận."); }}>↗ <span>Thịnh hành</span></button>
         </nav>
         <div className="vn-snapmap-self-marker" aria-label="Vị trí của tôi, không chia sẻ">
           <span className="vn-snapmap-marker-glow" />
-          <span className="vn-snapmap-marker-avatar">☺</span>
+          <span className="vn-snapmap-marker-avatar" aria-hidden="true"><span>🧍</span><i>⚑</i></span>
           <strong>Tôi <small>🔋 100%</small></strong>
         </div>
         <div className="vn-snapmap-actions">
@@ -117,7 +119,7 @@ export function VibeRadarScreen({ displayName, vibeTag, posts, onOpenChat, force
           <button type="button" className="vn-snapmap-add-friends" onClick={() => setFriendsOpen(true)}>＋ <span>Thêm bạn bè</span></button>
         </div>
       </div>
-      {settingsOpen && <div className="vn-snapmap-sheet-backdrop" role="presentation" onClick={() => setSettingsOpen(false)}><section className="vn-snapmap-sheet" role="dialog" aria-modal="true" aria-labelledby="vn-snapmap-settings-title" onClick={(event) => event.stopPropagation()}><header><div><small>QUYỀN RIÊNG TƯ</small><h2 id="vn-snapmap-settings-title">Cài đặt bản đồ</h2></div><button type="button" onClick={() => setSettingsOpen(false)} aria-label="Đóng">×</button></header><div className="vn-snapmap-ghost-row"><span><strong>Ghost Mode</strong><small>Ẩn vị trí khỏi bạn bè. Chế độ này hiện chỉ áp dụng cho giao diện thiết bị.</small></span><button type="button" role="switch" aria-checked={ghostMode} disabled={forceGhostMode} onClick={toggleGhostMode} className={ghostMode ? "enabled" : ""}><i /></button></div><p>VibeNest chưa gửi vị trí lên máy chủ. Không có dữ liệu GPS nào được chia sẻ với người khác. Bán kính làm mờ 500 m chỉ có thể được bảo đảm khi có backend geospatial và chính sách RLS tương ứng.</p></section></div>}
+      {settingsOpen && <div className="vn-snapmap-sheet-backdrop" role="presentation" onClick={() => setSettingsOpen(false)}><section className="vn-snapmap-sheet" role="dialog" aria-modal="true" aria-labelledby="vn-snapmap-settings-title" onClick={(event) => event.stopPropagation()}><header><div><small>QUYỀN RIÊNG TƯ</small><h2 id="vn-snapmap-settings-title">Cài đặt bản đồ</h2></div><button type="button" onClick={() => setSettingsOpen(false)} aria-label="Đóng">×</button></header><div className="vn-snapmap-ghost-row"><span><strong>Ghost Mode</strong><small>Ẩn vị trí khỏi bạn bè. Tùy chọn thiết bị; chưa đồng bộ với dịch vụ vị trí máy chủ.</small></span><button type="button" role="switch" aria-checked={ghostMode} disabled={forceGhostMode} onClick={toggleGhostMode} className={ghostMode ? "enabled" : ""}><i /></button></div><p>VibeNest chưa gửi vị trí lên máy chủ. Không có dữ liệu GPS nào được chia sẻ với người khác. Làm mờ 500 m chưa được thực thi ở backend; không hiển thị vị trí người khác cho đến khi có sự đồng ý hai chiều.</p></section></div>}
       {friendsOpen && <div className="vn-snapmap-sheet-backdrop" role="presentation" onClick={() => setFriendsOpen(false)}><section className="vn-snapmap-sheet" role="dialog" aria-modal="true" aria-labelledby="vn-snapmap-friends-title" onClick={(event) => event.stopPropagation()}><header><div><small>VIBENEST · CONNECTIONS</small><h2 id="vn-snapmap-friends-title">Thêm bạn bè</h2></div><button type="button" onClick={() => setFriendsOpen(false)} aria-label="Đóng">×</button></header><p>Danh sách bạn bè và lời mời trên bản đồ sẽ xuất hiện tại đây khi kết nối với hệ thống bạn bè. Vị trí chỉ hiển thị khi cả hai phía chủ động đồng ý.</p><button className="vn-snapmap-primary" type="button" onClick={() => setFriendsOpen(false)}>Đã hiểu</button></section></div>}
       <div className="vn-snapmap-accessible-copy"><strong>{displayName}</strong><span>{vibeTag}</span></div>
       <div className="vn-snapmap-below-map">

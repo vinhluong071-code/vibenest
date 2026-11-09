@@ -131,7 +131,7 @@ export function VibeDirectMessenger({ userId, alias, onClose, onOpenConversation
         ) : (
           <>
             <div className="dm-smart-search"><span>⌕</span><input className="dm-search" type="search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Tìm tên hoặc nội dung tâm sự…" aria-label="Tìm người để nhắn tin" /></div>
-            {searching ? <p className="dm-state">Đang tìm…</p> : visiblePeople.length ? <><section className="dm-suggestion-heading"><strong>Gợi ý kết bạn</strong><small>Gợi ý dựa trên chủ đề và tâm trạng công khai tương đồng; chưa dùng ngày sinh hay cung hoàng đạo.</small></section><div className="dm-list">{visiblePeople.map((person) => (
+            {searching ? <p className="dm-state">Đang tìm…</p> : visiblePeople.length ? <><section className="dm-suggestion-heading"><strong>Gợi ý kết bạn</strong><small>Đề xuất hiện dựa trên chủ đề và tâm trạng công khai. Cung hoàng đạo và khoảng cách chỉ được dùng khi có hồ sơ hợp lệ và người dùng đồng ý chia sẻ; hiện chưa có dữ liệu đó.</small></section><div className="dm-list">{visiblePeople.map((person) => (
               <button key={person.id} className="dm-row" onClick={() => openPost(person)}>
                 <span className="dm-avatar">{person.alias.slice(0, 1).toUpperCase()}<i /></span>
                 <span className="dm-copy"><strong>{person.alias}</strong><small>{person.content}</small><time>{person.mood} · Có thể nhắn riêng</time></span>
