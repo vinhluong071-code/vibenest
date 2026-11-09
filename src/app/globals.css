@@ -75,3 +75,47 @@
 .vn-snapmap-friend-marker.is-ghost{opacity:.55;filter:grayscale(.4)}
 .vn-snapmap-empty-friends{position:absolute;z-index:2;left:50%;top:63%;transform:translateX(-50%);padding:6px 10px;border-radius:12px;background:#ffffffd9;color:#475569;font-size:10px;white-space:nowrap;pointer-events:none}
 @keyframes vn-friend-pulse{0%{box-shadow:0 0 0 2px #16a34a,0 0 0 4px #22c55e40}100%{box-shadow:0 0 0 2px #16a34a,0 0 0 12px #22c55e00}}
+
+
+
+/* Sprint 2: persistent 24h Stories rail and vertical Reels player */
+.vn-home-stories-rail{align-items:stretch;min-height:154px;padding:14px 16px 18px}
+.vn-home-story-create,.vn-home-story-card{flex:0 0 clamp(82px,22vw,104px);width:clamp(82px,22vw,104px);height:clamp(128px,34vw,158px);border-radius:18px}
+.vn-home-story-neon{border:2px solid transparent;background:linear-gradient(#161321,#161321) padding-box,linear-gradient(145deg,#f472b6,#a855f7,#22d3ee) border-box;box-shadow:0 0 0 2px #a855f755,0 5px 22px #a855f733}
+.vn-home-story-neon img,.vn-home-story-neon video{position:absolute;inset:3px;width:calc(100% - 6px);height:calc(100% - 6px);border-radius:14px;object-fit:cover}
+.vn-home-media-empty{align-self:center;max-width:230px;color:#9ca3af;font-size:12px;line-height:1.5}
+.vn-home-reels-player{height:min(82dvh,900px);min-height:520px;overflow-y:auto;overscroll-behavior-y:contain;scroll-snap-type:y mandatory;background:#050507;border-radius:22px;scrollbar-width:none}
+.vn-home-reels-player::-webkit-scrollbar{display:none}
+.vn-reel-slide{position:relative;width:100%;height:100%;min-height:520px;max-height:900px;aspect-ratio:9/16;overflow:hidden;scroll-snap-align:start;scroll-snap-stop:always;background:#101018;color:#fff}
+.vn-reel-slide>video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#08080b}
+.vn-reel-gradient{position:absolute;inset:30% 0 0;background:linear-gradient(transparent,#0009 70%,#000b);pointer-events:none}
+.vn-reel-caption{position:absolute;left:16px;right:90px;bottom:22px;z-index:2;color:white;text-shadow:0 1px 4px #0009}
+.vn-reel-caption p{margin:7px 0;font-size:14px;line-height:1.45}
+.vn-reel-caption span{font-size:12px}
+.vn-reel-actions{position:absolute;z-index:3;right:12px;bottom:30px;display:flex;flex-direction:column;align-items:center;gap:18px}
+.vn-reel-actions button{display:grid;justify-items:center;gap:3px;border:0;background:transparent;color:#fff;text-shadow:0 1px 5px #000;font-size:27px}
+.vn-reel-actions small{font-size:10px}
+.vn-reel-actions button.liked span{color:#fb3d79;animation:vn-heart-pop .35s ease}
+.vn-reel-actions .vn-reel-disc{width:48px;height:48px;border:7px solid #34343c;border-radius:50%;background:conic-gradient(#fff,#777,#17171c,#fff);color:#fff;font-size:19px;animation:vn-disc-spin 4s linear infinite}
+.vn-story-viewer{position:fixed;z-index:250;inset:0;overflow:hidden;background:#08080d;color:#fff}
+.vn-story-viewer>header{position:absolute;z-index:4;top:calc(18px + env(safe-area-inset-top));left:18px;right:18px;display:flex;align-items:center;gap:10px;text-shadow:0 1px 4px #000}
+.vn-story-viewer>header time{font-size:12px;opacity:.8}
+.vn-story-viewer>header button{margin-left:auto;width:40px;height:40px;border:0;border-radius:50%;background:#ffffff25;color:#fff;font-size:28px}
+.vn-story-progress{position:absolute;z-index:5;top:calc(8px + env(safe-area-inset-top));left:12px;right:12px;height:3px;overflow:hidden;border-radius:5px;background:#ffffff55}
+.vn-story-progress span{display:block;height:100%;background:#fff;transition:width .05s linear}
+.vn-story-media{position:absolute!important;inset:0;width:100%;height:100%;object-fit:contain}
+.vn-story-caption{position:absolute;z-index:3;left:18px;right:18px;bottom:150px;text-align:center;text-shadow:0 2px 8px #000;font-size:15px}
+.vn-story-interaction{position:absolute;z-index:6;left:16px;right:16px;bottom:calc(28px + env(safe-area-inset-bottom));display:grid;gap:9px;padding:14px;border:1px solid #ffffff44;border-radius:18px;background:#10101dcc;backdrop-filter:blur(18px)}
+.vn-story-interaction input{min-height:44px;padding:0 12px;border:1px solid #ffffff40;border-radius:12px;background:#ffffff15;color:#fff}
+.vn-story-interaction>button{display:flex;justify-content:space-between;gap:12px;min-height:42px;padding:9px 12px;border:1px solid #a78bfa;border-radius:12px;background:#ffffff18;color:#fff;text-align:left}
+.vn-story-interaction>button:disabled{opacity:.8}
+.vn-story-prev,.vn-story-next{position:absolute;z-index:2;top:15%;bottom:25%;width:28%;border:0;background:transparent}
+.vn-story-prev{left:0}.vn-story-next{right:0}
+.vn-home-media-notice{position:fixed;z-index:260;left:14px;right:14px;bottom:calc(90px + env(safe-area-inset-bottom));display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;border:1px solid #ffffff20;border-radius:14px;background:#171923f2;color:#fff;font-size:12px;box-shadow:0 8px 32px #0004}
+.vn-home-media-notice button{border:0;background:transparent;color:#fff;font-size:22px}
+.vn-reel-comment-sheet{position:fixed;z-index:260;left:12px;right:12px;bottom:calc(18px + env(safe-area-inset-bottom));display:flex;gap:7px;align-items:center;padding:12px;border-radius:18px;background:#171923;color:white}
+.vn-reel-comment-sheet label{font-size:11px}.vn-reel-comment-sheet input{min-width:0;flex:1;height:42px;padding:0 10px;border-radius:10px;border:1px solid #ffffff33;background:#ffffff12;color:white}.vn-reel-comment-sheet button{border:0;border-radius:10px;padding:9px;background:#9333ea;color:white}
+@keyframes vn-heart-pop{0%{transform:scale(.5)}60%{transform:scale(1.45)}100%{transform:scale(1)}}
+@keyframes vn-disc-spin{to{transform:rotate(360deg)}}
+@media(min-width:760px){.vn-home-reels-player{width:min(100%,440px);height:min(78dvh,820px);margin:0 auto}.vn-story-viewer{display:flex;justify-content:center}.vn-story-viewer .vn-story-media{left:50%;width:auto;max-width:100%;transform:translateX(-50%)}}
+@media(max-width:390px){.vn-home-reels-player{height:calc(100dvh - 190px);min-height:430px}.vn-reel-slide{min-height:430px}.vn-story-interaction{bottom:calc(16px + env(safe-area-inset-bottom))}}
