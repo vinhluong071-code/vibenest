@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import Image from 'next/image';
 import { getAvatarThemeFromIdentity } from '../../lib/avatar-hash';
 
@@ -55,6 +55,9 @@ export const VibeFeedCard: React.FC<VibeFeedCardProps> = ({
 }) => {
   const [isRepliesOpen, setIsRepliesOpen] = useState<boolean>(false);
   const [replyText, setReplyText] = useState<string>('');
+  const [doubleTapHeart, setDoubleTapHeart] = useState(false);
+  const lastMediaTap = useRef(0);
+  const heartTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const avatarTheme = getAvatarThemeFromIdentity(post.handle);
 
   const handleReplySubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -67,12 +70,12 @@ export const VibeFeedCard: React.FC<VibeFeedCardProps> = ({
   };
 
   return (
-    <article aria-busy={busy} className="rounded-3xl p-5 bg-white/85 dark:bg-white/[0.035] border border-slate-200/80 dark:border-white/[0.08] hover:border-slate-300 dark:hover:border-white/[0.14] backdrop-blur-xl shadow-sm transition-colors">
+    <article aria-busy={busy} className="vn-rich-post-card rounded-[24px] p-4 sm:p-5 bg-white/85 dark:bg-white/[0.035] border border-slate-200/80 dark:border-white/[0.08] hover:border-slate-300 dark:hover:border-white/[0.14] backdrop-blur-xl shadow-sm transition-colors">
       {/* Author Header (Personal Identity + Unboxed Metadata) */}
       <div className="flex items-start justify-between gap-3 mb-3.5">
         <div className="flex items-center gap-3 min-w-0">
           <div
-            className={`w-10 h-10 rounded-2xl border flex items-center justify-center font-display font-semibold text-sm shrink-0 ${avatarTheme.textClass}`}
+            className={`vn-rich-post-avatar w-10 h-10 rounded-full border flex items-center justify-center font-display font-semibold text-sm shrink-0 ${avatarTheme.textClass}`}
             style={{
               background: avatarTheme.bgStyle,
               borderColor: avatarTheme.borderStyle,
@@ -90,9 +93,7 @@ export const VibeFeedCard: React.FC<VibeFeedCardProps> = ({
               </span>
             </div>
             <div className="flex flex-wrap items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-              <span className="font-medium text-rose-600 dark:text-rose-400">
-                {post.mood}
-              </span>
+              <span className="vn-post-topic-pill font-medium text-rose-600 dark:text-rose-400">{post.vibeTag || post.mood}</span>
               <span aria-hidden="true">·</span>
               <span>{post.location}</span>
               <span aria-hidden="true">·</span>
@@ -134,13 +135,27 @@ export const VibeFeedCard: React.FC<VibeFeedCardProps> = ({
       </div>
 
       {/* Post Body Text */}
-      <p className="text-[15px] leading-[1.68] text-slate-800 dark:text-slate-200 whitespace-pre-line mb-3.5">
+      <p className="vn-rich-post-copy text-[16px] leading-[1.72] text-slate-800 dark:text-slate-200 whitespace-pre-line mb-3.5">
         {post.content}
       </p>
 
       {/* Optional Visual Media Attachment (Pinterest / IG Aesthetic) */}
       {post.imageUrl && (
-        <div className="relative mb-4 rounded-2xl overflow-hidden border border-slate-200/70 dark:border-white/[0.08] bg-slate-900/20 aspect-[16/10]">
+        <div
+          className="vn-rich-post-media relative mb-4 rounded-[20px] overflow-hidden border border-white/10 bg-slate-900/20 aspect-[16/10]"
+          onClick={(event) => {
+            const now = Date.now();
+            if (now - lastMediaTap.current < 280) {
+              if (!post.empathized) onToggleEmpathy(post.id);
+              setDoubleTapHeart(true);
+              if (heartTimer.current) clearTimeout(heartTimer.current);
+              heartTimer.current = setTimeout(() => setDoubleTapHeart(false), 720);
+              if (typeof navigator !== 'undefined' && 'vibrate' in navigator) navigator.vibrate?.(18);
+            }
+            lastMediaTap.current = now;
+          }}
+        >
+          {doubleTapHeart && <span className="vn-post-double-heart" aria-hidden="true">♥</span>}
           <Image
             src={post.imageUrl}
             alt={post.displayName}
