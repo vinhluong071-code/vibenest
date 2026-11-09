@@ -66,7 +66,7 @@ jobs:
 
       - name: Validate bundled Capacitor entry point
         run: |
-          test -s capacitor-web/index.html
+          test -s public/index.html
           if grep -Eq 'server:[[:space:]]*\{' capacitor.config.ts; then
             echo "Remote server configuration must remain opt-in only."
           fi

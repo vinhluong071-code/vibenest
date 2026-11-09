@@ -1,8 +1,7 @@
 import type { CapacitorConfig } from "@capacitor/cli";
 
-// Native production builds load the bundled local Capacitor entry point.
-// A remote URL is permitted only for an explicitly opted-in local development
-// session; CI/release builds never inherit a hosted production URL.
+// The native shell opens the production web application. Keep local development
+// overrides opt-in; CI and production builds always use the committed entry point.
 const developmentServerUrl =
   process.env.NODE_ENV !== "production" && process.env.CAPACITOR_SERVER_URL
     ? process.env.CAPACITOR_SERVER_URL
@@ -11,17 +10,23 @@ const developmentServerUrl =
 const config: CapacitorConfig = {
   appId: "vn.id.omni.app",
   appName: "VibeNest",
-  webDir: "capacitor-web",
+  webDir: "public",
+  bundledWebRuntime: false,
   ...(developmentServerUrl
     ? {
         server: {
           url: developmentServerUrl,
           cleartext: developmentServerUrl.startsWith("http://"),
+          allowNavigation: ["omni.id.vn", "www.omni.id.vn"],
         },
       }
-    : {}),
+    : {
+        server: {
+          allowNavigation: ["omni.id.vn", "www.omni.id.vn"],
+        },
+      }),
   android: {
-    allowMixedContent: true,
+    allowMixedContent: false,
     captureInput: true,
   },
   plugins: {
