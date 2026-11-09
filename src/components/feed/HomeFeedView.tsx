@@ -108,6 +108,7 @@ export function HomeFeedView({ alias, posts, children, onCompose, onSearch, onNo
   if (!supabase) { onCompose(); return; }
   const mediaUrl = window.prompt("Dán đường dẫn HTTPS ảnh/video cho Story (24 giờ):");
   if (!mediaUrl) return;
+  const qaPrompt = window.prompt("Thêm hộp câu hỏi ẩn danh? Để trống nếu không cần.", "Hãy gửi cho tôi một câu hỏi ẩn danh…");
   if (!/^https:\/\//i.test(mediaUrl.trim())) { setNotice("Story cần đường dẫn HTTPS hợp lệ."); return; }
   setBusy(true);
   const { data: userData } = await supabase.auth.getUser();
@@ -116,8 +117,8 @@ export function HomeFeedView({ alias, posts, children, onCompose, onSearch, onNo
   let created = false;
   for (const table of STORY_TABLES) {
    const payloads = [
-    { author_id: userId, alias, mood: "Tâm trạng", caption: "", image_url: mediaUrl.trim(), expires_at: new Date(Date.now() + 86400000).toISOString() },
-    { user_id: userId, author_id: userId, handle: alias, caption: "", media_url: mediaUrl.trim(), expires_at: new Date(Date.now() + 86400000).toISOString() },
+    { author_id: userId, alias, mood: "Tâm trạng", caption: "", image_url: mediaUrl.trim(), qa_question: qaPrompt?.trim() || null, expires_at: new Date(Date.now() + 86400000).toISOString() },
+    { user_id: userId, author_id: userId, handle: alias, caption: "", media_url: mediaUrl.trim(), qa_question: qaPrompt?.trim() || null, expires_at: new Date(Date.now() + 86400000).toISOString() },
    ];
    for (const payload of payloads) {
     const result = await (supabase.from(table) as any).insert(payload);
@@ -235,7 +236,7 @@ export function HomeFeedView({ alias, posts, children, onCompose, onSearch, onNo
    <header><strong>{activeStory.owner}</strong><time>{new Date(activeStory.created).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })}</time><button type="button" onClick={() => setStoryIndex(null)} aria-label="Đóng Story">×</button></header>
    {activeStory.media && (/\.(mp4|webm|mov)(\?|$)/i.test(activeStory.media) ? <video className="vn-story-media" src={activeStory.media} autoPlay muted playsInline /> : <Image className="vn-story-media" src={activeStory.media} alt="" fill unoptimized />)}
    {activeStory.captionText && <p className="vn-story-caption">{activeStory.captionText}</p>}
-   {activeStory.qa && <form className="vn-story-interaction" onSubmit={event => { event.preventDefault(); void sendQuestion(); }}><strong>{activeStory.qa}</strong><input value={storyQuestion} onChange={event => setStoryQuestion(event.target.value)} maxLength={500} placeholder="Gửi câu hỏi ẩn danh…" /><button type="submit">Gửi</button></form>}
+   {activeStory.qa && <form className="vn-story-interaction" onSubmit={event => { event.preventDefault(); void sendQuestion(); }}><strong className="vn-ngl-story-sticker"><span>?</span><small>HỘP CÂU HỎI ẨN DANH</small>{activeStory.qa}</strong><input value={storyQuestion} onChange={event => setStoryQuestion(event.target.value)} maxLength={500} placeholder="Gửi câu hỏi ẩn danh…" /><button type="submit">Gửi</button></form>}
    {activeStory.poll && <div className="vn-story-interaction"><strong>{activeStory.poll}</strong>{activeStory.options.map((option, index) => { const total = (activePoll?.a ?? 0) + (activePoll?.b ?? 0); const count = index === 0 ? activePoll?.a ?? 0 : activePoll?.b ?? 0; const percent = total ? Math.round(count / total * 100) : 0; return <button type="button" key={option} onClick={() => void votePoll(index as 0 | 1)} disabled={activePoll?.mine !== undefined && activePoll?.mine !== null}><span>{option}</span><b>{percent}%</b></button>; })}</div>}
    <button type="button" className="vn-story-prev" onClick={() => setStoryIndex(index => index === null ? null : Math.max(0, index - 1))} aria-label="Story trước" />
    <button type="button" className="vn-story-next" onClick={() => setStoryIndex(index => index === null ? null : index + 1 < stories.length ? index + 1 : null)} aria-label="Story tiếp theo" />

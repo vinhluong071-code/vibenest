@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { createClient } from '@/lib/supabase/client';
 import Image from 'next/image';
 import { getAvatarThemeFromIdentity } from '../../lib/avatar-hash';
 
@@ -50,21 +51,69 @@ export const VibeFeedCard: React.FC<VibeFeedCardProps> = ({
   onChat,
   onToggleEmpathy,
   onToggleSave,
-  onAddReply,
   onShare,
 }) => {
   const [isRepliesOpen, setIsRepliesOpen] = useState<boolean>(false);
   const [replyText, setReplyText] = useState<string>('');
+  const [nestedReply, setNestedReply] = useState<{ id: string; text: string } | null>(null);
+  const [threadComments, setThreadComments] = useState<Array<{ id: string; parent_comment_id: string | null; author_alias: string; content: string; created_at: string }>>([]);
+  const [postVote, setPostVote] = useState<-1 | 0 | 1>(0);
+  const [postScore, setPostScore] = useState(0);
+  const [zodiac, setZodiac] = useState<{ zodiac_sign: string | null; zodiac_symbol: string | null } | null>(null);
+  const [threadError, setThreadError] = useState("");
   const [doubleTapHeart, setDoubleTapHeart] = useState(false);
   const lastMediaTap = useRef(0);
   const heartTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const avatarTheme = getAvatarThemeFromIdentity(post.handle);
 
+  useEffect(() => {
+    let live = true;
+    void (async () => {
+      const supabase = createClient();
+      const [profile, ownVote, score, comments] = await Promise.all([
+        supabase.from("vibenest_profiles").select("zodiac_sign,zodiac_symbol").eq("handle", post.handle).maybeSingle(),
+        supabase.from("vibenest_post_votes").select("vote").eq("post_id", post.id).maybeSingle(),
+        supabase.rpc("vibenest_get_post_score", { p_post_id: post.id }),
+        supabase.from("vibenest_comments").select("id,parent_comment_id,author_alias,content,created_at").eq("post_id", post.id).order("created_at", { ascending: true }),
+      ]);
+      if (!live) return;
+      if (!profile.error) setZodiac(profile.data as typeof zodiac);
+      if (!ownVote.error && ownVote.data?.vote) setPostVote(ownVote.data.vote as -1 | 1);
+      if (!score.error) setPostScore(Number(score.data ?? 0));
+      if (!comments.error) setThreadComments((comments.data ?? []) as typeof threadComments);
+    })();
+    return () => { live = false; };
+  }, [post.id, post.handle]);
+
+  const votePost = async (vote: -1 | 1) => {
+    const supabase = createClient();
+    const { data: auth } = await supabase.auth.getUser();
+    if (!auth.user) { setThreadError("Đăng nhập để bình chọn."); return; }
+    const nextVote = postVote === vote ? 0 : vote;
+    const result = nextVote === 0
+      ? await supabase.from("vibenest_post_votes").delete().eq("post_id", post.id).eq("user_id", auth.user.id)
+      : await supabase.from("vibenest_post_votes").upsert({ post_id: post.id, user_id: auth.user.id, vote: nextVote }, { onConflict: "post_id,user_id" });
+    if (result.error) { setThreadError(result.error.message); return; }
+    setPostVote(nextVote);
+    const score = await supabase.rpc("vibenest_get_post_score", { p_post_id: post.id });
+    if (!score.error) setPostScore(Number(score.data ?? 0));
+  };
+
+  const submitNestedReply = async (parentId: string | null, content: string) => {
+    const text = content.trim(); if (!text) return;
+    const supabase = createClient(); const { data: auth } = await supabase.auth.getUser();
+    if (!auth.user) { setThreadError("Đăng nhập để bình luận."); return; }
+    const { data, error } = await supabase.from("vibenest_comments").insert({ post_id: post.id, parent_comment_id: parentId, user_id: auth.user.id, author_alias: "Bạn", content: text }).select("id,parent_comment_id,author_alias,content,created_at").single();
+    if (error) { setThreadError(error.message); return; }
+    setThreadComments(current => [...current, data as typeof threadComments[number]]);
+    setNestedReply(null); setReplyText("");
+  };
+
   const handleReplySubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const trimmed = replyText.trim();
     if (!trimmed) return;
-    onAddReply(post.id, trimmed);
+    void submitNestedReply(null, trimmed);
     setReplyText('');
     setIsRepliesOpen(true);
   };
@@ -170,6 +219,7 @@ export const VibeFeedCard: React.FC<VibeFeedCardProps> = ({
       {/* Ergonomic Action Bar (All Touch Targets >= 44px) */}
       <div className="pt-3 border-t border-slate-200/60 dark:border-white/[0.06] flex items-center justify-between gap-2">
         <div className="flex items-center gap-1.5">
+          <div className="vn-vote-stack" aria-label="Điểm Vibe Score"><button type="button" aria-label="Upvote" aria-pressed={postVote === 1} className={postVote === 1 ? "is-upvoted" : ""} onClick={() => void votePost(1)}>▲</button><strong>{postScore}</strong><button type="button" aria-label="Downvote" aria-pressed={postVote === -1} className={postVote === -1 ? "is-downvoted" : ""} onClick={() => void votePost(-1)}>▼</button></div>
           <button
             type="button"
             onClick={() => onToggleEmpathy(post.id)}
@@ -288,6 +338,8 @@ export const VibeFeedCard: React.FC<VibeFeedCardProps> = ({
             })}
           </div>
 
+          {threadComments.filter(comment => !comment.parent_comment_id).map(comment => <div className="vn-thread-comment" key={comment.id}><strong>{comment.author_alias}</strong><p>{comment.content}</p><button type="button" onClick={() => setNestedReply({ id: comment.id, text: "" })}>Trả lời</button>{threadComments.filter(reply => reply.parent_comment_id === comment.id).map(reply => <div className="vn-thread-reply" key={reply.id}><strong>{reply.author_alias}</strong><p>{reply.content}</p></div>)}{nestedReply?.id === comment.id && <form onSubmit={event => { event.preventDefault(); void submitNestedReply(comment.id, nestedReply.text); }}><input value={nestedReply.text} onChange={event => setNestedReply({ id: comment.id, text: event.target.value })} placeholder="Trả lời bình luận…" maxLength={1000}/><button type="submit">Gửi</button></form>}</div>)}
+          {threadError && <p role="alert" className="text-xs text-rose-500">{threadError}</p>}
           <form onSubmit={handleReplySubmit} className="flex items-center gap-2">
             <input
               type="text"

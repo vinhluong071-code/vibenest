@@ -49,6 +49,10 @@ export function ChatDialog({ post, alias, onClose, onEnsureIdentity, onMessagesR
   const [callNotice, setCallNotice] = useState("");
   const [memories, setMemories] = useState<Array<{id:string;caption:string|null;strip_url:string;created_at:string}>>([]);
   const [showMemories, setShowMemories] = useState(false);
+  const [messageReactions, setMessageReactions] = useState<Record<string, Array<{ user_id: string; emoji: string }>>>({});
+  const [reactionPicker, setReactionPicker] = useState<string | null>(null);
+  const reactionHoldTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const reactionEmojis = ["❤️", "😂", "😮", "😢", "😡", "🔥"];
   const bottomRef = useRef<HTMLDivElement>(null);
   const channelRef = useRef<RealtimeChannel | null>(null);
   const localTypingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -142,6 +146,18 @@ export function ChatDialog({ post, alias, onClose, onEnsureIdentity, onMessagesR
               }
             },
           )
+          .on("postgres_changes", { event: "*", schema: "public", table: "chat_message_reactions" }, (payload: { new?: { message_id?: string; user_id?: string; emoji?: string }; old?: { message_id?: string; user_id?: string } }) => {
+            const row = payload.new;
+            if (row?.message_id && row.user_id && row.emoji) {
+              setMessageReactions(current => {
+                const rows = (current[row.message_id!] ?? []).filter(item => item.user_id !== row.user_id);
+                rows.push({ user_id: row.user_id!, emoji: row.emoji! });
+                return { ...current, [row.message_id!]: rows };
+              });
+            } else if (payload.old?.message_id && payload.old.user_id) {
+              setMessageReactions(current => ({ ...current, [payload.old!.message_id!]: (current[payload.old!.message_id!] ?? []).filter(item => item.user_id !== payload.old!.user_id) }));
+            }
+          })
           .on(
             "postgres_changes",
             { event: "UPDATE", schema: "public", table: "chat_messages", filter: `room_id=eq.${idOfRoom}` },
@@ -173,6 +189,10 @@ export function ChatDialog({ post, alias, onClose, onEnsureIdentity, onMessagesR
             for (const item of loaded) merged.set(item.id, item);
             return [...merged.values()].sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
           });
+          if (loaded.length) {
+            const { data: reactionRows } = await supabase.from("chat_message_reactions").select("message_id,user_id,emoji").in("message_id", loaded.map(item => item.id));
+            if (alive && reactionRows) setMessageReactions(reactionRows.reduce((acc, row) => { (acc[row.message_id] ??= []).push({ user_id: row.user_id, emoji: row.emoji }); return acc; }, {} as Record<string, Array<{ user_id: string; emoji: string }>>));
+          }
           const unreadIds = loaded.filter((item) => item.sender_id !== id && !item.read_at).map((item) => item.id);
           if (unreadIds.length) {
             const { error: readError } = await supabase.from("chat_messages")
@@ -231,6 +251,18 @@ export function ChatDialog({ post, alias, onClose, onEnsureIdentity, onMessagesR
     }
   }, [alias, broadcastTyping, draft, roomId, sending, userId]);
 
+  const saveMessageReaction = async (messageId: string, emoji: string) => {
+    if (!userId) return;
+    const supabase = createClient();
+    const current = messageReactions[messageId]?.find(item => item.user_id === userId);
+    const result = current?.emoji === emoji
+      ? await supabase.from("chat_message_reactions").delete().eq("message_id", messageId).eq("user_id", userId)
+      : await supabase.from("chat_message_reactions").upsert({ message_id: messageId, user_id: userId, emoji }, { onConflict: "message_id,user_id" });
+    if (result.error) { setError("Không lưu được reaction: " + result.error.message); return; }
+    setMessageReactions(state => { const rows = (state[messageId] ?? []).filter(item => item.user_id !== userId); if (current?.emoji !== emoji) rows.push({ user_id: userId, emoji }); return { ...state, [messageId]: rows }; });
+    setReactionPicker(null);
+  };
+
   const sendPhotostrip = async (memory: {id:string;caption:string|null;strip_url:string}) => {
     if (!roomId || !userId || sending) return;
     setSending(true); setError("");
@@ -261,12 +293,14 @@ export function ChatDialog({ post, alias, onClose, onEnsureIdentity, onMessagesR
           {loading ? <p className="chat-state">Đang mở cuộc trò chuyện riêng tư…</p> : null}
           {!loading && messages.length === 0 ? <p className="chat-state">Hãy gửi lời chào đầu tiên. Cuộc trò chuyện này chỉ dành cho hai người.</p> : null}
           {messages.map((message) => (
-            <div className={message.sender_id === userId ? "chat-message mine" : "chat-message"} key={message.id}>
+            <div className={message.sender_id === userId ? "chat-message mine vn-message-reactable" : "chat-message vn-message-reactable"} key={message.id} onContextMenu={event => { event.preventDefault(); setReactionPicker(message.id); }} onDoubleClick={() => setReactionPicker(message.id)} onTouchStart={() => { reactionHoldTimer.current = setTimeout(() => setReactionPicker(message.id), 480); }} onTouchEnd={() => { if (reactionHoldTimer.current) clearTimeout(reactionHoldTimer.current); }}>
               <span>{message.sender_id === userId ? "Bạn" : message.sender_alias}</span>
               <p>{message.content}</p>
               {message.media_url && <a className="chat-photostrip-link" href={message.media_url} target="_blank" rel="noreferrer"><img className="chat-photostrip" src={message.media_url} alt="Dải ảnh Photobooth được chia sẻ" loading="lazy" /></a>}
               <time>{new Date(message.created_at).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })}</time>
               {message.sender_id === userId && <small className="chat-read-state">{message.read_at ? "Đã xem" : "Đã gửi"}</small>}
+              {!!messageReactions[message.id]?.length && <div className="vn-message-reaction-badges">{messageReactions[message.id].map((reaction, index) => <span key={`${reaction.user_id}-${index}`}>{reaction.emoji}</span>)}</div>}
+              {reactionPicker === message.id && <div className="vn-message-reaction-picker" role="group" aria-label="Chọn cảm xúc">{reactionEmojis.map(emoji => <button type="button" key={emoji} onClick={() => void saveMessageReaction(message.id, emoji)} aria-label={`Thả cảm xúc ${emoji}`}>{emoji}</button>)}</div>}
             </div>
           ))}
           {peerTyping && <div className="chat-typing" role="status"><span /><span /><span /> <small>{peerAlias} đang gõ…</small></div>}

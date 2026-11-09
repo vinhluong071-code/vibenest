@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { getAgeAccess } from "@/lib/age-gating";
 import { ChatDialog } from "@/components/ChatDialog";
@@ -20,6 +20,8 @@ export function SoulDatingModal({ birthDate, onClose }: { birthDate: string | nu
   const [matched, setMatched] = useState(false);
   const [datingRoomId, setDatingRoomId] = useState<string | null>(null);
   const [chatError, setChatError] = useState("");
+  const [dragX, setDragX] = useState(0);
+  const dragStart = useRef<{ x: number; pointerId: number } | null>(null);
   const [error, setError] = useState("");
 
   const ensureIdentity = useCallback(async () => {
@@ -72,6 +74,23 @@ export function SoulDatingModal({ birthDate, onClose }: { birthDate: string | nu
     } finally {
       setBusy(false);
     }
+  }
+
+  function onDeckPointerDown(event: ReactPointerEvent<HTMLElement>) {
+    if (busy || (event.target as HTMLElement).closest("button")) return;
+    dragStart.current = { x: event.clientX, pointerId: event.pointerId };
+    event.currentTarget.setPointerCapture(event.pointerId);
+  }
+  function onDeckPointerMove(event: ReactPointerEvent<HTMLElement>) {
+    if (!dragStart.current || dragStart.current.pointerId !== event.pointerId) return;
+    setDragX(Math.max(-180, Math.min(180, event.clientX - dragStart.current.x)));
+  }
+  function onDeckPointerUp(event: ReactPointerEvent<HTMLElement>) {
+    if (!dragStart.current || dragStart.current.pointerId !== event.pointerId) return;
+    const delta = event.clientX - dragStart.current.x;
+    dragStart.current = null;
+    setDragX(0);
+    if (delta > 90) void swipe("like"); else if (delta < -90) void swipe("pass");
   }
 
   async function startDatingChat() {
@@ -137,7 +156,7 @@ export function SoulDatingModal({ birthDate, onClose }: { birthDate: string | nu
           {chatError && <p role="alert">{chatError}</p>}
         </div> : loading ? <p>Đang tải hồ sơ đề xuất…</p> : people[i] ? <>
           <p>Mỗi lượt thích hoặc bỏ qua đều được xác thực lại ở máy chủ.</p>
-          <article className="vn-oracle-card"><span>SOUL DISCOVERY</span><strong>✧ Hồ sơ VibeNest</strong><p>Thành viên có thông tin ngày sinh</p>
+          <article className="vn-oracle-card vn-dating-swipe-deck" onPointerDown={onDeckPointerDown} onPointerMove={onDeckPointerMove} onPointerUp={onDeckPointerUp} onPointerCancel={() => { dragStart.current = null; setDragX(0); }} style={{ transform: `translateX(${dragX}px) rotate(${dragX / 18}deg)`, transition: dragStart.current ? "none" : "transform .24s cubic-bezier(.16,1,.3,1)", touchAction: "pan-y" }}><span>SOUL DISCOVERY · 18+</span><strong>✧ Hồ sơ VibeNest</strong><p>Thành viên có thông tin ngày sinh</p><div className={dragX > 24 ? "vn-swipe-stamp like" : dragX < -24 ? "vn-swipe-stamp pass" : "vn-swipe-stamp"}>{dragX > 24 ? "LIKE" : dragX < -24 ? "PASS" : "KÉO THẺ ĐỂ QUẸT"}</div>
             <div className="vn-dating-actions"><button disabled={busy} onClick={() => void swipe("pass")}>Bỏ qua</button><button disabled={busy} onClick={() => void swipe("like")}>♡ Thích</button></div>
           </article>
         </> : <p>Chưa có hồ sơ đề xuất. Hãy quay lại sau nhé.</p>}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { getAgeAccess } from "@/lib/age-gating";
 
 const groups = [
@@ -18,6 +18,9 @@ export function CommunitySpacesModal({ birthDate, onClose }: { birthDate: string
   const [active, setActive] = useState<string | null>(null);
   const [draft, setDraft] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
+  const [micEnabled, setMicEnabled] = useState(false);
+  const [micError, setMicError] = useState("");
+  const micStream = useRef<MediaStream | null>(null);
   const access = getAgeAccess(birthDate);
   const canJoinSpaces = access.allowed["interest-groups"];
 
@@ -41,6 +44,15 @@ export function CommunitySpacesModal({ birthDate, onClose }: { birthDate: string
       // Ignore malformed or unavailable local cache.
     }
   }, [canJoinSpaces]);
+
+  useEffect(() => () => { micStream.current?.getTracks().forEach(track => track.stop()); }, []);
+
+  async function toggleMicrophone() {
+    if (micEnabled) { micStream.current?.getTracks().forEach(track => track.stop()); micStream.current = null; setMicEnabled(false); return; }
+    if (!navigator.mediaDevices?.getUserMedia) { setMicError("Thiết bị hoặc trình duyệt không hỗ trợ micro."); return; }
+    try { micStream.current = await navigator.mediaDevices.getUserMedia({ audio: true }); setMicEnabled(true); setMicError(""); }
+    catch { setMicError("Chưa cấp quyền micro. Hãy cho phép truy cập micro trong cài đặt trình duyệt."); }
+  }
 
   function join(id: GroupId) {
     setJoined((current) => {
@@ -78,6 +90,7 @@ export function CommunitySpacesModal({ birthDate, onClose }: { birthDate: string
         ) : active && current ? (
           <>
             <p>{current.description}</p>
+            <section className="vn-voice-stage" aria-label={"Voice Stage " + current.name}><div className="vn-voice-stage-head"><span>LIVE VOICE STAGE</span><small>Phòng thoại · {current.emoji}</small></div><div className="vn-voice-stage-speaker"><div className={micEnabled ? "vn-voice-avatar is-speaking" : "vn-voice-avatar"}><span>{micEnabled ? "🎙️" : "🙂"}</span>{micEnabled && <i />}</div><strong>Bạn</strong><small>{micEnabled ? "Micro đang bật trên thiết bị này" : "Người nghe"}</small></div><div className="vn-voice-stage-list"><span>NGƯỜI NGHE</span><p>Chưa có người nghe khác trong phòng.</p></div><button type="button" className={micEnabled ? "vn-voice-mic is-on" : "vn-voice-mic"} onClick={() => void toggleMicrophone()}>{micEnabled ? "Tắt micro" : "Bật micro"}</button>{micError && <p role="alert">{micError}</p>}<p className="vn-feature-footnote">Bản hiện tại chỉ kiểm tra micro cục bộ; chưa truyền âm thanh tới thành viên khác (chưa có WebRTC/signaling).</p></section>
             <div className="vn-space-chat-log" aria-live="polite">
               {messages.filter((message) => message.group === active).map((message) => (
                 <p key={message.id}>{message.body}<small>{new Date(message.createdAt).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })}</small></p>
@@ -95,7 +108,7 @@ export function CommunitySpacesModal({ birthDate, onClose }: { birthDate: string
             {groups.map((group) => (
               <article key={group.id}>
                 <span>{group.emoji}</span><div><strong>{group.name}</strong><p>{group.description}</p></div>
-                <button onClick={() => join(group.id)}>{joined.includes(group.id) ? "Mở phòng" : "Tham gia"}</button>
+                <button onClick={() => { join(group.id); }}>{joined.includes(group.id) ? "Mở phòng" : "Tham gia"}</button>
               </article>
             ))}
           </div>
