@@ -327,7 +327,7 @@ export function VibeRadarScreen({ displayName, vibeTag, posts, onOpenChat, force
         {layer === "mood" && <div className="vn-snapmap-mood-overlay"><span>✧</span><strong>Mood Map</strong><small>Lớp dữ liệu tâm trạng đang chờ đồng thuận cộng đồng</small></div>}
         <div className="vn-snapmap-friend-markers" aria-label="Vị trí bạn bè">
           {visibleFriends.map((friend) => {
-            const isPrivateOrb = !friend.mutual || friend.ghost || ghostMode;
+            const isPrivateOrb = !friend.mutual || friend.ghost;
             const point = getMarkerPosition(isPrivateOrb ? moodOrbPosition(friend) : friend, center);
             return isPrivateOrb ? (
               <div key={friend.id} className="vn-snapmap-friend-marker is-ghost is-mood-orb" style={{ left: point.left + "%", top: point.top + "%" }} title="Đốm sáng cảm xúc · vị trí đã làm mờ">
