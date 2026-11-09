@@ -1,27 +1,37 @@
-name: VibeNest Capacitor production APK
+name: VibeNest Capacitor APK and AAB
 
 on:
   push:
     branches:
-      - feat/hybrid-mobile-navigation-pwa-capacitor
+      - main
+    paths:
+      - "src/**"
+      - "public/**"
+      - "capacitor-web/**"
+      - "capacitor.config.ts"
+      - "android/**"
+      - "package.json"
+      - "package-lock.json"
+      - "next.config.ts"
+      - ".github/workflows/capacitor-production-apk.yml"
   workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: vibenest-capacitor-production-apk-${{ github.ref }}
+  group: vibenest-capacitor-native-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  android-apk:
+  android-bundles:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 60
     steps:
-      - name: Checkout target branch
+      - name: Checkout main
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.ref }}
+          ref: ${{ github.sha }}
           fetch-depth: 1
 
       - name: Set up Node.js 22
@@ -34,7 +44,8 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '21'
+          java-version: "21"
+          cache: gradle
 
       - name: Install Android SDK
         uses: android-actions/setup-android@v3
@@ -44,7 +55,7 @@ jobs:
       - name: Install locked dependencies
         run: npm ci --no-audit --no-fund
 
-      - name: Validate application
+      - name: Typecheck, lint and build the Next.js application
         run: |
           npm run typecheck
           npm run lint
@@ -53,69 +64,34 @@ jobs:
           NEXT_PUBLIC_SUPABASE_URL: https://build-check.supabase.co
           NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_build_check
 
-      - name: Configure VibeNest app identity
-        env:
-          CAPACITOR_SERVER_URL: https://omni.id.vn
+      - name: Validate bundled Capacitor entry point
         run: |
-          python3 - <<'PY'
-          from pathlib import Path
-          import re
-          config = Path("capacitor.config.ts")
-          config_source = config.read_text()
-          config_source, changed = re.subn(r"""appId:\s*[\"'][^\"']+[\"']""", 'appId: "vn.id.omni.app"', config_source, count=1)
-          if changed != 1:
-              raise SystemExit("Could not set Capacitor appId")
-          config.write_text(config_source)
-          gradle = Path("android/app/build.gradle")
-          gradle_source = gradle.read_text()
-          gradle_source = gradle_source.replace('applicationId "vn.vibenest.app"', 'applicationId "vn.id.omni.app"')
-          if gradle_source == gradle.read_text():
-              raise SystemExit("Could not set Android applicationId")
-          gradle.write_text(gradle_source)
-          PY
-          npx cap sync android
-
-      - name: Build signed release APK when signing secrets are configured
-        id: release
-        env:
-          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
-          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
-          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
-        run: |
-          if [ -n "$ANDROID_KEYSTORE_BASE64" ] && [ -n "$ANDROID_KEYSTORE_PASSWORD" ] && [ -n "$ANDROID_KEY_ALIAS" ] && [ -n "$ANDROID_KEY_PASSWORD" ]; then
-            printf '%s' "$ANDROID_KEYSTORE_BASE64" | base64 --decode > android/app/release-signing.keystore
-            cat >> android/app/build.gradle <<'GRADLE'
-          android {
-              signingConfigs {
-                  release {
-                      storeFile file("release-signing.keystore")
-                      storePassword System.getenv("ANDROID_KEYSTORE_PASSWORD")
-                      keyAlias System.getenv("ANDROID_KEY_ALIAS")
-                      keyPassword System.getenv("ANDROID_KEY_PASSWORD")
-                  }
-              }
-              buildTypes {
-                  release {
-                      signingConfig signingConfigs.release
-                  }
-              }
-          }
-          GRADLE
-            (cd android && ./gradlew --no-daemon :app:assembleRelease)
-            echo "apk_path=android/app/build/outputs/apk/release/app-release.apk" >> "$GITHUB_OUTPUT"
-            echo "apk_type=signed-release" >> "$GITHUB_OUTPUT"
-          else
-            echo "::warning::Android signing secrets are not configured; building a debug-signed internal-test APK, not a store-release APK."
-            (cd android && ./gradlew --no-daemon :app:assembleDebug)
-            echo "apk_path=android/app/build/outputs/apk/debug/app-debug.apk" >> "$GITHUB_OUTPUT"
-            echo "apk_type=debug-internal-test" >> "$GITHUB_OUTPUT"
+          test -s capacitor-web/index.html
+          if grep -Eq 'server:[[:space:]]*\{' capacitor.config.ts; then
+            echo "Remote server configuration must remain opt-in only."
           fi
 
-      - name: Upload APK artifact
+      - name: Synchronize Android native project
+        run: npx cap sync android
+
+      - name: Build debug APK and AAB
+        working-directory: android
+        run: |
+          ./gradlew --no-daemon :app:assembleDebug :app:bundleDebug
+
+      - name: Verify generated bundle files
+        run: |
+          test -s android/app/build/outputs/apk/debug/app-debug.apk
+          test -s android/app/build/outputs/bundle/debug/app-debug.aab
+          mkdir -p artifacts
+          cp android/app/build/outputs/apk/debug/app-debug.apk artifacts/vibenest-debug.apk
+          cp android/app/build/outputs/bundle/debug/app-debug.aab artifacts/vibenest-debug.aab
+          sha256sum artifacts/* | tee artifacts/SHA256SUMS.txt
+
+      - name: Upload APK and AAB
         uses: actions/upload-artifact@v4
         with:
-          name: vibenest-android-${{ steps.release.outputs.apk_type }}
-          path: ${{ steps.release.outputs.apk_path }}
+          name: vibenest-android-debug-apk-aab-${{ github.sha }}
+          path: artifacts/*
           if-no-files-found: error
           retention-days: 14

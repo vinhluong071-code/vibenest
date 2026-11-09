@@ -1,17 +1,34 @@
-const productionOrigin = "https://vibenest-vinhluong071-code.vercel.app";
-const serverUrl = process.env.CAPACITOR_SERVER_URL || productionOrigin;
-const serverHost = new URL(serverUrl).host;
+import type { CapacitorConfig } from "@capacitor/cli";
 
-const config = {
-  appId: "vn.vibenest.app",
+// Native production builds load the bundled local Capacitor entry point.
+// A remote URL is permitted only for an explicitly opted-in local development
+// session; CI/release builds never inherit a hosted production URL.
+const developmentServerUrl =
+  process.env.NODE_ENV !== "production" && process.env.CAPACITOR_SERVER_URL
+    ? process.env.CAPACITOR_SERVER_URL
+    : undefined;
+
+const config: CapacitorConfig = {
+  appId: "vn.id.omni.app",
   appName: "VibeNest",
   webDir: "capacitor-web",
-  server: {
-    // This hybrid shell loads the hosted Next.js app so API routes and Supabase
-    // Auth remain server-backed. Override for a dedicated release domain.
-    url: serverUrl,
-    cleartext: false,
-    allowNavigation: [serverHost],
+  ...(developmentServerUrl
+    ? {
+        server: {
+          url: developmentServerUrl,
+          cleartext: developmentServerUrl.startsWith("http://"),
+        },
+      }
+    : {}),
+  android: {
+    allowMixedContent: true,
+    captureInput: true,
+  },
+  plugins: {
+    SplashScreen: {
+      launchShowDuration: 1200,
+      backgroundColor: "#07080d",
+    },
   },
   ios: {
     contentInset: "automatic",
