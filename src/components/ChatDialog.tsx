@@ -19,6 +19,7 @@ type ChatMessage = {
 
 type ChatDialogProps = {
   post: VibePost;
+  initialRoomId?: string;
   alias: string;
   onClose: () => void;
   onEnsureIdentity: () => Promise<string>;
@@ -34,8 +35,8 @@ function friendlyChatError(error: unknown): string {
   return "Chưa thể kết nối cuộc trò chuyện. Vui lòng thử lại.";
 }
 
-export function ChatDialog({ post, alias, onClose, onEnsureIdentity, onMessagesRead }: ChatDialogProps) {
-  const [roomId, setRoomId] = useState<string | null>(null);
+export function ChatDialog({ post, alias, onClose, onEnsureIdentity, onMessagesRead, initialRoomId }: ChatDialogProps) {
+  const [roomId, setRoomId] = useState<string | null>(initialRoomId ?? null);
   const [peerAlias, setPeerAlias] = useState(post.alias);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [draft, setDraft] = useState("");
@@ -91,18 +92,24 @@ export function ChatDialog({ post, alias, onClose, onEnsureIdentity, onMessagesR
         if (alive) setMemories((memoryRows ?? []) as Array<{id:string;caption:string|null;strip_url:string;created_at:string}>);
 
         const supabase = createClient();
-        const { data: roomData, error: roomError } = await supabase.rpc(
-          "start_vibenest_chat",
-          { p_post_id: post.id, p_alias: alias },
-        );
-        if (roomError) throw roomError;
-
-        const room = Array.isArray(roomData) ? roomData[0] : roomData;
-        if (!room?.room_id) throw new Error("Supabase không trả về phòng chat.");
-        const idOfRoom = room.room_id as string;
+        let idOfRoom: string;
+        if (initialRoomId) {
+          // Dating RPC has already authorized both matched adults and created this room.
+          // Reuse it directly; do not call the post-based chat RPC or create another room.
+          idOfRoom = initialRoomId;
+        } else {
+          const { data: roomData, error: roomError } = await supabase.rpc(
+            "start_vibenest_chat",
+            { p_post_id: post.id, p_alias: alias },
+          );
+          if (roomError) throw roomError;
+          const room = Array.isArray(roomData) ? roomData[0] : roomData;
+          if (!room?.room_id) throw new Error("Supabase không trả về phòng chat.");
+          idOfRoom = room.room_id as string;
+          setPeerAlias((room.peer_alias as string) || post.alias);
+        }
         if (!alive) return;
         setRoomId(idOfRoom);
-        setPeerAlias((room.peer_alias as string) || post.alias);
 
         channel = supabase
           .channel(`vibenest-chat:${idOfRoom}`, { config: { private: true } })
@@ -192,7 +199,7 @@ export function ChatDialog({ post, alias, onClose, onEnsureIdentity, onMessagesR
       if (peerTypingTimeoutRef.current) clearTimeout(peerTypingTimeoutRef.current);
       if (channel) void createClient().removeChannel(channel);
     };
-  }, [alias, onEnsureIdentity, onMessagesRead, post.id, post.alias]);
+  }, [alias, initialRoomId, onEnsureIdentity, onMessagesRead, post.id, post.alias]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
