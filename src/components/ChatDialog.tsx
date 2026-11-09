@@ -191,7 +191,16 @@ export function ChatDialog({ post, alias, onClose, onEnsureIdentity, onMessagesR
           });
           if (loaded.length) {
             const { data: reactionRows } = await supabase.from("chat_message_reactions").select("message_id,user_id,emoji").in("message_id", loaded.map(item => item.id));
-            if (alive && reactionRows) setMessageReactions(reactionRows.reduce((acc, row) => { (acc[row.message_id] ??= []).push({ user_id: row.user_id, emoji: row.emoji }); return acc; }, {} as Record<string, Array<{ user_id: string; emoji: string }>>));
+            if (alive && reactionRows) {
+              type ReactionRow = { message_id: string; user_id: string; emoji: string };
+              setMessageReactions(reactionRows.reduce(
+                (acc: Record<string, Array<{ user_id: string; emoji: string }>>, row: ReactionRow) => {
+                  (acc[row.message_id] ??= []).push({ user_id: row.user_id, emoji: row.emoji });
+                  return acc;
+                },
+                {} as Record<string, Array<{ user_id: string; emoji: string }>>,
+              ));
+            }
           }
           const unreadIds = loaded.filter((item) => item.sender_id !== id && !item.read_at).map((item) => item.id);
           if (unreadIds.length) {

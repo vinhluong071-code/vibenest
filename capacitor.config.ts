@@ -11,7 +11,6 @@ const config: CapacitorConfig = {
   appId: "vn.id.omni.app",
   appName: "VibeNest",
   webDir: "public",
-  bundledWebRuntime: false,
   ...(developmentServerUrl
     ? {
         server: {
