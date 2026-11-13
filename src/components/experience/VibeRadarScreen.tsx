@@ -212,10 +212,7 @@ export function VibeRadarScreen({ displayName, vibeTag, posts, onOpenChat, force
   }, [supabase]);
 
   useEffect(() => {
-    if (!supabase) {
-      setLocationMessage("Chưa cấu hình Supabase trên thiết bị này.");
-      return;
-    }
+    if (!supabase) return;
     const initialLoad = window.setTimeout(() => void loadFriends(), 0);
     const friendTimer = window.setInterval(() => void loadFriends(), SYNC_INTERVAL_MS);
     return () => { window.clearTimeout(initialLoad); window.clearInterval(friendTimer); };

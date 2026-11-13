@@ -65,7 +65,10 @@ export function HomeFeedView({ alias, posts, children, onCompose, onSearch, onNo
   else setNotice("Không tải được Reels: " + reelsResult.error.message);
  }, [supabase]);
 
- useEffect(() => { void loadMedia(); }, [loadMedia]);
+ useEffect(() => {
+  const initialLoad = window.setTimeout(() => void loadMedia(), 0);
+  return () => window.clearTimeout(initialLoad);
+ }, [loadMedia]);
  useEffect(() => {
   if (!supabase) return;
   const channel = supabase.channel("vibenest-home-media")
@@ -161,31 +164,6 @@ export function HomeFeedView({ alias, posts, children, onCompose, onSearch, onNo
   setReelFeedback({ id, kind, x, y });
   reelFeedbackTimer.current = setTimeout(() => setReelFeedback(null), 560);
  };
- const handleReelTap = (event: ReactMouseEvent<HTMLVideoElement>, id: string) => {
-  const video = event.currentTarget;
-  const rect = video.getBoundingClientRect();
-  const x = Math.max(8, Math.min(92, ((event.clientX - rect.left) / rect.width) * 100));
-  const y = Math.max(8, Math.min(92, ((event.clientY - rect.top) / rect.height) * 100));
-  const pending = reelTapTimers.current.get(id);
-  if (pending) {
-   clearTimeout(pending);
-   reelTapTimers.current.delete(id);
-   setLiked(current => current.includes(id) ? current : [...current, id]);
-   showReelFeedback(id, "heart", x, y);
-   if (typeof navigator !== "undefined" && "vibrate" in navigator) navigator.vibrate?.(18);
-   return;
-  }
-  const timer = setTimeout(() => {
-   reelTapTimers.current.delete(id);
-   if (video.paused) {
-    void video.play().then(() => showReelFeedback(id, "play", 50, 50)).catch(() => undefined);
-   } else {
-    video.pause();
-    showReelFeedback(id, "pause", 50, 50);
-   }
-  }, 230);
-  reelTapTimers.current.set(id, timer);
- };
  useEffect(() => () => {
   reelTapTimers.current.forEach(timer => clearTimeout(timer));
   if (reelFeedbackTimer.current) clearTimeout(reelFeedbackTimer.current);
@@ -216,7 +194,39 @@ export function HomeFeedView({ alias, posts, children, onCompose, onSearch, onNo
    {children}
   </> : <section ref={reelsContainerRef} className="vn-home-reels-player" aria-label="Reels video dọc">
    {[...reels, ...reelsFromPosts].length ? [...reels, ...reelsFromPosts].map(reel => <article className="vn-reel-slide" key={reel.id} style={{ aspectRatio: "9 / 16" }}>
-    <video src={reel.media} playsInline loop muted={muted} preload="metadata" onClick={event => handleReelTap(event, reel.id)} onTimeUpdate={event => { const video = event.currentTarget; if (video.duration) setReelProgress(current => ({ ...current, [reel.id]: (video.currentTime / video.duration) * 100 })); }} />
+    <video src={reel.media} playsInline loop muted={muted} preload="metadata" onClick={event => {
+      const video = event.currentTarget;
+      const rect = video.getBoundingClientRect();
+      const x = Math.max(8, Math.min(92, ((event.clientX - rect.left) / rect.width) * 100));
+      const y = Math.max(8, Math.min(92, ((event.clientY - rect.top) / rect.height) * 100));
+      const pending = reelTapTimers.current.get(reel.id);
+      if (pending) {
+       clearTimeout(pending);
+       reelTapTimers.current.delete(reel.id);
+       setLiked(current => current.includes(reel.id) ? current : [...current, reel.id]);
+       if (reelFeedbackTimer.current) clearTimeout(reelFeedbackTimer.current);
+       setReelFeedback({ id: reel.id, kind: "heart", x, y });
+       reelFeedbackTimer.current = setTimeout(() => setReelFeedback(null), 560);
+       if (typeof navigator !== "undefined" && "vibrate" in navigator) navigator.vibrate?.(18);
+       return;
+      }
+      const timer = setTimeout(() => {
+       reelTapTimers.current.delete(reel.id);
+       if (video.paused) {
+        void video.play().then(() => {
+         if (reelFeedbackTimer.current) clearTimeout(reelFeedbackTimer.current);
+         setReelFeedback({ id: reel.id, kind: "play", x: 50, y: 50 });
+         reelFeedbackTimer.current = setTimeout(() => setReelFeedback(null), 560);
+        }).catch(() => undefined);
+       } else {
+        video.pause();
+        if (reelFeedbackTimer.current) clearTimeout(reelFeedbackTimer.current);
+        setReelFeedback({ id: reel.id, kind: "pause", x: 50, y: 50 });
+        reelFeedbackTimer.current = setTimeout(() => setReelFeedback(null), 560);
+       }
+      }, 230);
+      reelTapTimers.current.set(reel.id, timer);
+     }} onTimeUpdate={event => { const video = event.currentTarget; if (video.duration) setReelProgress(current => ({ ...current, [reel.id]: (video.currentTime / video.duration) * 100 })); }} />
     {reelFeedback?.id === reel.id && <span key={`${reel.id}-${reelFeedback.kind}-${Math.round(reelFeedback.x)}`} className={`vn-reel-feedback vn-reel-feedback-${reelFeedback.kind}`} style={{ left: `${reelFeedback.x}%`, top: `${reelFeedback.y}%` }} aria-hidden="true">{reelFeedback.kind === "heart" ? "♥" : reelFeedback.kind === "play" ? "▶" : "Ⅱ"}</span>}
     <div className="vn-reel-progress"><span style={{ width: `${reelProgress[reel.id] ?? 0}%` }} /></div><div className="vn-reel-gradient" />
     <div className="vn-reel-caption"><strong>@{reel.owner}</strong><p>{reel.captionText}</p><span>♫ {reel.audioTitle}</span></div>
