@@ -40,7 +40,8 @@ export function HomeFeedView({ alias, posts, children, onCompose, onSearch, onNo
  const [busy, setBusy] = useState(false);
  const [notice, setNotice] = useState("");
  const [muted, setMuted] = useState(true);
- const [liked, setLiked] = useState<string[]>([]);\n const [reelComments, setReelComments] = useState<ReelComment[]>([]);
+ const [liked, setLiked] = useState<string[]>([]);
+ const [reelComments, setReelComments] = useState<ReelComment[]>([]);
  const [commentReel, setCommentReel] = useState<string | null>(null);
  const [commentText, setCommentText] = useState("");
  const [reelProgress, setReelProgress] = useState<Record<string, number>>({});
@@ -62,7 +63,15 @@ export function HomeFeedView({ alias, posts, children, onCompose, onSearch, onNo
   }
   setStories(storyRows.map(normalizeStory));
   const reelsResult = await (supabase.from(REEL_TABLE) as any).select("*").order("created_at", { ascending: false }).limit(50);
-  if (!reelsResult.error) {\n   const nextReels = ((reelsResult.data ?? []) as MediaRow[]).map(normalizeReel).filter(item => item.media);\n   setReels(nextReels);\n   const { data: authData } = await supabase.auth.getUser();\n   if (authData.user && nextReels.length) {\n    const likesResult = await (supabase.from("vibenest_reel_likes") as any).select("reel_id").eq("user_id", authData.user.id).in("reel_id", nextReels.map(item => item.id));\n    if (!likesResult.error) setLiked((likesResult.data ?? []).map((row: { reel_id: string }) => row.reel_id));\n   }\n  }
+  if (!reelsResult.error) {
+   const nextReels = ((reelsResult.data ?? []) as MediaRow[]).map(normalizeReel).filter(item => item.media);
+   setReels(nextReels);
+   const { data: authData } = await supabase.auth.getUser();
+   if (authData.user && nextReels.length) {
+    const likesResult = await (supabase.from("vibenest_reel_likes") as any).select("reel_id").eq("user_id", authData.user.id).in("reel_id", nextReels.map(item => item.id));
+    if (!likesResult.error) setLiked((likesResult.data ?? []).map((row: { reel_id: string }) => row.reel_id));
+   }
+  }
   else setNotice("Không tải được Reels: " + reelsResult.error.message);
  }, [supabase]);
 
@@ -159,7 +168,35 @@ export function HomeFeedView({ alias, posts, children, onCompose, onSearch, onNo
   setPollVotes(current => ({ ...current, [activeStory.id]: { a: (current[activeStory.id]?.a ?? 0) + (option === 0 ? 1 : 0), b: (current[activeStory.id]?.b ?? 0) + (option === 1 ? 1 : 0), mine: option } }));
  };
 
- const toggleLike = async (id: string) => {\n  if (!supabase) return;\n  if (!reels.some(item => item.id === id)) { setNotice("Tương tác Reel chỉ bật cho video đã đăng trong Reels."); return; }\n  const { data } = await supabase.auth.getUser();\n  if (!data.user) { setNotice("Đăng nhập để thích Reel."); return; }\n  const alreadyLiked = liked.includes(id);\n  const result = alreadyLiked\n   ? await (supabase.from("vibenest_reel_likes") as any).delete().eq("reel_id", id).eq("user_id", data.user.id)\n   : await (supabase.from("vibenest_reel_likes") as any).insert({ reel_id: id, user_id: data.user.id });\n  if (result.error) { setNotice("Không thể lưu lượt thích: " + result.error.message); return; }\n  setLiked(current => alreadyLiked ? current.filter(item => item !== id) : [...current, id]);\n };\n const openReelComments = async (id: string) => {\n  if (!supabase || !reels.some(item => item.id === id)) { setNotice("Bình luận chỉ khả dụng với Reel đã được lưu trên máy chủ."); return; }\n  const result = await (supabase.from("vibenest_reel_comments") as any).select("id,author_alias,content,created_at").eq("reel_id", id).order("created_at", { ascending: true }).limit(100);\n  if (result.error) { setNotice("Không tải được bình luận: " + result.error.message); return; }\n  setReelComments((result.data ?? []) as ReelComment[]);\n  setCommentText("");\n  setCommentReel(id);\n };\n const sendReelComment = async (id: string) => {\n  if (!supabase || !commentText.trim()) return;\n  const { data } = await supabase.auth.getUser();\n  if (!data.user) { setNotice("Đăng nhập để bình luận."); return; }\n  const result = await (supabase.from("vibenest_reel_comments") as any).insert({ reel_id: id, user_id: data.user.id, author_alias: alias, content: commentText.trim() }).select("id,author_alias,content,created_at").single();\n  if (result.error) { setNotice("Không thể gửi bình luận: " + result.error.message); return; }\n  setReelComments(current => [...current, result.data as ReelComment]);\n  setCommentText("");\n };
+ const toggleLike = async (id: string) => {
+  if (!supabase) return;
+  if (!reels.some(item => item.id === id)) { setNotice("Tương tác Reel chỉ bật cho video đã đăng trong Reels."); return; }
+  const { data } = await supabase.auth.getUser();
+  if (!data.user) { setNotice("Đăng nhập để thích Reel."); return; }
+  const alreadyLiked = liked.includes(id);
+  const result = alreadyLiked
+   ? await (supabase.from("vibenest_reel_likes") as any).delete().eq("reel_id", id).eq("user_id", data.user.id)
+   : await (supabase.from("vibenest_reel_likes") as any).insert({ reel_id: id, user_id: data.user.id });
+  if (result.error) { setNotice("Không thể lưu lượt thích: " + result.error.message); return; }
+  setLiked(current => alreadyLiked ? current.filter(item => item !== id) : [...current, id]);
+ };
+ const openReelComments = async (id: string) => {
+  if (!supabase || !reels.some(item => item.id === id)) { setNotice("Bình luận chỉ khả dụng với Reel đã được lưu trên máy chủ."); return; }
+  const result = await (supabase.from("vibenest_reel_comments") as any).select("id,author_alias,content,created_at").eq("reel_id", id).order("created_at", { ascending: true }).limit(100);
+  if (result.error) { setNotice("Không tải được bình luận: " + result.error.message); return; }
+  setReelComments((result.data ?? []) as ReelComment[]);
+  setCommentText("");
+  setCommentReel(id);
+ };
+ const sendReelComment = async (id: string) => {
+  if (!supabase || !commentText.trim()) return;
+  const { data } = await supabase.auth.getUser();
+  if (!data.user) { setNotice("Đăng nhập để bình luận."); return; }
+  const result = await (supabase.from("vibenest_reel_comments") as any).insert({ reel_id: id, user_id: data.user.id, author_alias: alias, content: commentText.trim() }).select("id,author_alias,content,created_at").single();
+  if (result.error) { setNotice("Không thể gửi bình luận: " + result.error.message); return; }
+  setReelComments(current => [...current, result.data as ReelComment]);
+  setCommentText("");
+ };
  const showReelFeedback = (id: string, kind: "play" | "pause" | "heart", x = 50, y = 50) => {
   if (reelFeedbackTimer.current) clearTimeout(reelFeedbackTimer.current);
   setReelFeedback({ id, kind, x, y });
