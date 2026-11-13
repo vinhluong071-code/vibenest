@@ -8,7 +8,8 @@ import { createClient } from "@/lib/supabase/client";
 type Props = { alias: string; posts: VibePostItem[]; children: ReactNode; onCompose: () => void; onSearch: () => void; onNotifications: () => void };
 type MediaRow = Record<string, unknown> & { id: string };
 type Story = MediaRow & { owner: string; media: string; captionText: string; created: string; expires: string; qa: string | null; poll: string | null; options: [string, string] };
-type Reel = MediaRow & { owner: string; media: string; captionText: string; audio: string; audioTitle: string };
+type Reel = MediaRow & { owner: string; media: string; captionText: string; audio: string; audioTitle: string; persisted?: boolean };
+type ReelComment = { id: string; author_alias: string; content: string; created_at: string };
 const STORY_TABLES = ["vibenest_stories", "vibe_stories"] as const;
 const REEL_TABLE = "vibenest_reels";
 const QUESTION_TABLES = ["vibenest_story_questions", "vibe_story_questions"] as const;
@@ -25,7 +26,7 @@ function normalizeStory(row: MediaRow): Story {
  return { ...row, id: String(row.id), owner: str(row, ["alias", "handle", "username", "display_name"], "VibeNest"), media: str(row, ["media_url", "image_url", "video_url", "media_path", "image_path"]), captionText: str(row, ["caption", "content", "text"]), created: str(row, ["created_at"], new Date().toISOString()), expires: str(row, ["expires_at"], new Date(Date.now() + 86400000).toISOString()), qa: str(row, ["qa_question", "question_prompt"]) || null, poll: str(row, ["poll_question"]) || null, options: parseOptions(row) };
 }
 function normalizeReel(row: MediaRow): Reel {
- return { ...row, id: String(row.id), owner: str(row, ["handle", "alias", "username", "display_name"], "VibeNest"), media: str(row, ["video_url", "media_url", "video_path", "media_path", "url"]), captionText: str(row, ["caption", "content", "description"]), audio: str(row, ["audio_url", "sound_url"]), audioTitle: str(row, ["audio_title", "sound_title", "music_title"], "Original audio") };
+ return { ...row, id: String(row.id), owner: str(row, ["handle", "alias", "username", "display_name"], "VibeNest"), media: str(row, ["video_url", "media_url", "video_path", "media_path", "url"]), captionText: str(row, ["caption", "content", "description"]), audio: str(row, ["audio_url", "sound_url"]), audioTitle: str(row, ["audio_title", "sound_title", "music_title"], "Original audio"), persisted: true };
 }
 
 export function HomeFeedView({ alias, posts, children, onCompose, onSearch, onNotifications }: Props) {
@@ -39,7 +40,7 @@ export function HomeFeedView({ alias, posts, children, onCompose, onSearch, onNo
  const [busy, setBusy] = useState(false);
  const [notice, setNotice] = useState("");
  const [muted, setMuted] = useState(true);
- const [liked, setLiked] = useState<string[]>([]);
+ const [liked, setLiked] = useState<string[]>([]);\n const [reelComments, setReelComments] = useState<ReelComment[]>([]);
  const [commentReel, setCommentReel] = useState<string | null>(null);
  const [commentText, setCommentText] = useState("");
  const [reelProgress, setReelProgress] = useState<Record<string, number>>({});
@@ -61,7 +62,7 @@ export function HomeFeedView({ alias, posts, children, onCompose, onSearch, onNo
   }
   setStories(storyRows.map(normalizeStory));
   const reelsResult = await (supabase.from(REEL_TABLE) as any).select("*").order("created_at", { ascending: false }).limit(50);
-  if (!reelsResult.error) setReels(((reelsResult.data ?? []) as MediaRow[]).map(normalizeReel).filter(item => item.media));
+  if (!reelsResult.error) {\n   const nextReels = ((reelsResult.data ?? []) as MediaRow[]).map(normalizeReel).filter(item => item.media);\n   setReels(nextReels);\n   const { data: authData } = await supabase.auth.getUser();\n   if (authData.user && nextReels.length) {\n    const likesResult = await (supabase.from("vibenest_reel_likes") as any).select("reel_id").eq("user_id", authData.user.id).in("reel_id", nextReels.map(item => item.id));\n    if (!likesResult.error) setLiked((likesResult.data ?? []).map((row: { reel_id: string }) => row.reel_id));\n   }\n  }
   else setNotice("Không tải được Reels: " + reelsResult.error.message);
  }, [supabase]);
 
@@ -158,7 +159,7 @@ export function HomeFeedView({ alias, posts, children, onCompose, onSearch, onNo
   setPollVotes(current => ({ ...current, [activeStory.id]: { a: (current[activeStory.id]?.a ?? 0) + (option === 0 ? 1 : 0), b: (current[activeStory.id]?.b ?? 0) + (option === 1 ? 1 : 0), mine: option } }));
  };
 
- const toggleLike = (id: string) => setLiked(current => current.includes(id) ? current.filter(item => item !== id) : [...current, id]);
+ const toggleLike = async (id: string) => {\n  if (!supabase) return;\n  if (!reels.some(item => item.id === id)) { setNotice("Tương tác Reel chỉ bật cho video đã đăng trong Reels."); return; }\n  const { data } = await supabase.auth.getUser();\n  if (!data.user) { setNotice("Đăng nhập để thích Reel."); return; }\n  const alreadyLiked = liked.includes(id);\n  const result = alreadyLiked\n   ? await (supabase.from("vibenest_reel_likes") as any).delete().eq("reel_id", id).eq("user_id", data.user.id)\n   : await (supabase.from("vibenest_reel_likes") as any).insert({ reel_id: id, user_id: data.user.id });\n  if (result.error) { setNotice("Không thể lưu lượt thích: " + result.error.message); return; }\n  setLiked(current => alreadyLiked ? current.filter(item => item !== id) : [...current, id]);\n };\n const openReelComments = async (id: string) => {\n  if (!supabase || !reels.some(item => item.id === id)) { setNotice("Bình luận chỉ khả dụng với Reel đã được lưu trên máy chủ."); return; }\n  const result = await (supabase.from("vibenest_reel_comments") as any).select("id,author_alias,content,created_at").eq("reel_id", id).order("created_at", { ascending: true }).limit(100);\n  if (result.error) { setNotice("Không tải được bình luận: " + result.error.message); return; }\n  setReelComments((result.data ?? []) as ReelComment[]);\n  setCommentText("");\n  setCommentReel(id);\n };\n const sendReelComment = async (id: string) => {\n  if (!supabase || !commentText.trim()) return;\n  const { data } = await supabase.auth.getUser();\n  if (!data.user) { setNotice("Đăng nhập để bình luận."); return; }\n  const result = await (supabase.from("vibenest_reel_comments") as any).insert({ reel_id: id, user_id: data.user.id, author_alias: alias, content: commentText.trim() }).select("id,author_alias,content,created_at").single();\n  if (result.error) { setNotice("Không thể gửi bình luận: " + result.error.message); return; }\n  setReelComments(current => [...current, result.data as ReelComment]);\n  setCommentText("");\n };
  const showReelFeedback = (id: string, kind: "play" | "pause" | "heart", x = 50, y = 50) => {
   if (reelFeedbackTimer.current) clearTimeout(reelFeedbackTimer.current);
   setReelFeedback({ id, kind, x, y });
@@ -204,7 +205,7 @@ export function HomeFeedView({ alias, posts, children, onCompose, onSearch, onNo
   reelTapTimers.current.set(reelId, timer);
  }
  const activePoll = activeStory ? pollVotes[activeStory.id] : undefined;
- const reelsFromPosts = posts.filter(post => /video\//i.test(post.imageUrl ?? "") || /\.(mp4|webm|mov)(\?|$)/i.test(post.imageUrl ?? "")).map(post => ({ id: post.id, owner: post.handle, media: post.imageUrl ?? "", captionText: post.content, audio: "", audioTitle: "Original audio" }));
+ const reelsFromPosts = posts.filter(post => /video\//i.test(post.imageUrl ?? "") || /\.(mp4|webm|mov)(\?|$)/i.test(post.imageUrl ?? "")).map(post => ({ id: post.id, owner: post.handle, media: post.imageUrl ?? "", captionText: post.content, audio: "", audioTitle: "Original audio", persisted: false }));
 
  return <section className="vn-home-feed-shell" aria-label="Home feed">
   <header className="vn-home-feed-top">
@@ -234,8 +235,8 @@ export function HomeFeedView({ alias, posts, children, onCompose, onSearch, onNo
     <div className="vn-reel-progress"><span style={{ width: `${reelProgress[reel.id] ?? 0}%` }} /></div><div className="vn-reel-gradient" />
     <div className="vn-reel-caption"><strong>@{reel.owner}</strong><p>{reel.captionText}</p><span>♫ {reel.audioTitle}</span></div>
     <aside className="vn-reel-actions">
-     <button type="button" className={liked.includes(reel.id) ? "liked" : ""} onClick={() => toggleLike(reel.id)} aria-label="Thả tim"><span>♥</span><small>{liked.includes(reel.id) ? "Đã thích" : "Thích"}</small></button>
-     <button type="button" onClick={() => setCommentReel(reel.id)} aria-label="Bình luận"><span>▢</span><small>Bình luận</small></button>
+     <button type="button" className={liked.includes(reel.id) ? "liked" : ""} onClick={() => void toggleLike(reel.id)} aria-label="Thả tim"><span>♥</span><small>{liked.includes(reel.id) ? "Đã thích" : "Thích"}</small></button>
+     <button type="button" onClick={() => void openReelComments(reel.id)} aria-label="Bình luận"><span>▢</span><small>Bình luận</small></button>
      <button type="button" onClick={() => { if (navigator.share) void navigator.share({ title: "VibeNest Reel", text: reel.captionText, url: reel.media }).catch(() => undefined); else void navigator.clipboard?.writeText(reel.media); }} aria-label="Chia sẻ"><span>↗</span><small>Chia sẻ</small></button>
      <button type="button" className="vn-reel-disc" onClick={() => setMuted(value => !value)} aria-label={muted ? "Bật âm thanh" : "Tắt âm thanh"}>♫</button>
     </aside>
@@ -251,7 +252,7 @@ export function HomeFeedView({ alias, posts, children, onCompose, onSearch, onNo
    <button type="button" className="vn-story-prev" onClick={() => setStoryIndex(index => index === null ? null : Math.max(0, index - 1))} aria-label="Story trước" />
    <button type="button" className="vn-story-next" onClick={() => setStoryIndex(index => index === null ? null : index + 1 < stories.length ? index + 1 : null)} aria-label="Story tiếp theo" />
   </div>}
-  {commentReel && <form className="vn-reel-comment-sheet" onSubmit={event => { event.preventDefault(); setNotice("Bình luận đang chờ kết nối endpoint bình luận Reels."); setCommentReel(null); setCommentText(""); }}><label htmlFor="vn-reel-comment">Bình luận Reel</label><input id="vn-reel-comment" value={commentText} onChange={event => setCommentText(event.target.value)} placeholder="Viết bình luận…" maxLength={500} /><button type="submit">Gửi</button><button type="button" onClick={() => setCommentReel(null)}>Đóng</button></form>}
+  {commentReel && <form className="vn-reel-comment-sheet" onSubmit={event => { event.preventDefault(); if (commentReel) void sendReelComment(commentReel); }}><label htmlFor="vn-reel-comment">Bình luận Reel ({reelComments.length})</label><div className="vn-reel-comment-list">{reelComments.map(comment => <article key={comment.id}><strong>@{comment.author_alias}</strong><p>{comment.content}</p></article>)}</div><input id="vn-reel-comment" value={commentText} onChange={event => setCommentText(event.target.value)} placeholder="Viết bình luận…" maxLength={1000} /><button type="submit">Gửi</button><button type="button" onClick={() => setCommentReel(null)}>Đóng</button></form>}
   {notice && <div className="vn-home-media-notice" role="status"><span>{notice}</span><button type="button" onClick={() => setNotice("")}>×</button></div>}
  </section>;
 }
