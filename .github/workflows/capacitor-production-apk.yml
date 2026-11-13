@@ -90,7 +90,7 @@ jobs:
           sha256sum artifacts/* | tee artifacts/SHA256SUMS.txt
 
       - name: Upload APK and AAB
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: vibenest-android-debug-apk-aab-${{ github.sha }}
           path: artifacts/*
