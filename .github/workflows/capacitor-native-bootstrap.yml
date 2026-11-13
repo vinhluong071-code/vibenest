@@ -71,7 +71,7 @@ jobs:
           fi
 
       - name: Upload unsigned debug APK
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: vibenest-android-debug-apk
           path: android/app/build/outputs/apk/debug/app-debug.apk
