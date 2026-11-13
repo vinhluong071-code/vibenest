@@ -310,7 +310,7 @@ export function VibeRadarScreen({ displayName, vibeTag, posts, onOpenChat, force
       setLocationMessage("Ghost Mode bắt buộc theo chính sách an toàn tài khoản.");
       return;
     }
-    setGhostMode((current) => !current);
+    setGhostPreference((current) => !current);
   }
 
   return (
