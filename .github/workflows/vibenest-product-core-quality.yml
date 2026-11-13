@@ -3,6 +3,7 @@ name: VibeNest product-core quality
 on:
   push:
     branches:
+      - main
       - feat/hybrid-mobile-navigation-pwa-capacitor
   workflow_dispatch:
 
