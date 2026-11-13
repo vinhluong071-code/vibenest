@@ -7,7 +7,6 @@ import { signInAnonymously } from "@/lib/supabase/anonymous-auth";
 import { ComposerModal } from "@/components/ComposerModal";
 import { ChatDialog } from "@/components/ChatDialog";
 import { Sidebar } from "@/components/Sidebar";
-import { VibeStoriesBar } from "@/components/stories/VibeStoriesBar";
 import { HomeFeedView } from "@/components/feed/HomeFeedView";
 import { VibeFeedCard, type VibePostItem } from "@/components/feed/VibeFeedCard";
 import { BottomTabBar, type BottomNavTab } from "@/components/navigation/BottomTabBar";
@@ -654,19 +653,11 @@ export function VibeNestApp() {
         onTouchStart={(event) => { const target = event.target; if (target instanceof Element && target.closest("button,a,input,textarea,select,[data-no-swipe],.aura-card-track,.mood-tabs,.sort-switch")) { touchOrigin.current = null; return; } const touch = event.touches[0]; if (touch) touchOrigin.current = { x: touch.clientX, y: touch.clientY }; }}
         onTouchEnd={(event) => { const start = touchOrigin.current; touchOrigin.current = null; const touch = event.changedTouches[0]; if (!start || !touch) return; const dx = touch.clientX - start.x; const dy = touch.clientY - start.y; if (Math.abs(dx) < 70 || Math.abs(dx) < Math.abs(dy) * 1.25) return; setActiveSurface((current) => { const order = ["home", "voice", "radar"] as const; const index = order.indexOf(current); return order[Math.max(0, Math.min(order.length - 1, index + (dx < 0 ? 1 : -1)))]; }); }}>
         {activeSurface === "home" && <>
-        <section className="vn-home-header"><div className="vn-home-avatar">{alias.slice(0,1).toUpperCase()}</div><label className="vn-home-search"><span>⌕</span><input value={query} onChange={event=>setQuery(event.target.value)} placeholder="Tìm bạn bè, khoảnh khắc…" aria-label="Tìm bạn bè và khoảnh khắc"/></label><div className="vn-home-title"><h1>Home</h1><p>Khoảnh khắc của bạn bè và những câu chuyện mới</p></div></section>
-
         <HomeFeedView alias={alias} posts={feedCardPosts} onCompose={()=>setComposerOpen(true)} onSearch={()=>{document.querySelector<HTMLInputElement>(".feed-tools input")?.focus();}} onNotifications={()=>setInboxTab("notifications")}>
         <div className="workspace-grid">
           <Sidebar alias={alias} postCount={ownPostCount} savedCount={savedCount} onChangeAlias={() => setAlias(makeAlias())} />
           <section className="feed-column" id="feed" aria-label="Luồng tâm sự">
-            <VibeStoriesBar currentUserName={alias} currentUserHandle={profile.handle} onNotify={setNotice} />
             <AuraDiscoveryRail posts={feedCardPosts.slice(0, 3)} onOpenChat={(postId) => { if (!hasCompletedProfile) { requestAuth("kết bạn và bắt đầu trò chuyện"); return; } const target = posts.find((item) => item.id === postId); if (target) setChatPost(target); }} />
-            <div className="composer-prompt glass-panel">
-              <div className="avatar">{alias.slice(0, 1)}</div>
-              <button className="prompt-trigger" onClick={() => setComposerOpen(true)}>Viết vài dòng trút bầu tâm sự ẩn danh…</button>
-              <button className="prompt-plus" onClick={() => setComposerOpen(true)} aria-label="Viết tâm sự">＋</button>
-            </div>
             <div className="feed-tools">
               <input className="search-input" type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Tìm theo từ khóa hoặc tâm trạng…" aria-label="Tìm tâm sự" />
               <div className="sort-switch"><button className={sort === "latest" ? "selected" : ""} onClick={() => setSort("latest")}>Mới nhất</button><button className={sort === "popular" ? "selected" : ""} onClick={() => setSort("popular")}>Nổi bật</button></div>
