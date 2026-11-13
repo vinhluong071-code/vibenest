@@ -80,7 +80,7 @@ export function HomeFeedView({ alias, posts, children, onCompose, onSearch, onNo
  }, [supabase, loadMedia]);
 
  useEffect(() => {
-  if (!activeStory) return;
+  if (storyIndex === null) return;
   const started = Date.now();
   storyTimer.current = setInterval(() => {
    const progress = Math.min(100, ((Date.now() - started) / 5000) * 100);
@@ -88,7 +88,7 @@ export function HomeFeedView({ alias, posts, children, onCompose, onSearch, onNo
    if (progress >= 100) setStoryIndex(index => index === null ? null : index < stories.length - 1 ? index + 1 : null);
   }, 50);
   return () => { if (storyTimer.current) clearInterval(storyTimer.current); };
- }, [activeStory?.id, stories.length]);
+ }, [storyIndex, stories.length]);
 
  useEffect(() => {
   if (mode !== "reels") return;
@@ -168,6 +168,41 @@ export function HomeFeedView({ alias, posts, children, onCompose, onSearch, onNo
   reelTapTimers.current.forEach(timer => clearTimeout(timer));
   if (reelFeedbackTimer.current) clearTimeout(reelFeedbackTimer.current);
  }, []);
+ function handleReelTap(event: ReactMouseEvent<HTMLVideoElement>) {
+  const video = event.currentTarget;
+  const reelId = video.dataset.reelId;
+  if (!reelId) return;
+  const rect = video.getBoundingClientRect();
+  const x = Math.max(8, Math.min(92, ((event.clientX - rect.left) / rect.width) * 100));
+  const y = Math.max(8, Math.min(92, ((event.clientY - rect.top) / rect.height) * 100));
+  const pending = reelTapTimers.current.get(reelId);
+  if (pending) {
+   clearTimeout(pending);
+   reelTapTimers.current.delete(reelId);
+   setLiked(current => current.includes(reelId) ? current : [...current, reelId]);
+   if (reelFeedbackTimer.current) clearTimeout(reelFeedbackTimer.current);
+   setReelFeedback({ id: reelId, kind: "heart", x, y });
+   reelFeedbackTimer.current = setTimeout(() => setReelFeedback(null), 560);
+   if (typeof navigator !== "undefined" && "vibrate" in navigator) navigator.vibrate?.(18);
+   return;
+  }
+  const timer = setTimeout(() => {
+   reelTapTimers.current.delete(reelId);
+   if (video.paused) {
+    void video.play().then(() => {
+     if (reelFeedbackTimer.current) clearTimeout(reelFeedbackTimer.current);
+     setReelFeedback({ id: reelId, kind: "play", x: 50, y: 50 });
+     reelFeedbackTimer.current = setTimeout(() => setReelFeedback(null), 560);
+    }).catch(() => undefined);
+   } else {
+    video.pause();
+    if (reelFeedbackTimer.current) clearTimeout(reelFeedbackTimer.current);
+    setReelFeedback({ id: reelId, kind: "pause", x: 50, y: 50 });
+    reelFeedbackTimer.current = setTimeout(() => setReelFeedback(null), 560);
+   }
+  }, 230);
+  reelTapTimers.current.set(reelId, timer);
+ }
  const activePoll = activeStory ? pollVotes[activeStory.id] : undefined;
  const reelsFromPosts = posts.filter(post => /video\//i.test(post.imageUrl ?? "") || /\.(mp4|webm|mov)(\?|$)/i.test(post.imageUrl ?? "")).map(post => ({ id: post.id, owner: post.handle, media: post.imageUrl ?? "", captionText: post.content, audio: "", audioTitle: "Original audio" }));
 
@@ -194,39 +229,7 @@ export function HomeFeedView({ alias, posts, children, onCompose, onSearch, onNo
    {children}
   </> : <section ref={reelsContainerRef} className="vn-home-reels-player" aria-label="Reels video dọc">
    {[...reels, ...reelsFromPosts].length ? [...reels, ...reelsFromPosts].map(reel => <article className="vn-reel-slide" key={reel.id} style={{ aspectRatio: "9 / 16" }}>
-    <video src={reel.media} playsInline loop muted={muted} preload="metadata" onClick={event => {
-      const video = event.currentTarget;
-      const rect = video.getBoundingClientRect();
-      const x = Math.max(8, Math.min(92, ((event.clientX - rect.left) / rect.width) * 100));
-      const y = Math.max(8, Math.min(92, ((event.clientY - rect.top) / rect.height) * 100));
-      const pending = reelTapTimers.current.get(reel.id);
-      if (pending) {
-       clearTimeout(pending);
-       reelTapTimers.current.delete(reel.id);
-       setLiked(current => current.includes(reel.id) ? current : [...current, reel.id]);
-       if (reelFeedbackTimer.current) clearTimeout(reelFeedbackTimer.current);
-       setReelFeedback({ id: reel.id, kind: "heart", x, y });
-       reelFeedbackTimer.current = setTimeout(() => setReelFeedback(null), 560);
-       if (typeof navigator !== "undefined" && "vibrate" in navigator) navigator.vibrate?.(18);
-       return;
-      }
-      const timer = setTimeout(() => {
-       reelTapTimers.current.delete(reel.id);
-       if (video.paused) {
-        void video.play().then(() => {
-         if (reelFeedbackTimer.current) clearTimeout(reelFeedbackTimer.current);
-         setReelFeedback({ id: reel.id, kind: "play", x: 50, y: 50 });
-         reelFeedbackTimer.current = setTimeout(() => setReelFeedback(null), 560);
-        }).catch(() => undefined);
-       } else {
-        video.pause();
-        if (reelFeedbackTimer.current) clearTimeout(reelFeedbackTimer.current);
-        setReelFeedback({ id: reel.id, kind: "pause", x: 50, y: 50 });
-        reelFeedbackTimer.current = setTimeout(() => setReelFeedback(null), 560);
-       }
-      }, 230);
-      reelTapTimers.current.set(reel.id, timer);
-     }} onTimeUpdate={event => { const video = event.currentTarget; if (video.duration) setReelProgress(current => ({ ...current, [reel.id]: (video.currentTime / video.duration) * 100 })); }} />
+    <video src={reel.media} playsInline loop muted={muted} preload="metadata" data-reel-id={reel.id} onClick={handleReelTap} onTimeUpdate={event => { const video = event.currentTarget; if (video.duration) setReelProgress(current => ({ ...current, [reel.id]: (video.currentTime / video.duration) * 100 })); }} />
     {reelFeedback?.id === reel.id && <span key={`${reel.id}-${reelFeedback.kind}-${Math.round(reelFeedback.x)}`} className={`vn-reel-feedback vn-reel-feedback-${reelFeedback.kind}`} style={{ left: `${reelFeedback.x}%`, top: `${reelFeedback.y}%` }} aria-hidden="true">{reelFeedback.kind === "heart" ? "♥" : reelFeedback.kind === "play" ? "▶" : "Ⅱ"}</span>}
     <div className="vn-reel-progress"><span style={{ width: `${reelProgress[reel.id] ?? 0}%` }} /></div><div className="vn-reel-gradient" />
     <div className="vn-reel-caption"><strong>@{reel.owner}</strong><p>{reel.captionText}</p><span>♫ {reel.audioTitle}</span></div>
