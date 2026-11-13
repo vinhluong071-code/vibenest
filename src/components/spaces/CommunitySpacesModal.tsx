@@ -26,6 +26,7 @@ export function CommunitySpacesModal({ birthDate, onClose }: { birthDate: string
 
   useEffect(() => {
     if (!canJoinSpaces) return;
+    const restoreTimer = window.setTimeout(() => {
     try {
       const savedJoined: unknown = JSON.parse(localStorage.getItem("vibenest.spaces.joined.v1") || "[]");
       if (Array.isArray(savedJoined)) setJoined(savedJoined.filter((item): item is string => typeof item === "string" && groups.some((group) => group.id === item)));
@@ -43,6 +44,8 @@ export function CommunitySpacesModal({ birthDate, onClose }: { birthDate: string
     } catch {
       // Ignore malformed or unavailable local cache.
     }
+    }, 0);
+    return () => window.clearTimeout(restoreTimer);
   }, [canJoinSpaces]);
 
   useEffect(() => () => { micStream.current?.getTracks().forEach(track => track.stop()); }, []);

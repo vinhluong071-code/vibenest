@@ -134,7 +134,8 @@ function getMarkerPosition(point: Coordinates, center: Coordinates) {
 }
 
 export function VibeRadarScreen({ displayName, vibeTag, posts, onOpenChat, forceGhostMode = false }: Props) {
-  const [ghostMode, setGhostMode] = useState(true);
+  const [ghostPreference, setGhostPreference] = useState(true);
+  const ghostMode = forceGhostMode || ghostPreference;
   const [layer, setLayer] = useState<Layer>("street");
   const [center, setCenter] = useState<Coordinates>(DEFAULT_CENTER);
   const [myLocation, setMyLocation] = useState<Coordinates | null>(null);
@@ -169,13 +170,6 @@ export function VibeRadarScreen({ displayName, vibeTag, posts, onOpenChat, force
   useEffect(() => {
     ghostRef.current = ghostMode;
   }, [ghostMode]);
-
-  useEffect(() => {
-    if (forceGhostMode) {
-      setGhostMode(true);
-      setLocationMessage("Ghost Mode bắt buộc theo chính sách an toàn tài khoản.");
-    }
-  }, [forceGhostMode]);
 
   const loadFriends = useCallback(async () => {
     if (!supabase) return;
@@ -222,9 +216,9 @@ export function VibeRadarScreen({ displayName, vibeTag, posts, onOpenChat, force
       setLocationMessage("Chưa cấu hình Supabase trên thiết bị này.");
       return;
     }
-    void loadFriends();
+    const initialLoad = window.setTimeout(() => void loadFriends(), 0);
     const friendTimer = window.setInterval(() => void loadFriends(), SYNC_INTERVAL_MS);
-    return () => window.clearInterval(friendTimer);
+    return () => { window.clearTimeout(initialLoad); window.clearInterval(friendTimer); };
   }, [loadFriends, supabase]);
 
   useEffect(() => {
@@ -255,10 +249,9 @@ export function VibeRadarScreen({ displayName, vibeTag, posts, onOpenChat, force
 
   useEffect(() => {
     if (typeof navigator === "undefined" || !navigator.geolocation) {
-      setLocationMessage("Thiết bị không hỗ trợ GPS hoặc chưa cấp quyền vị trí.");
+      window.setTimeout(() => setLocationMessage("Thiết bị không hỗ trợ GPS hoặc chưa cấp quyền vị trí."), 0);
       return;
     }
-    setLocationBusy(true);
     const watchId = navigator.geolocation.watchPosition(
       ({ coords }) => {
         const next = { lat: coords.latitude, lon: coords.longitude };
@@ -313,7 +306,7 @@ export function VibeRadarScreen({ displayName, vibeTag, posts, onOpenChat, force
 
   function toggleGhostMode() {
     if (forceGhostMode) {
-      setGhostMode(true);
+      setGhostPreference(true);
       setLocationMessage("Ghost Mode bắt buộc theo chính sách an toàn tài khoản.");
       return;
     }

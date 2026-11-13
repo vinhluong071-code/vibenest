@@ -21,6 +21,7 @@ export function SoulDatingModal({ birthDate, onClose }: { birthDate: string | nu
   const [datingRoomId, setDatingRoomId] = useState<string | null>(null);
   const [chatError, setChatError] = useState("");
   const [dragX, setDragX] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
   const dragStart = useRef<{ x: number; pointerId: number } | null>(null);
   const [error, setError] = useState("");
 
@@ -79,6 +80,7 @@ export function SoulDatingModal({ birthDate, onClose }: { birthDate: string | nu
   function onDeckPointerDown(event: ReactPointerEvent<HTMLElement>) {
     if (busy || (event.target as HTMLElement).closest("button")) return;
     dragStart.current = { x: event.clientX, pointerId: event.pointerId };
+    setIsDragging(true);
     event.currentTarget.setPointerCapture(event.pointerId);
   }
   function onDeckPointerMove(event: ReactPointerEvent<HTMLElement>) {
@@ -89,6 +91,7 @@ export function SoulDatingModal({ birthDate, onClose }: { birthDate: string | nu
     if (!dragStart.current || dragStart.current.pointerId !== event.pointerId) return;
     const delta = event.clientX - dragStart.current.x;
     dragStart.current = null;
+    setIsDragging(false);
     setDragX(0);
     if (delta > 90) void swipe("like"); else if (delta < -90) void swipe("pass");
   }
@@ -150,13 +153,13 @@ export function SoulDatingModal({ birthDate, onClose }: { birthDate: string | nu
           <div className="vn-age-shield">🛡️</div><h3>Bảo vệ người dùng vị thành niên</h3>
           <p>Máy chủ từ chối thao tác vì tài khoản chưa đáp ứng điều kiện 18+. Tính năng hẹn hò đã bị khóa.</p>
         </> : matched ? <div className="vn-match-celebration">
-          <div className="vn-match-sparkle">💜 ✨ 💜</div><h2>It's a Vibe Match!</h2>
+          <div className="vn-match-sparkle">💜 ✨ 💜</div><h2>It&apos;s a Vibe Match!</h2>
           <p>Hai bạn đã cùng thích nhau. Hãy bắt đầu bằng một lời chào tôn trọng.</p>
           <button className="vn-feature-primary" disabled={busy} onClick={() => void startDatingChat()}>{busy ? "Đang mở phòng chat…" : "Nhắn tin ngay"}</button>
           {chatError && <p role="alert">{chatError}</p>}
         </div> : loading ? <p>Đang tải hồ sơ đề xuất…</p> : people[i] ? <>
           <p>Mỗi lượt thích hoặc bỏ qua đều được xác thực lại ở máy chủ.</p>
-          <article className="vn-oracle-card vn-dating-swipe-deck" onPointerDown={onDeckPointerDown} onPointerMove={onDeckPointerMove} onPointerUp={onDeckPointerUp} onPointerCancel={() => { dragStart.current = null; setDragX(0); }} style={{ transform: `translateX(${dragX}px) rotate(${dragX / 18}deg)`, transition: dragStart.current ? "none" : "transform .24s cubic-bezier(.16,1,.3,1)", touchAction: "pan-y" }}><span>SOUL DISCOVERY · 18+</span><strong>✧ Hồ sơ VibeNest</strong><p>Thành viên có thông tin ngày sinh</p><div className={dragX > 24 ? "vn-swipe-stamp like" : dragX < -24 ? "vn-swipe-stamp pass" : "vn-swipe-stamp"}>{dragX > 24 ? "LIKE" : dragX < -24 ? "PASS" : "KÉO THẺ ĐỂ QUẸT"}</div>
+          <article className="vn-oracle-card vn-dating-swipe-deck" onPointerDown={onDeckPointerDown} onPointerMove={onDeckPointerMove} onPointerUp={onDeckPointerUp} onPointerCancel={() => { dragStart.current = null; setIsDragging(false); setDragX(0); }} style={{ transform: `translateX(${dragX}px) rotate(${dragX / 18}deg)`, transition: isDragging ? "none" : "transform .24s cubic-bezier(.16,1,.3,1)", touchAction: "pan-y" }}><span>SOUL DISCOVERY · 18+</span><strong>✧ Hồ sơ VibeNest</strong><p>Thành viên có thông tin ngày sinh</p><div className={dragX > 24 ? "vn-swipe-stamp like" : dragX < -24 ? "vn-swipe-stamp pass" : "vn-swipe-stamp"}>{dragX > 24 ? "LIKE" : dragX < -24 ? "PASS" : "KÉO THẺ ĐỂ QUẸT"}</div>
             <div className="vn-dating-actions"><button disabled={busy} onClick={() => void swipe("pass")}>Bỏ qua</button><button disabled={busy} onClick={() => void swipe("like")}>♡ Thích</button></div>
           </article>
         </> : <p>Chưa có hồ sơ đề xuất. Hãy quay lại sau nhé.</p>}

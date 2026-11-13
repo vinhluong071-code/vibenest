@@ -47,7 +47,7 @@ export function HomeFeedView({ alias, posts, children, onCompose, onSearch, onNo
  const reelTapTimers = useRef(new Map<string, ReturnType<typeof setTimeout>>());
  const reelFeedbackTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
  const storyTimer = useRef<ReturnType<typeof setInterval> | null>(null);
- const videoRefs = useRef(new Map<string, HTMLVideoElement>());
+ const reelsContainerRef = useRef<HTMLElement | null>(null);
  const supabase = useMemo(() => { try { return createClient(); } catch { return null; } }, []);
  const activeStory = storyIndex === null ? null : stories[storyIndex] ?? null;
 
@@ -78,8 +78,6 @@ export function HomeFeedView({ alias, posts, children, onCompose, onSearch, onNo
 
  useEffect(() => {
   if (!activeStory) return;
-  setStoryProgress(0);
-  setStoryQuestion("");
   const started = Date.now();
   storyTimer.current = setInterval(() => {
    const progress = Math.min(100, ((Date.now() - started) / 5000) * 100);
@@ -91,7 +89,7 @@ export function HomeFeedView({ alias, posts, children, onCompose, onSearch, onNo
 
  useEffect(() => {
   if (mode !== "reels") return;
-  const nodes = Array.from(videoRefs.current.values());
+  const nodes = Array.from(reelsContainerRef.current?.querySelectorAll("video") ?? []);
   if (!nodes.length) return;
   const observer = new IntersectionObserver(entries => {
    entries.forEach(entry => {
@@ -210,15 +208,15 @@ export function HomeFeedView({ alias, posts, children, onCompose, onSearch, onNo
     <button type="button" className="vn-home-story-create" onClick={() => void createStory()} disabled={busy} aria-label="Tạo tin">
      <span className="vn-home-create-avatar">{alias.slice(0,1).toUpperCase()}</span><span className="vn-home-create-plus" aria-hidden="true">＋</span><small>{busy ? "Đang đăng…" : "Tạo tin"}</small>
     </button>
-    {stories.map((story, index) => <button type="button" className="vn-home-story-card vn-home-story-neon" key={story.id} onClick={() => setStoryIndex(index)}>
+    {stories.map((story, index) => <button type="button" className="vn-home-story-card vn-home-story-neon" key={story.id} onClick={() => { setStoryProgress(0); setStoryQuestion(""); setStoryIndex(index); }}>
      {story.media ? (/\.(mp4|webm|mov)(\?|$)/i.test(story.media) ? <video src={story.media} muted playsInline /> : <Image src={story.media} alt="" fill sizes="104px" unoptimized />) : <span className="vn-home-story-gradient" />}
      <span>{story.owner}</span>
     </button>)}
    </section>
    {children}
-  </> : <section className="vn-home-reels-player" aria-label="Reels video dọc">
+  </> : <section ref={reelsContainerRef} className="vn-home-reels-player" aria-label="Reels video dọc">
    {[...reels, ...reelsFromPosts].length ? [...reels, ...reelsFromPosts].map(reel => <article className="vn-reel-slide" key={reel.id} style={{ aspectRatio: "9 / 16" }}>
-    <video ref={node => { if (node) videoRefs.current.set(reel.id, node); else videoRefs.current.delete(reel.id); }} src={reel.media} playsInline loop muted={muted} preload="metadata" onClick={event => handleReelTap(event, reel.id)} onTimeUpdate={event => { const video = event.currentTarget; if (video.duration) setReelProgress(current => ({ ...current, [reel.id]: (video.currentTime / video.duration) * 100 })); }} />
+    <video src={reel.media} playsInline loop muted={muted} preload="metadata" onClick={event => handleReelTap(event, reel.id)} onTimeUpdate={event => { const video = event.currentTarget; if (video.duration) setReelProgress(current => ({ ...current, [reel.id]: (video.currentTime / video.duration) * 100 })); }} />
     {reelFeedback?.id === reel.id && <span key={`${reel.id}-${reelFeedback.kind}-${Math.round(reelFeedback.x)}`} className={`vn-reel-feedback vn-reel-feedback-${reelFeedback.kind}`} style={{ left: `${reelFeedback.x}%`, top: `${reelFeedback.y}%` }} aria-hidden="true">{reelFeedback.kind === "heart" ? "♥" : reelFeedback.kind === "play" ? "▶" : "Ⅱ"}</span>}
     <div className="vn-reel-progress"><span style={{ width: `${reelProgress[reel.id] ?? 0}%` }} /></div><div className="vn-reel-gradient" />
     <div className="vn-reel-caption"><strong>@{reel.owner}</strong><p>{reel.captionText}</p><span>♫ {reel.audioTitle}</span></div>
