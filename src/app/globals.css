@@ -527,3 +527,33 @@
   .hybrid-bottom-wrap { right: 50%; bottom: 18px; left: auto; width: min(560px, calc(100% - 40px)); transform: translateX(50%); border: 1px solid #ffffff18; border-radius: 24px; }
   .app-shell { padding-bottom: 104px; }
 }
+
+
+/* Overlay and map controls stay clear of the fixed iPhone tab dock */
+.vn-reel-comment-sheet {
+  bottom: calc(88px + env(safe-area-inset-bottom));
+  left: 50%;
+  right: auto;
+  width: min(560px, calc(100% - 24px));
+  transform: translateX(-50%);
+  flex-wrap: wrap;
+}
+.vn-reel-comment-sheet label { flex: 0 0 100%; }
+.vn-reel-comment-sheet input { flex: 1 1 180px; }
+.vn-snapmap-bottom-actions { bottom: calc(88px + env(safe-area-inset-bottom)); }
+.vn-snapmap-location-status { bottom: calc(158px + env(safe-area-inset-bottom)); }
+.vn-snapmap-sheet-backdrop {
+  padding: max(12px, env(safe-area-inset-top)) 12px max(12px, env(safe-area-inset-bottom));
+}
+.vn-snapmap-sheet {
+  max-height: min(78dvh, 680px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.vn-story-viewer { height: 100dvh; }
+.vn-story-viewer .vn-story-media { max-height: 100dvh; }
+@media (max-width: 640px) {
+  .vn-reel-comment-sheet { gap: 8px; padding: 12px; }
+  .vn-reel-comment-sheet input { min-height: 44px; }
+  .vn-snapmap-bottom-actions { left: 12px; right: 12px; }
+}
